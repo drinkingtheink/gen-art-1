@@ -1,5 +1,20 @@
 <script setup>
-// Layout shell. Controls land in the sidebar, the piece renders in the stage.
+import SvgStage from '@/components/SvgStage.vue'
+
+// Namespace probe: one of each shape kind the generators will emit, so a
+// mis-namespaced <component :is> shows up immediately as a blank stage.
+const scene = {
+  width: 400,
+  height: 400,
+  background: '#f4eed2',
+  shapes: [
+    { tag: 'rect', attrs: { x: 20, y: 20, width: 160, height: 160, fill: '#003049' } },
+    { tag: 'circle', attrs: { cx: 300, cy: 100, r: 70, fill: '#d62828' } },
+    { tag: 'path', attrs: { d: 'M20 380 L180 220 L180 380 Z', fill: '#f77f00' } },
+    { tag: 'line', attrs: { x1: 230, y1: 210, x2: 380, y2: 380, stroke: '#111', 'stroke-width': 6 } },
+    { tag: 'polygon', attrs: { points: '230,380 380,210 380,380', fill: '#fcbf49' } },
+  ],
+}
 </script>
 
 <template>
@@ -9,7 +24,7 @@
     </aside>
 
     <main class="stage-area">
-      <div class="stage-frame" />
+      <SvgStage :scene="scene" />
     </main>
   </div>
 </template>
@@ -46,15 +61,8 @@
 .stage-area {
   display: grid;
   place-items: center;
+  min-height: 0;
   min-width: 0;
   padding: 1.5rem;
-}
-
-.stage-frame {
-  aspect-ratio: 1;
-  width: min(100%, 100cqh);
-  max-height: 100%;
-  background: #0f0f13;
-  border: 1px solid var(--panel-edge);
 }
 </style>
