@@ -1,17 +1,43 @@
 <script setup>
+import ControlPanel from '@/components/ControlPanel.vue'
 import SvgStage from '@/components/SvgStage.vue'
+import Toolbar from '@/components/Toolbar.vue'
 import { useGenerator } from '@/composables/useGenerator.js'
 
-const { generator, seed, scene, reroll } = useGenerator({ seed: 'quiet-heron-41' })
+const {
+  generator,
+  generatorId,
+  seed,
+  params,
+  scene,
+  setParam,
+  selectGenerator,
+  setSeed,
+  reroll,
+  resetParams,
+} = useGenerator()
 </script>
 
 <template>
   <div class="app">
     <aside class="sidebar">
-      <h1 class="wordmark">gen<span>·</span>art</h1>
-      <p class="blurb">{{ generator.blurb }}</p>
-      <button type="button" @click="reroll">Re-roll seed</button>
-      <code class="seed">{{ seed }}</code>
+      <header class="head">
+        <h1 class="wordmark">gen<span>·</span>art</h1>
+        <p class="blurb">{{ generator.blurb }}</p>
+      </header>
+
+      <Toolbar
+        :generator-id="generatorId"
+        :seed="seed"
+        @select-generator="selectGenerator"
+        @set-seed="setSeed"
+        @reroll="reroll"
+        @reset="resetParams"
+      />
+
+      <hr class="rule" />
+
+      <ControlPanel :generator="generator" :params="params" @update="setParam" />
     </aside>
 
     <main class="stage-area">
@@ -30,11 +56,17 @@ const { generator, seed, scene, reroll } = useGenerator({ seed: 'quiet-heron-41'
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   overflow-y: auto;
   padding: 1rem;
   background: var(--panel);
   border-right: 1px solid var(--panel-edge);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .wordmark {
@@ -52,13 +84,16 @@ const { generator, seed, scene, reroll } = useGenerator({ seed: 'quiet-heron-41'
 .blurb {
   margin: 0;
   color: var(--ink-dim);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   line-height: 1.45;
 }
 
-.seed {
-  color: var(--accent);
-  font-size: 0.8rem;
+.rule {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  background: var(--panel-edge);
+  border: 0;
 }
 
 .stage-area {
