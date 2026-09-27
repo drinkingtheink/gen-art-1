@@ -1,13 +1,15 @@
 <script setup>
 import { computed, useTemplateRef } from 'vue'
+import SvgNode from './SvgNode.vue'
 
 /**
  * Dumb renderer for a scene description.
  *
- * Shapes are `{ tag, attrs }` where attrs are SVG attributes verbatim, so a
- * generator can emit any SVG element without this component growing a branch
- * for it. Everything here stays real DOM: inspectable in devtools and
- * serialisable straight out as vector.
+ * Shapes are `{ tag, attrs, children }` where attrs are SVG attributes
+ * verbatim, so a generator can emit any SVG element — including groups and
+ * clip paths — without this component growing a branch for it. Everything
+ * here stays real DOM: inspectable in devtools and serialisable straight out
+ * as vector.
  */
 const props = defineProps({
   scene: { type: Object, required: true },
@@ -37,12 +39,7 @@ defineExpose({ svg })
       :height="scene.height"
       :fill="scene.background"
     />
-    <component
-      v-for="(shape, i) in scene.shapes"
-      :is="shape.tag"
-      :key="i"
-      v-bind="shape.attrs"
-    />
+    <SvgNode v-for="(shape, i) in scene.shapes" :key="i" :node="shape" />
   </svg>
 </template>
 

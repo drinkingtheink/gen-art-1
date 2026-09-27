@@ -29,6 +29,9 @@ const params = [
   { key: 'strokeWidth', type: 'range', label: 'Stroke width', min: 0, max: 8, step: 0.5, default: 1.5 },
 ]
 
+/** Levels that split regardless of splitChance, so no seed yields one big rect. */
+const FORCED_DEPTH = 2
+
 /** Round to 2dp so the emitted SVG stays readable when copied out. */
 const r2 = (n) => Math.round(n * 100) / 100
 
@@ -114,6 +117,12 @@ export default {
     const palette = getPalette(p.palette)
     const shapes = []
 
+    // Clip-path ids must be unique in the document. Seeding the token from the
+    // rng keeps it deterministic per piece while staying distinct between
+    // pieces, so two scenes on one page can't steal each other's clips.
+    const token = rng.int(0, 0xffffff).toString(36)
+    let clipSeq = 0
+
     const leaf = (cell) => {
       const inset = p.gutter / 2
       const x = cell.x + inset
@@ -141,13 +150,38 @@ export default {
       // silently disappears into the fill.
       if (rng.bool(p.motifChance)) {
         const others = palette.colors.filter((c) => c !== fill)
-        shapes.push(...motif({ x, y, w, h }, rng.pick(others), rng))
+        const drawn = motif({ x, y, w, h }, rng.pick(others), rng)
+
+        if (attrs.rx) {
+          // Corner-anchored motifs square off the cell's rounded corners
+          // unless they're clipped to the same shape.
+          const id = `${token}-${clipSeq++}`
+          shapes.push({
+            tag: 'g',
+            attrs: { 'clip-path': `url(#${id})` },
+            children: [
+              {
+                tag: 'clipPath',
+                attrs: { id },
+                children: [{ tag: 'rect', attrs: { x: attrs.x, y: attrs.y, width: attrs.width, height: attrs.height, rx: attrs.rx } }],
+              },
+              ...drawn,
+            ],
+          })
+        } else {
+          shapes.push(...drawn)
+        }
       }
     }
 
     const subdivide = (cell, depth) => {
       const canFit = Math.min(cell.w, cell.h) >= p.minSize * 2
-      if (depth >= p.maxDepth || !canFit || !rng.bool(p.splitChance)) {
+      // The top levels split unconditionally. Letting splitChance roll at the
+      // root means a 1-in-8 chance of returning the whole canvas as a single
+      // undivided rectangle, which is never the piece anyone wanted.
+      const forced = depth < Math.min(FORCED_DEPTH, p.maxDepth)
+
+      if (depth >= p.maxDepth || !canFit || (!forced && !rng.bool(p.splitChance))) {
         leaf(cell)
         return
       }
