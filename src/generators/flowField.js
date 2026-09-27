@@ -81,6 +81,12 @@ export default {
     const palette = getPalette(p.palette)
     const noise = createNoise2D(rng)
 
+    // Palettes run quiet -> loud, which suits filled areas: the dominant
+    // colour sits nearest the paper. Line work wants the opposite — thin
+    // strokes in the quietest colour vanish against the background — so the
+    // weighting reads from the loud end here.
+    const inks = [...palette.colors].reverse()
+
     const left = p.margin
     const top = p.margin
     const right = width - p.margin
@@ -124,7 +130,16 @@ export default {
 
     const shapes = []
 
-    for (const [startX, startY] of seeds) {
+    /**
+     * Follow the field from a point and return the path data, or null if the
+     * particle left the canvas before drawing anything.
+     *
+     * `heading` of -1 walks the same field line the other way. A particle
+     * released on an edge where the field points outward dies instantly;
+     * the line through that point still exists, so we try the inward half
+     * before giving up on it.
+     */
+    const traceFrom = (startX, startY, heading) => {
       let x = startX
       let y = startY
 
@@ -140,8 +155,8 @@ export default {
 
       for (let step = 0; step < p.steps; step += 1) {
         const angle = angleAt(x, y)
-        const nextX = x + Math.cos(angle) * p.stepLength
-        const nextY = y + Math.sin(angle) * p.stepLength
+        const nextX = x + Math.cos(angle) * p.stepLength * heading
+        const nextY = y + Math.sin(angle) * p.stepLength * heading
 
         if (nextX < left || nextX > right || nextY < top || nextY > bottom) break
 
@@ -169,14 +184,19 @@ export default {
         kept += 1
       }
 
-      if (kept < 2) continue
+      return kept < 2 ? null : d
+    }
+
+    for (const [startX, startY] of seeds) {
+      const d = traceFrom(startX, startY, 1) ?? traceFrom(startX, startY, -1)
+      if (d === null) continue
 
       shapes.push({
         tag: 'path',
         attrs: {
           d,
           fill: 'none',
-          stroke: rng.weighted(palette.colors, p.colorBias),
+          stroke: rng.weighted(inks, p.colorBias),
           'stroke-width': p.lineWidth,
           'stroke-opacity': p.opacity,
           'stroke-linecap': 'round',

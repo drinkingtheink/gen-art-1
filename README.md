@@ -74,12 +74,14 @@ history.
 src/
   core/
     rng.js         seeded PRNG — xmur3 over mulberry32, plus speakable seeds
+    noise.js       seeded 2D simplex + fBm
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
   generators/
     index.js       the registry — add a line here
     subdivision.js
+    flowField.js
   components/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer
@@ -95,10 +97,21 @@ src/
 Pieces are authored in a fixed 1000x1000 space and scaled by CSS, so a seed looks the same on any
 screen and the output is resolution-independent.
 
-SVG starts to struggle somewhere past 5–10k nodes. Subdivision can't get there: a depth-9 binary
-tree caps at 512 leaves, and the worst case measured with every knob maxed is 1254 nodes. A
-generator that emits tens of thousands of elements — dense particle work, say — would want a
-different surface.
+Two different costs get conflated as "SVG is slow", and they have different fixes.
 
-Not built yet, and nothing here precludes them: PNG export, a favourites strip, an animated mode,
-and more generators.
+**Node count.** Subdivision's worst case is 1254 elements (a depth-9 binary tree caps at 512
+leaves), well inside what SVG handles. Flow field is cheaper than it looks — each traced curve is
+a single `<path>`, so 650 curves is 650 nodes, not 650 × its length.
+
+**Path data.** This is what actually bites on line work. A curve traced at every step carries
+hundreds of coordinates. Flow field rounds to 1dp and simplifies with a deviation bound of 0.6
+units — sub-pixel at a 1000px display — which cuts markup by about 40% with no visible change.
+Worth knowing if you add a generator that draws long paths.
+
+A generator wanting tens of thousands of *elements* would still want a different surface.
+
+Palettes run quiet → loud, which suits filled areas: the dominant colour sits nearest the paper.
+Line work wants the opposite, so flow field reads the weighting from the loud end — thin strokes
+in the quietest colour vanish against the background.
+
+Not built yet, and nothing here precludes them: PNG export, a favourites strip, an animated mode.
