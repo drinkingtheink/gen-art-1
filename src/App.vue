@@ -1,26 +1,17 @@
 <script setup>
 import SvgStage from '@/components/SvgStage.vue'
+import { useGenerator } from '@/composables/useGenerator.js'
 
-// Namespace probe: one of each shape kind the generators will emit, so a
-// mis-namespaced <component :is> shows up immediately as a blank stage.
-const scene = {
-  width: 400,
-  height: 400,
-  background: '#f4eed2',
-  shapes: [
-    { tag: 'rect', attrs: { x: 20, y: 20, width: 160, height: 160, fill: '#003049' } },
-    { tag: 'circle', attrs: { cx: 300, cy: 100, r: 70, fill: '#d62828' } },
-    { tag: 'path', attrs: { d: 'M20 380 L180 220 L180 380 Z', fill: '#f77f00' } },
-    { tag: 'line', attrs: { x1: 230, y1: 210, x2: 380, y2: 380, stroke: '#111', 'stroke-width': 6 } },
-    { tag: 'polygon', attrs: { points: '230,380 380,210 380,380', fill: '#fcbf49' } },
-  ],
-}
+const { generator, seed, scene, reroll } = useGenerator({ seed: 'quiet-heron-41' })
 </script>
 
 <template>
   <div class="app">
     <aside class="sidebar">
       <h1 class="wordmark">gen<span>·</span>art</h1>
+      <p class="blurb">{{ generator.blurb }}</p>
+      <button type="button" @click="reroll">Re-roll seed</button>
+      <code class="seed">{{ seed }}</code>
     </aside>
 
     <main class="stage-area">
@@ -39,7 +30,7 @@ const scene = {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   overflow-y: auto;
   padding: 1rem;
   background: var(--panel);
@@ -56,6 +47,18 @@ const scene = {
 
 .wordmark span {
   color: var(--accent);
+}
+
+.blurb {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.seed {
+  color: var(--accent);
+  font-size: 0.8rem;
 }
 
 .stage-area {
