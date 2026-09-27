@@ -1,10 +1,11 @@
+import flowField from './flowField.js'
 import subdivision from './subdivision.js'
 
 /**
  * The registry. Adding a piece of art is an import and an entry here —
  * controls, seeding and permalinks come for free from the schema.
  */
-export const generators = [subdivision]
+export const generators = [subdivision, flowField]
 
 export const generatorById = Object.fromEntries(generators.map((g) => [g.id, g]))
 
