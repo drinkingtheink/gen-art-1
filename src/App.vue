@@ -1,8 +1,15 @@
 <script setup>
+import { ref } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import { useGenerator } from '@/composables/useGenerator.js'
+import { usePermalink } from '@/composables/usePermalink.js'
+import { readHash } from '@/core/permalink.js'
+
+// A shared link is the starting state; otherwise a fresh random seed.
+const piece = useGenerator(readHash() ?? {})
+usePermalink(piece)
 
 const {
   generator,
@@ -15,7 +22,23 @@ const {
   setSeed,
   reroll,
   resetParams,
-} = useGenerator()
+} = piece
+
+const copied = ref(false)
+let copyTimer = null
+
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    copied.value = true
+    clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => { copied.value = false }, 1600)
+  } catch {
+    // Clipboard blocked (insecure context, denied permission) — the URL is
+    // already in the address bar, so there's nothing to recover from.
+    copied.value = false
+  }
+}
 </script>
 
 <template>
@@ -34,6 +57,10 @@ const {
         @reroll="reroll"
         @reset="resetParams"
       />
+
+      <button type="button" class="copy" @click="copyLink">
+        {{ copied ? 'Link copied' : 'Copy link to this piece' }}
+      </button>
 
       <hr class="rule" />
 
@@ -86,6 +113,12 @@ const {
   color: var(--ink-dim);
   font-size: 0.78rem;
   line-height: 1.45;
+}
+
+.copy {
+  width: 100%;
+  color: var(--ink-dim);
+  font-size: 0.8rem;
 }
 
 .rule {
