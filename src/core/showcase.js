@@ -190,6 +190,38 @@ export const PRESETS = {
     { key: 'bow', wave: 'sine', amplitude: 0.6, period: 19, phase: 0.3 },
     { key: 'twist', wave: 'drift', amplitude: 22, period: 29, centre: 12 },
   ],
+  glyphs: [
+    // The alphabet is fixed; the hand writing it changes.
+    //
+    // This is the calmest piece in the set and can't help being: a stroke is
+    // about 47 units long, so even a large change to a letterform is a small
+    // change in pixels. The periods are short to compensate — it still reads
+    // as writing that breathes rather than writing that thrashes.
+    { key: 'tracking', wave: 'sine', amplitude: 0.34, period: 7, centre: 0.7 },
+    { key: 'slant', wave: 'sine', amplitude: 33, period: 9 },
+    { key: 'bend', wave: 'drift', amplitude: 1, period: 6, centre: 0.15 },
+    { key: 'ascender', wave: 'sine', amplitude: 0.5, period: 8, centre: 0.55 },
+    { key: 'waver', wave: 'drift', amplitude: 1.1, period: 11, centre: 1.1 },
+    { key: 'weight', wave: 'sine', amplitude: 0.07, period: 13, centre: 0.1 },
+  ],
+  cells: [
+    // Sites wander, so every tile reshapes while the tile count holds.
+    // Sites barely need to move: a site shifting a few units redraws the
+    // whole tile around it, so these amplitudes are far smaller than they look
+    // like they should be.
+    { key: 'phase', wave: 'ramp', amplitude: 1.6, period: 71, centre: 1.6 },
+    { key: 'drift', wave: 'sine', amplitude: 0.05, period: 37, centre: 0.4 },
+    { key: 'relax', wave: 'sine', amplitude: 0.05, period: 43, centre: 0.5 },
+    { key: 'inset', wave: 'drift', amplitude: 0.05, period: 17, centre: 0.09 },
+  ],
+  phyllotaxis: [
+    // Divergence is the piece. A hundredth of a degree rebuilds every arm, so
+    // the amplitude here is deliberately tiny.
+    { key: 'divergence', wave: 'sine', amplitude: 0.22, period: 23, centre: 137.507 },
+    { key: 'turn', wave: 'ramp', amplitude: 180, period: 41, centre: 180 },
+    { key: 'grow', wave: 'sine', amplitude: 0.45, period: 17, centre: 0.35 },
+    { key: 'packing', wave: 'drift', amplitude: 0.06, period: 31, centre: 0.52 },
+  ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
     { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },

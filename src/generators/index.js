@@ -1,14 +1,17 @@
 import attractor from './attractor.js'
 import blocks from './blocks.js'
+import cells from './cells.js'
 import chladni from './chladni.js'
 import contour from './contour.js'
 import flowField from './flowField.js'
+import glyphs from './glyphs.js'
 import growth from './growth.js'
 import halftone from './halftone.js'
 import harmonograph from './harmonograph.js'
 import lens from './lens.js'
 import moire from './moire.js'
 import packing from './packing.js'
+import phyllotaxis from './phyllotaxis.js'
 import rosette from './rosette.js'
 import strata from './strata.js'
 import subdivision from './subdivision.js'
@@ -34,6 +37,9 @@ export const generators = [
   blocks,
   packing,
   rosette,
+  glyphs,
+  cells,
+  phyllotaxis,
 ]
 
 export const generatorById = Object.fromEntries(generators.map((g) => [g.id, g]))
