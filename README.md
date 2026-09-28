@@ -121,11 +121,19 @@ cycling introduced, so no generator needed changing.
 `bg` indexes the palette's *original* colours, so the swatch you click is the colour you get
 whatever muting and rotation are doing to the ink order.
 
-Switching palette eases rather than cuts. Because generators are pure and take a resolved palette,
-the *palette data* is interpolated rather than the rendered scene being cross-faded — geometry
-stays byte-identical throughout and only colour moves, so there's no second scene and no flicker
-risk. The cycle's own hold-to-transition ramp is smoothstepped for the same reason: a linear
-cross-fade reads as a wipe, an eased one reads as a dissolve.
+Colour changes ease rather than cut — a 600ms CSS transition on `fill`, `stroke` and their
+opacities. `fill` and `stroke` are presentation attributes, which act as low-priority CSS
+declarations, so changing them triggers a transition like any other property. That covers palette
+switches, background swaps, muting an ink and rotating the order, all from one rule.
+
+Deliberately *not* `stroke-width` or geometry: those are modulated every frame during showcase and
+easing them would lag the motion rather than smooth it. Neither `fill` nor `stroke` is
+compositor-accelerated, so a switch repaints every affected element for the duration — up to one
+transition per element, around 2000 on a maxed flow field. Watch the fps readout on the heavy
+pieces. `prefers-reduced-motion` disables it.
+
+The cycle's own hold-to-transition ramp is smoothstepped: a linear cross-fade reads as a wipe, an
+eased one reads as a dissolve.
 
 During playback the cycle walks *from* the palette you chose, and choosing one restarts the cycle
 from it. Otherwise the sequence is decided purely by elapsed time and your pick is discarded.

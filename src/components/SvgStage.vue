@@ -47,6 +47,32 @@ defineExpose({ svg })
 </template>
 
 <style scoped>
+/**
+ * Colour changes ease rather than cut — palette switches, background swaps,
+ * muting an ink, rotating the order.
+ *
+ * fill and stroke are presentation attributes, which act as low-priority CSS
+ * declarations, so changing them triggers a transition like any other property.
+ *
+ * Deliberately not stroke-width or geometry: those are modulated every frame
+ * during showcase, and easing them would lag the motion rather than smooth it.
+ * Neither is compositor-accelerated, so this repaints affected elements for the
+ * duration — watch the fps readout on the heavier pieces.
+ */
+.stage :is(path, rect, circle, polygon, line, g) {
+  transition:
+    fill 600ms ease,
+    stroke 600ms ease,
+    fill-opacity 600ms ease,
+    stroke-opacity 600ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage :is(path, rect, circle, polygon, line, g) {
+    transition: none;
+  }
+}
+
 .stage {
   display: block;
   width: auto;
