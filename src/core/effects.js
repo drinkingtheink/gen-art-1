@@ -16,6 +16,8 @@
  */
 
 export const EFFECT_DEFAULTS = {
+  glitch: 0,
+  glitchScale: 0.06,
   bloom: 0,
   bloomRadius: 8,
   bloomThreshold: 0.35,
@@ -34,6 +36,8 @@ const round = (n, dp = 2) => Number(n.toFixed(dp))
 
 export function coerceEffects(raw = {}) {
   return {
+    glitch: round(clamp(raw.glitch, 0, 1, EFFECT_DEFAULTS.glitch)),
+    glitchScale: round(clamp(raw.glitchScale, 0.01, 0.3, EFFECT_DEFAULTS.glitchScale), 3),
     bloom: round(clamp(raw.bloom, 0, 1, EFFECT_DEFAULTS.bloom)),
     bloomRadius: round(clamp(raw.bloomRadius, 1, 40, EFFECT_DEFAULTS.bloomRadius), 1),
     bloomThreshold: round(clamp(raw.bloomThreshold, 0, 0.95, EFFECT_DEFAULTS.bloomThreshold)),
@@ -44,7 +48,7 @@ export function coerceEffects(raw = {}) {
   }
 }
 
-export const hasArtworkFilter = (e) => e.bloom > 0 || e.aberration > 0
+export const hasArtworkFilter = (e) => e.bloom > 0 || e.aberration > 0 || e.glitch > 0
 
 /** Isolate one channel, keeping alpha. */
 const channel = (which) => {
@@ -65,6 +69,49 @@ const channel = (which) => {
 function artworkFilter(e, id) {
   const stages = []
   let source = 'SourceGraphic'
+
+  if (e.glitch > 0) {
+    // Turbulence stretched flat — almost no variation across, plenty down —
+    // so it varies only by row. Quantising it to a handful of discrete levels
+    // turns a smooth gradient into hard bands, which is the difference
+    // between a warp and a tear.
+    //
+    // A displacement channel is centred at 0.5, so holding green there keeps
+    // the offset purely horizontal: slices slide sideways and never drift up
+    // or down.
+    stages.push(
+      {
+        tag: 'feTurbulence',
+        attrs: {
+          type: 'fractalNoise',
+          baseFrequency: `0.0008 ${round(e.glitchScale, 4)}`,
+          numOctaves: 1,
+          seed: 7,
+          result: 'gNoise',
+        },
+      },
+      {
+        tag: 'feComponentTransfer',
+        attrs: { in: 'gNoise', result: 'gSteps' },
+        children: [
+          { tag: 'feFuncR', attrs: { type: 'discrete', tableValues: '0 0.28 0.42 0.5 0.58 0.72 1' } },
+          { tag: 'feFuncG', attrs: { type: 'discrete', tableValues: '0.5' } },
+        ],
+      },
+      {
+        tag: 'feDisplacementMap',
+        attrs: {
+          in: source,
+          in2: 'gSteps',
+          scale: round(e.glitch * 140, 2),
+          xChannelSelector: 'R',
+          yChannelSelector: 'G',
+          result: 'torn',
+        },
+      },
+    )
+    source = 'torn'
+  }
 
   if (e.aberration > 0) {
     const rad = (e.aberrationAngle * Math.PI) / 180

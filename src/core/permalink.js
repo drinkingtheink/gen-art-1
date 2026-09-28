@@ -32,6 +32,8 @@ export function encodeState({ generatorId, ratioId, grain, effects, treatment, s
     `&n=${grain.amount}:${grain.scale}:${encodeURIComponent(grain.blend)}` +
     `&t=${treatment.bg}:${treatment.rotate}:${treatment.invert ? 1 : 0}:${treatment.muted.join('.')}` +
     `&e=${[
+      effects.glitch,
+      effects.glitchScale,
       effects.bloom,
       effects.bloomRadius,
       effects.bloomThreshold,
@@ -77,8 +79,12 @@ export function decodeState(hash) {
   // no grain — so old links still render as they did.
   const [amount, scale, blend] = (safe(query.n) ?? '').split(':')
   const [bg, rotate, invert, muted] = (safe(query.t) ?? '').split(':')
-  const [bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread] =
-    (safe(query.e) ?? '').split(':')
+  // Order matters and is append-only: glitch went on the front when it was
+  // added, so the two new fields are read first and older links — which have
+  // seven fields, not nine — would misread. They're read from the end instead.
+  const eParts = (safe(query.e) ?? '').split(':')
+  const [glitch, glitchScale, bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread] =
+    eParts.length >= 9 ? eParts : [undefined, undefined, ...eParts]
 
   return {
     generatorId: safe(query.g),
@@ -88,7 +94,17 @@ export function decodeState(hash) {
     effects:
       query.e === undefined
         ? undefined
-        : { bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread },
+        : {
+            glitch,
+            glitchScale,
+            bloom,
+            bloomRadius,
+            bloomThreshold,
+            aberration,
+            aberrationAngle,
+            vignette,
+            vignetteSpread,
+          },
     seed: safe(query.s),
     params,
   }

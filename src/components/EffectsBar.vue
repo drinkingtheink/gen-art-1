@@ -17,6 +17,7 @@ const blends = BLEND_MODES
 
 const anyOn = computed(
   () =>
+    props.effects.glitch > 0 ||
     props.effects.bloom > 0 ||
     props.effects.aberration > 0 ||
     props.effects.vignette > 0 ||
@@ -25,6 +26,7 @@ const anyOn = computed(
 
 function reset() {
   emit('update-effects', {
+    glitch: 0, glitchScale: 0.06,
     bloom: 0, bloomRadius: 8, bloomThreshold: 0.35,
     aberration: 0, aberrationAngle: 0, vignette: 0, vignetteSpread: 0.55,
   })
@@ -35,6 +37,17 @@ function reset() {
 <template>
   <div class="fx">
     <span class="field-label">Effects</span>
+
+    <label class="row">
+      <span class="lbl"><span>Glitchy</span><output>{{ effects.glitch.toFixed(2) }}</output></span>
+      <input type="range" min="0" max="1" step="0.01" :value="effects.glitch"
+             @input="emit('update-effects', { glitch: Number($event.target.value) })" />
+    </label>
+    <label v-if="effects.glitch > 0" class="row sub">
+      <span class="lbl"><span>Slice height</span><output>{{ effects.glitchScale.toFixed(3) }}</output></span>
+      <input type="range" min="0.01" max="0.3" step="0.002" :value="effects.glitchScale"
+             @input="emit('update-effects', { glitchScale: Number($event.target.value) })" />
+    </label>
 
     <label class="row">
       <span class="lbl"><span>Bloom</span><output>{{ effects.bloom.toFixed(2) }}</output></span>

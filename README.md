@@ -148,8 +148,14 @@ from it. Otherwise the sequence is decided purely by elapsed time and your pick 
 
 ## Effects
 
-Bloom, chromatic aberration and a vignette, grouped with the grain because they all act on the
-finished piece rather than on how it was made. Canvas state, so no generator knows they exist.
+Glitch, bloom, chromatic aberration and a vignette, grouped with the grain because they all act on
+the finished piece rather than on how it was made. Canvas state, so no generator knows they exist.
+
+Glitch is horizontal slice displacement — the scanline tear. Turbulence stretched almost flat
+across and steep down varies only by row; quantising it to a handful of discrete levels turns a
+smooth gradient into hard bands, which is the difference between a warp and a tear. A displacement
+channel is centred at 0.5, so holding green there keeps the offset purely horizontal and slices
+slide sideways without drifting.
 
 Bloom and aberration filter the **artwork group only, never the background rect**. That distinction
 is the whole reason aberration works: splitting a filled background into colour channels and
