@@ -207,7 +207,7 @@ reads as judder — measured as a median per-frame change of exactly zero with a
 arriving in spikes.
 
 Eight pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
-**attractor**, **canopy**, **strata**, **halftone**, **contour** and **weave**.
+**attractor**, **strata**, **halftone**, **contour**, **chladni** and **lens**.
 The trick is to spend the rng entirely up front, on a noise field or a set of pendulum ratios, and
 have every param after that transform fixed geometry. Both end up with 10 of their range params
 animatable, the strongest motion of any piece, and 2-5ms generation.
@@ -242,11 +242,11 @@ src/
     moire.js
     harmonograph.js
     attractor.js
-    canopy.js
     strata.js
     halftone.js
     contour.js
-    weave.js
+    chladni.js
+    lens.js
   components/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer

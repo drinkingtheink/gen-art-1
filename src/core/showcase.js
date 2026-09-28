@@ -130,13 +130,6 @@ export const PRESETS = {
     { key: 'd', wave: 'sine', amplitude: 0.09, period: 37, centre: -2.1, phase: 0.8 },
     { key: 'spin', wave: 'ramp', amplitude: 180, period: 71, centre: 180 },
   ],
-  canopy: [
-    // Branch angle and lean together read as wind through the whole tree.
-    { key: 'spread', wave: 'sine', amplitude: 7, period: 13, centre: 27 },
-    { key: 'lean', wave: 'drift', amplitude: 11, period: 17 },
-    { key: 'lengthRatio', wave: 'sine', amplitude: 0.045, period: 23, centre: 0.755 },
-    { key: 'curl', wave: 'sine', amplitude: 0.3, period: 19, phase: 0.4 },
-  ],
   strata: [
     // Phase slides the field through the boundaries, so the stack undulates.
     { key: 'phase', wave: 'ramp', amplitude: 10, period: 41, centre: 10 },
@@ -158,12 +151,21 @@ export const PRESETS = {
     { key: 'fieldScale', wave: 'drift', amplitude: 0.16, period: 41, centre: 1.2 },
     { key: 'range', wave: 'sine', amplitude: 0.1, period: 23, centre: 0.82 },
   ],
-  weave: [
-    // The cloth ripples without the strand count ever changing.
-    { key: 'phase', wave: 'ramp', amplitude: 3.14, period: 11, centre: 3.14 },
-    { key: 'wave', wave: 'sine', amplitude: 0.3, period: 13, centre: 0.42 },
-    { key: 'ribbon', wave: 'sine', amplitude: 0.22, period: 17, centre: 0.7 },
-    { key: 'skew', wave: 'drift', amplitude: 16, period: 23 },
+  chladni: [
+    // Whole mode numbers are the figures a real plate holds. Sliding between
+    // them morphs one standing wave into the next, which is the motion.
+    { key: 'modeA', wave: 'drift', amplitude: 2.4, period: 17, centre: 6.5 },
+    { key: 'modeB', wave: 'sine', amplitude: 2.8, period: 23, centre: 9.5, phase: 0.3 },
+    { key: 'mix', wave: 'sine', amplitude: 0.22, period: 19, centre: 0.62 },
+    { key: 'detune', wave: 'drift', amplitude: 0.22, period: 23, centre: 0.24 },
+    { key: 'spread', wave: 'sine', amplitude: 0.1, period: 13, centre: 0.26 },
+  ],
+  lens: [
+    // Orbiting the lenses sweeps the bulge across a lattice that never moves.
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 17, centre: 180 },
+    { key: 'strength', wave: 'sine', amplitude: 0.55, period: 11, centre: 0.45 },
+    { key: 'reach', wave: 'drift', amplitude: 0.22, period: 23, centre: 0.66 },
+    { key: 'twist', wave: 'sine', amplitude: 0.5, period: 41 },
   ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
