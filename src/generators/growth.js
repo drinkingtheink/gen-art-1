@@ -32,7 +32,7 @@ const params = [
   { key: 'historyEvery', type: 'range', label: 'Ring spacing', min: 4, max: 60, step: 2, default: 16, structural: true },
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0.3, max: 6, step: 0.1, default: 1.4 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 2, default: 50 },
-  { key: 'palette', type: 'select', label: 'Palette', options: paletteOptions, default: 'moss' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'moss' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.1, default: 1.4 },
 ]
 

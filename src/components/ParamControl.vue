@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { palettes } from '@/core/palettes.js'
 
 /**
  * One control, chosen by the param's `type`. Adding a new param type means
@@ -18,6 +19,9 @@ const emit = defineEmits(['update:modelValue'])
 const id = computed(() => `param-${props.spec.key}`)
 
 /** Match the displayed precision to the step, so 0.22 doesn't read as 0.2200000001. */
+/** Every palette as a chip, so the choice is visible rather than named. */
+const swatches = computed(() => palettes)
+
 const display = computed(() => {
   if (props.spec.type !== 'range') return props.modelValue
   const step = String(props.spec.step ?? 1)
@@ -28,10 +32,10 @@ const display = computed(() => {
 
 <template>
   <div class="control" :class="`control--${spec.type}`">
-    <label class="label" :for="id">
+    <component :is="spec.type === 'palette' ? 'span' : 'label'" class="label" :for="spec.type === 'palette' ? undefined : id">
       <span class="name">{{ spec.label }}</span>
       <output v-if="spec.type === 'range'" class="value">{{ display }}</output>
-    </label>
+    </component>
 
     <input
       v-if="spec.type === 'range'"
@@ -43,6 +47,21 @@ const display = computed(() => {
       :value="modelValue"
       @input="emit('update:modelValue', Number($event.target.value))"
     />
+
+    <div v-else-if="spec.type === 'palette'" class="palettes" role="group" :aria-label="spec.label">
+      <button
+        v-for="p in swatches"
+        :key="p.id"
+        type="button"
+        class="chip"
+        :class="{ on: p.id === modelValue }"
+        :title="p.name"
+        :aria-pressed="p.id === modelValue"
+        @click="emit('update:modelValue', p.id)"
+      >
+        <span v-for="c in p.colors" :key="c" class="stripe" :style="{ background: c }" />
+      </button>
+    </div>
 
     <select
       v-else-if="spec.type === 'select'"
@@ -126,6 +145,35 @@ input[type='range']::-webkit-slider-thumb {
 
 select {
   width: 100%;
+}
+
+.palettes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+
+.chip {
+  display: flex;
+  height: 26px;
+  padding: 0;
+  overflow: hidden;
+  background: none;
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+}
+
+.chip:hover {
+  border-color: #5a5a6b;
+}
+
+.chip.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.stripe {
+  flex: 1;
 }
 
 .color-row {

@@ -98,6 +98,29 @@ regenerated, not reflowed.
 A link with no `r` resolves to square, so permalinks saved before shapes existed still render
 byte-identically.
 
+## Palettes
+
+Twenty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
+should be visible. Each is scored on luminance range x mean saturation; anything below ~0.35 reads
+as bland or midtone-heavy on screen and isn't kept. That measurement retired four sets (a greyscale
+at 0.00, and three whose colours all sat at the same value) and every remaining set scores 0.41 or
+better.
+
+**Palette use** is separate from *which* palette, and sits beside it:
+
+- **Background** — the paper can be the palette's own, any of its five colours, or neutral paper/ink
+- **Inks** — click any colour to mute it; muting everything falls back to the full set rather than
+  leaving generators nothing to draw with
+- **Order** — rotate which colour dominates, or flip the quiet-to-loud ordering
+
+Treatment is canvas state like the shape and the grain, so it applies to whatever piece is on
+screen, and it composes with showcase's palette cycling: a cycling piece keeps its background
+choice and muting as it moves through the sets. It rides the same resolved-palette override that
+cycling introduced, so no generator needed changing.
+
+`bg` indexes the palette's *original* colours, so the swatch you click is the colour you get
+whatever muting and rotation are doing to the ink order.
+
 ## Grain
 
 A turbulence layer over the finished piece — the tooth of the paper rather than anything the

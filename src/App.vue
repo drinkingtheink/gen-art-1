@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffe
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GrainBar from '@/components/GrainBar.vue'
+import PaletteBar from '@/components/PaletteBar.vue'
 import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
@@ -23,6 +24,8 @@ const {
   ratioId,
   canvas,
   grain,
+  treatment,
+  basePalette,
   overlay,
   seed,
   params,
@@ -32,6 +35,7 @@ const {
   selectGenerator,
   setRatio,
   setGrain,
+  setTreatment,
   setSeed,
   reroll,
   resetParams,
@@ -209,6 +213,16 @@ async function copyLink() {
         @reset="show.reset"
         @update="updateShowcase"
         @present="present"
+      />
+
+      <hr class="rule" />
+
+      <PaletteBar
+        :palette="basePalette"
+        :treatment="treatment"
+        :selected="params.palette"
+        @update="setTreatment"
+        @select="setParam('palette', $event)"
       />
 
       <hr class="rule" />

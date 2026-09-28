@@ -1,10 +1,14 @@
 /**
- * Named palettes, mostly ported from the circle-generator project's coolors
- * collection.
+ * Named palettes.
  *
  * Colours are ordered quiet -> loud. rng.weighted() favours the front of the
  * list, so the first entry reads as the dominant field and the last as a rare
- * accent. `bg` is the paper the piece sits on.
+ * accent; line-based generators reverse this, because a thin stroke in the
+ * quietest colour disappears. `bg` is the paper the piece sits on.
+ *
+ * Every set is scored on luminance range x mean saturation. Sets below ~0.35
+ * read as bland or midtone-heavy on screen — greys, and anything whose colours
+ * all sit at the same value — and are not kept.
  */
 const PALETTES = [
   {
@@ -15,13 +19,6 @@ const PALETTES = [
     colors: ['#eae2b7', '#fcbf49', '#003049', '#f77f00', '#d62828'],
   },
   {
-    id: 'dusk',
-    name: 'Dusk',
-    bg: '#f4ecf3',
-    // https://coolors.co/231942-5e548e-9f86c0-be95c4-e0b1cb
-    colors: ['#e0b1cb', '#be95c4', '#9f86c0', '#5e548e', '#231942'],
-  },
-  {
     id: 'reef',
     name: 'Reef',
     bg: '#f7fff7',
@@ -29,25 +26,11 @@ const PALETTES = [
     colors: ['#f7fff7', '#4ecdc4', '#1a535c', '#ffe66d', '#ff6b6b'],
   },
   {
-    id: 'slate',
-    name: 'Slate',
-    bg: '#f4f4f9',
-    // https://coolors.co/app/000000-2f4550-586f7c-b8dbd9-f4f4f9
-    colors: ['#f4f4f9', '#b8dbd9', '#586f7c', '#2f4550', '#000000'],
-  },
-  {
     id: 'blush',
     name: 'Blush',
     bg: '#f5f4f2',
     // https://coolors.co/app/f5f4f2-feedf3-feb4c1-cd3c67-3f3f3f
     colors: ['#f5f4f2', '#feedf3', '#feb4c1', '#cd3c67', '#3f3f3f'],
-  },
-  {
-    id: 'clay',
-    name: 'Clay',
-    bg: '#f8f1e2',
-    // https://coolors.co/f7bb93-dc846e-e9dbd4-ebc2b6-f8f1e2
-    colors: ['#f8f1e2', '#e9dbd4', '#ebc2b6', '#f7bb93', '#dc846e'],
   },
   {
     id: 'moss',
@@ -64,13 +47,6 @@ const PALETTES = [
     colors: ['#ebf2fa', '#427aa1', '#05668d', '#a5be00', '#679436'],
   },
   {
-    id: 'ember',
-    name: 'Ember',
-    bg: '#faf3df',
-    // https://coolors.co/app/f2dd6e-f2a359-e5b25d-b87d4b-523a34
-    colors: ['#f2dd6e', '#e5b25d', '#f2a359', '#b87d4b', '#523a34'],
-  },
-  {
     id: 'citrus',
     name: 'Citrus',
     bg: '#d3fad6',
@@ -85,10 +61,89 @@ const PALETTES = [
     colors: ['#a8f9ff', '#56cbf9', '#ffffff', '#ffe74c', '#ff729f'],
   },
   {
-    id: 'mono',
-    name: 'Mono',
-    bg: '#f2f2f2',
-    colors: ['#f2f2f2', '#c9c9c9', '#7a7a7a', '#3f3f3f', '#111111'],
+    id: 'ember',
+    name: 'Ember',
+    bg: '#faf3df',
+    // https://coolors.co/app/f2dd6e-f2a359-e5b25d-b87d4b-523a34
+    colors: ['#f2dd6e', '#e5b25d', '#f2a359', '#b87d4b', '#523a34'],
+  },
+
+  // --- high-chroma sets ---
+  {
+    id: 'riso',
+    name: 'Riso',
+    bg: '#fdf8f0',
+    // Risograph fluorescents: they overprint rather than blend.
+    colors: ['#fdf8f0', '#ffe800', '#00a95c', '#0078bf', '#ff48b0'],
+  },
+  {
+    id: 'acid',
+    name: 'Acid',
+    bg: '#0b0b10',
+    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
+  },
+  {
+    id: 'sodium',
+    name: 'Sodium',
+    bg: '#10101c',
+    // Sodium-vapour street light against night.
+    colors: ['#2a2440', '#f5e6c8', '#ffb000', '#ff6a00', '#ff2d55'],
+  },
+  {
+    id: 'vapor',
+    name: 'Vapor',
+    bg: '#120024',
+    colors: ['#3a1a5e', '#b967ff', '#01cdfe', '#05ffa1', '#ff71ce'],
+  },
+  {
+    id: 'ultra',
+    name: 'Ultra',
+    bg: '#f8f9fa',
+    // Bauhaus primaries — flat, loud, no blending.
+    colors: ['#f8f9fa', '#ffd60a', '#0033cc', '#e63946', '#0b090a'],
+  },
+  {
+    id: 'poppy',
+    name: 'Poppy',
+    bg: '#fff8e7',
+    colors: ['#fff3b0', '#ffba08', '#ff7b00', '#d00000', '#370617'],
+  },
+  {
+    id: 'jade',
+    name: 'Jade',
+    bg: '#f0fffc',
+    colors: ['#b2f7ef', '#00a878', '#ffd23f', '#00332c', '#011c1a'],
+  },
+  {
+    id: 'plasma',
+    name: 'Plasma',
+    bg: '#0d0221',
+    // Thermal ramp: black through magenta to white-hot yellow.
+    colors: ['#2d0b4e', '#7209b7', '#f72585', '#ff8500', '#ffe66d'],
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    bg: '#050d16',
+    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
+  },
+  {
+    id: 'tangerine',
+    name: 'Tangerine',
+    bg: '#fffaf0',
+    colors: ['#ffffff', '#ffea00', '#ff9e00', '#ff5400', '#00171f'],
+  },
+  {
+    id: 'oxblood',
+    name: 'Oxblood',
+    bg: '#fdf6ec',
+    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
+  },
+  {
+    id: 'electric',
+    name: 'Electric',
+    bg: '#10002b',
+    colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
   },
 ]
 
@@ -155,4 +210,77 @@ export function paletteAtCycle(position, hold = 0.55) {
   const within = position - Math.floor(position)
   const t = within < hold ? 0 : (within - hold) / (1 - hold)
   return mixPalettes(from, to, t)
+}
+
+/**
+ * Palette treatment — how the chosen palette gets used.
+ *
+ * Separate from *which* palette, which stays a per-piece param because
+ * different pieces genuinely suit different sets. Treatment is canvas state
+ * like the shape or the grain: it says which colour is paper, which dominates,
+ * and which are in play at all.
+ *
+ * Applied after showcase's palette blending, so cycling and treatment compose.
+ */
+
+/** bg values below zero are sources outside the palette's own colours. */
+export const BG_PALETTE = -1
+export const BG_PAPER = -2
+export const BG_INK = -3
+
+export const TREATMENT_DEFAULTS = { bg: BG_PALETTE, rotate: 0, invert: false, muted: [] }
+
+export function coerceTreatment(raw = {}) {
+  const bg = Number(raw.bg)
+  const rotate = Number(raw.rotate)
+  // filter(Boolean) before Number: ''.split('.') is [''], and Number('') is 0,
+  // which would silently mute colour 0 whenever muted was simply absent.
+  const muted = (Array.isArray(raw.muted) ? raw.muted : String(raw.muted ?? '').split('.'))
+    .filter((v) => v !== '' && v !== null && v !== undefined)
+    .map(Number)
+    .filter((n) => Number.isInteger(n) && n >= 0 && n <= 4)
+  return {
+    bg: Number.isInteger(bg) && bg >= BG_INK && bg <= 4 ? bg : TREATMENT_DEFAULTS.bg,
+    rotate: Number.isInteger(rotate) && rotate >= 0 && rotate <= 4 ? rotate : 0,
+    invert: raw.invert === true || raw.invert === 'true' || raw.invert === '1',
+    muted: [...new Set(muted)].sort(),
+  }
+}
+
+/**
+ * Resolve a palette through a treatment.
+ *
+ * `bg` indexes the palette's *original* colours, so the swatch you click is the
+ * colour you get, whatever muting and rotation are doing to the ink order.
+ */
+export function applyTreatment(palette, treatment) {
+  const t = treatment ?? TREATMENT_DEFAULTS
+
+  let colors = palette.colors.filter((_, i) => !t.muted.includes(i))
+  // Muting everything would leave generators with nothing to draw with.
+  if (!colors.length) colors = [...palette.colors]
+
+  if (t.invert) colors = [...colors].reverse()
+
+  if (t.rotate) {
+    const r = t.rotate % colors.length
+    colors = [...colors.slice(r), ...colors.slice(0, r)]
+  }
+
+  let bg = palette.bg
+  if (t.bg === BG_PAPER) bg = '#f7f7f4'
+  else if (t.bg === BG_INK) bg = '#12121a'
+  else if (t.bg >= 0) bg = palette.colors[t.bg] ?? palette.bg
+
+  return { ...palette, colors, bg }
+}
+
+/** Swatch sources for the background picker, in the order they're shown. */
+export function backgroundChoices(palette) {
+  return [
+    { value: BG_PALETTE, color: palette.bg, label: 'Palette paper' },
+    ...palette.colors.map((color, i) => ({ value: i, color, label: `Colour ${i + 1}` })),
+    { value: BG_PAPER, color: '#f7f7f4', label: 'Paper' },
+    { value: BG_INK, color: '#12121a', label: 'Ink' },
+  ]
 }

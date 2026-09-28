@@ -29,7 +29,7 @@ const params = [
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 120, step: 2, default: 40 },
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0.2, max: 6, step: 0.1, default: 1 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.05, max: 1, step: 0.05, default: 0.7 },
-  { key: 'palette', type: 'select', label: 'Palette', options: paletteOptions, default: 'dusk' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'plasma' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.1, default: 1 },
 ]
 

@@ -27,7 +27,9 @@ export function coerce(spec, raw) {
       const snapped = spec.min + Math.round((clamped - spec.min) / step) * step
       return Number(Math.min(spec.max, snapped).toFixed(decimalsOf(step)))
     }
+    // 'palette' is a select that renders as swatches; validation is identical.
     case 'select':
+    case 'palette':
       return spec.options.some((o) => o.value === raw) ? raw : spec.default
     case 'color':
       return typeof raw === 'string' && HEX.test(raw.trim()) ? raw.trim().toLowerCase() : spec.default

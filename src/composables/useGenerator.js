@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
-import { paletteAtCycle } from '@/core/palettes.js'
+import { applyTreatment, coerceTreatment, getPalette, paletteAtCycle } from '@/core/palettes.js'
 import { createRng, randomSeed } from '@/core/rng.js'
 import { paramsAt } from '@/core/showcase.js'
 import { buildGrain, coerceGrain } from '@/core/grain.js'
@@ -30,6 +30,10 @@ export function useGenerator(initial = {}) {
   // state like the shape — generators never see it.
   const grain = ref(coerceGrain(initial.grain))
 
+  // How the chosen palette is used, as opposed to which one it is. Canvas
+  // state, because it applies to whatever piece is on screen.
+  const treatment = ref(coerceTreatment(initial.treatment))
+
   const seed = ref(initial.seed || randomSeed())
   const params = ref(coerceAll(generator.value, initial.params))
 
@@ -45,11 +49,25 @@ export function useGenerator(initial = {}) {
     return paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
   })
 
-  const livedPalette = computed(() => {
+  /**
+   * The palette generators actually receive.
+   *
+   * Showcase cycling picks the base set, then treatment decides how it's used,
+   * so the two compose: a cycling piece keeps its background choice and muting
+   * as it moves through the palettes.
+   */
+  /**
+   * The palette before treatment — what the swatch UI shows, so clicking a
+   * colour means that colour rather than whatever treatment turned it into.
+   */
+  const basePalette = computed(() => {
     const s = showcase.value
-    if (!s?.active || !s.cyclePalette) return null
-    return paletteAtCycle(s.palettePosition)
+    return s?.active && s.cyclePalette
+      ? paletteAtCycle(s.palettePosition)
+      : getPalette(params.value.palette)
   })
+
+  const livedPalette = computed(() => applyTreatment(basePalette.value, treatment.value))
 
   const scene = computed(() =>
     generator.value.generate({
@@ -57,7 +75,7 @@ export function useGenerator(initial = {}) {
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,
-      palette: livedPalette.value ?? undefined,
+      palette: livedPalette.value,
     }),
   )
 
@@ -69,6 +87,10 @@ export function useGenerator(initial = {}) {
   const overlay = computed(() =>
     buildGrain(grain.value, seed.value, canvas.value.width, canvas.value.height),
   )
+
+  function setTreatment(patch) {
+    treatment.value = coerceTreatment({ ...treatment.value, ...patch })
+  }
 
   function setGrain(patch) {
     grain.value = coerceGrain({ ...grain.value, ...patch })
@@ -116,6 +138,7 @@ export function useGenerator(initial = {}) {
     generatorId.value = next.id
     ratioId.value = getRatio(state.ratioId).id
     grain.value = coerceGrain(state.grain)
+    treatment.value = coerceTreatment(state.treatment)
     if (state.seed) seed.value = state.seed
     params.value = coerceAll(next, state.params)
   }
@@ -126,6 +149,9 @@ export function useGenerator(initial = {}) {
     ratioId,
     canvas,
     grain,
+    treatment,
+    basePalette,
+    livedPalette,
     overlay,
     seed,
     params,
@@ -136,6 +162,7 @@ export function useGenerator(initial = {}) {
     selectGenerator,
     setRatio,
     setGrain,
+    setTreatment,
     setSeed,
     reroll,
     resetParams,

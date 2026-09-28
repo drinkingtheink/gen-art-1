@@ -22,7 +22,7 @@ function parseQuery(raw) {
   )
 }
 
-export function encodeState({ generatorId, ratioId, grain, seed, params }) {
+export function encodeState({ generatorId, ratioId, grain, treatment, seed, params }) {
   const encoded = Object.entries(params)
     .map(([key, value]) => `${key}:${encodeURIComponent(value)}`)
     .join(',')
@@ -30,6 +30,7 @@ export function encodeState({ generatorId, ratioId, grain, seed, params }) {
     `g=${encodeURIComponent(generatorId)}` +
     `&r=${encodeURIComponent(ratioId)}` +
     `&n=${grain.amount}:${grain.scale}:${encodeURIComponent(grain.blend)}` +
+    `&t=${treatment.bg}:${treatment.rotate}:${treatment.invert ? 1 : 0}:${treatment.muted.join('.')}` +
     `&s=${encodeURIComponent(seed)}` +
     `&p=${encoded}`
   )
@@ -66,11 +67,13 @@ export function decodeState(hash) {
   // default to what those pieces were authored with — a 1000x1000 square and
   // no grain — so old links still render as they did.
   const [amount, scale, blend] = (safe(query.n) ?? '').split(':')
+  const [bg, rotate, invert, muted] = (safe(query.t) ?? '').split(':')
 
   return {
     generatorId: safe(query.g),
     ratioId: safe(query.r),
     grain: query.n === undefined ? undefined : { amount, scale, blend },
+    treatment: query.t === undefined ? undefined : { bg, rotate, invert, muted },
     seed: safe(query.s),
     params,
   }

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import ParamControl from './ParamControl.vue'
 
 /**
@@ -6,18 +7,23 @@ import ParamControl from './ParamControl.vue'
  * particular generator — add a param to a generator module and a control
  * appears here with no edit to this file.
  */
-defineProps({
+const props = defineProps({
   generator: { type: Object, required: true },
   params: { type: Object, required: true },
 })
 
 const emit = defineEmits(['update'])
+
+// Palette params are rendered by PaletteBar instead, so choosing a palette
+// sits beside the controls for how it's used rather than halfway down the
+// generator's own params.
+const specs = computed(() => props.generator.params.filter((s) => s.type !== 'palette'))
 </script>
 
 <template>
   <div class="panel">
     <ParamControl
-      v-for="spec in generator.params"
+      v-for="spec in specs"
       :key="spec.key"
       :spec="spec"
       :model-value="params[spec.key]"
