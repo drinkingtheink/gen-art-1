@@ -167,6 +167,29 @@ export const PRESETS = {
     { key: 'reach', wave: 'drift', amplitude: 0.22, period: 23, centre: 0.66 },
     { key: 'twist', wave: 'sine', amplitude: 0.5, period: 41 },
   ],
+  blocks: [
+    // The lattice holds still while every block rises and falls through it.
+    { key: 'phase', wave: 'ramp', amplitude: 6, period: 29, centre: 6 },
+    { key: 'rise', wave: 'sine', amplitude: 70, period: 17, centre: 130 },
+    { key: 'fieldScale', wave: 'drift', amplitude: 0.4, period: 23, centre: 1.2 },
+    { key: 'pitch', wave: 'sine', amplitude: 0.13, period: 37, centre: 0.5 },
+  ],
+  packing: [
+    // Positions never move; the field decides how much room each disc claims.
+    { key: 'phase', wave: 'ramp', amplitude: 7, period: 31, centre: 7 },
+    { key: 'maxRadius', wave: 'sine', amplitude: 0.05, period: 19, centre: 0.14 },
+    { key: 'bite', wave: 'sine', amplitude: 0.3, period: 13, centre: 0.55 },
+    { key: 'drift', wave: 'sine', amplitude: 0.9, period: 11, centre: 1.1 },
+    { key: 'fieldScale', wave: 'drift', amplitude: 0.5, period: 23, centre: 1.3 },
+  ],
+  rosette: [
+    // Each ring turns at its own rate, so it never repeats while staying
+    // perfectly symmetric.
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 23, centre: 180 },
+    { key: 'petal', wave: 'sine', amplitude: 0.35, period: 13, centre: 0.66 },
+    { key: 'bow', wave: 'sine', amplitude: 0.6, period: 19, phase: 0.3 },
+    { key: 'twist', wave: 'drift', amplitude: 22, period: 29, centre: 12 },
+  ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
     { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },
