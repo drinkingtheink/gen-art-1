@@ -193,9 +193,11 @@ The one thing that can't be captured exactly is the palette: a cycling piece
 shows a blend of two sets, and a blend has no id to put in a param or a link,
 so pausing snaps to whichever it's nearer.
 
-Frozen values are deliberately **not** snapped to slider steps. Modulation runs
-continuous, so rounding on commit shifts the piece off the frame you paused on
-— it did, on all fifteen pieces, until `coerce` grew a `snap` option.
+Frozen values are deliberately not rounded at all. Snapping them to slider steps shifted the piece
+off the frame being paused on, in all fifteen pieces, which is why `coerce` grew a `snap` option.
+Rounding to even 5 decimals is no better: the attractor iterates a chaotic map 26,000 times, and a
+1e-5 change in its constants moved points by 956 units. Full precision makes a paused permalink
+longer — about 221 characters of params against 153 at the defaults — and it also makes it exact.
 
 There's no restart, deliberately. The modulators are endless periodic waves, so `t=0` is an
 arbitrary phase rather than a beginning — and reloading the page already gives a reproducible

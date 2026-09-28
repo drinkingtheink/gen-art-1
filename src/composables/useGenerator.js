@@ -119,8 +119,13 @@ export function useGenerator(initial = {}) {
       ? paletteIdAtCycle(s.palettePosition, params.value.palette)
       : params.value.palette
 
-    // Not snapped to slider steps: modulation runs continuous, so rounding
-    // here would shift the piece off the frame being paused on.
+    // Neither snapped to slider steps nor rounded at all.
+    //
+    // Snapping was the original bug — modulation runs continuous, so rounding
+    // to a step shifts the piece off the frame being paused on. Rounding to
+    // even 5 decimals is no better: the attractor iterates a chaotic map
+    // 26,000 times, and a 1e-5 change in its constants moved points by 956
+    // units. Full precision makes a permalink longer; it also makes it exact.
     params.value = coerceAll(generator.value, { ...frozen, palette }, { snap: false })
   }
 
@@ -215,6 +220,7 @@ export function useGenerator(initial = {}) {
     livedParams,
     scene,
     setShowcase,
+    commitLive,
     setParam,
     selectGenerator,
     setRatio,
