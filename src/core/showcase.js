@@ -102,6 +102,25 @@ export const PRESETS = {
     { key: 'colorBias', wave: 'sine', amplitude: 0.8, period: 13, phase: 0.4 },
     { key: 'strokeWidth', wave: 'sine', amplitude: 1.2, period: 19 },
   ],
+  moire: [
+    // Rotation is the star: a fraction of a degree redraws the whole
+    // interference pattern, so it sweeps without ever looking like it's
+    // merely spinning.
+    { key: 'rotation', wave: 'ramp', amplitude: 90, period: 47, centre: 90 },
+    { key: 'spread', wave: 'sine', amplitude: 2.4, period: 13, centre: 3.6 },
+    { key: 'phase', wave: 'ramp', amplitude: 0.5, period: 6.5, centre: 0.5 },
+    { key: 'warp', wave: 'drift', amplitude: 22, period: 17, centre: 30 },
+    { key: 'squeeze', wave: 'sine', amplitude: 0.22, period: 23, centre: 1.05 },
+  ],
+  harmonograph: [
+    // Phase drift precesses the figure; detune decides whether it closes at
+    // all. Together they read as a slowly tumbling object.
+    { key: 'drift', wave: 'ramp', amplitude: 3.15, period: 29, centre: 3.15 },
+    { key: 'detune', wave: 'sine', amplitude: 0.011, period: 19, centre: 0.015 },
+    { key: 'damping', wave: 'sine', amplitude: 0.16, period: 11, centre: 0.26 },
+    { key: 'spanTurns', wave: 'drift', amplitude: 4, period: 37, centre: 15 },
+    { key: 'separation', wave: 'sine', amplitude: 26, period: 23, centre: 28 },
+  ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
     { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },
