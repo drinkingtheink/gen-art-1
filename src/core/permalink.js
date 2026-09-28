@@ -22,7 +22,7 @@ function parseQuery(raw) {
   )
 }
 
-export function encodeState({ generatorId, ratioId, grain, treatment, seed, params }) {
+export function encodeState({ generatorId, ratioId, grain, effects, treatment, seed, params }) {
   const encoded = Object.entries(params)
     .map(([key, value]) => `${key}:${encodeURIComponent(value)}`)
     .join(',')
@@ -31,6 +31,15 @@ export function encodeState({ generatorId, ratioId, grain, treatment, seed, para
     `&r=${encodeURIComponent(ratioId)}` +
     `&n=${grain.amount}:${grain.scale}:${encodeURIComponent(grain.blend)}` +
     `&t=${treatment.bg}:${treatment.rotate}:${treatment.invert ? 1 : 0}:${treatment.muted.join('.')}` +
+    `&e=${[
+      effects.bloom,
+      effects.bloomRadius,
+      effects.bloomThreshold,
+      effects.aberration,
+      effects.aberrationAngle,
+      effects.vignette,
+      effects.vignetteSpread,
+    ].join(':')}` +
     `&s=${encodeURIComponent(seed)}` +
     `&p=${encoded}`
   )
@@ -68,12 +77,18 @@ export function decodeState(hash) {
   // no grain — so old links still render as they did.
   const [amount, scale, blend] = (safe(query.n) ?? '').split(':')
   const [bg, rotate, invert, muted] = (safe(query.t) ?? '').split(':')
+  const [bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread] =
+    (safe(query.e) ?? '').split(':')
 
   return {
     generatorId: safe(query.g),
     ratioId: safe(query.r),
     grain: query.n === undefined ? undefined : { amount, scale, blend },
     treatment: query.t === undefined ? undefined : { bg, rotate, invert, muted },
+    effects:
+      query.e === undefined
+        ? undefined
+        : { bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread },
     seed: safe(query.s),
     params,
   }

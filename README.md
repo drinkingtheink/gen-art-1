@@ -138,6 +138,26 @@ eased one reads as a dissolve.
 During playback the cycle walks *from* the palette you chose, and choosing one restarts the cycle
 from it. Otherwise the sequence is decided purely by elapsed time and your pick is discarded.
 
+## Effects
+
+Bloom, chromatic aberration and a vignette, grouped with the grain because they all act on the
+finished piece rather than on how it was made. Canvas state, so no generator knows they exist.
+
+Bloom and aberration filter the **artwork group only, never the background rect**. That distinction
+is the whole reason aberration works: splitting a filled background into colour channels and
+screen-blending it back wrecks the paper, whereas splitting shapes over a transparent backdrop
+reconstructs them exactly *except* at the edges — which is the fringe you want.
+
+Bloom thresholds before it blurs. Without that it smudges everything instead of making bright
+things bleed.
+
+A filter rasterises its group once and then works on pixels, so the cost scales with canvas area
+rather than element count — a 26,000-dot attractor filters no slower than a 16-band strata. It is
+not free though: PNG export went from about 440ms to 1.2s with bloom on.
+
+Same raster caveat as the grain: these survive PNG export and any renderer that understands
+filters, and a pen plotter ignores them.
+
 ## Grain
 
 A turbulence layer over the finished piece — the tooth of the paper rather than anything the
@@ -207,6 +227,7 @@ src/
     ratios.js      canvas shapes at constant area
     simplify.js    deviation-bounded polyline simplification
     grain.js       paper-grain overlay (raster)
+    effects.js     bloom, chromatic aberration, vignette (raster)
     showcase.js    time-based param modulation
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
@@ -229,6 +250,7 @@ src/
     ControlPanel.vue / ParamControl.vue   built from the schema
     Toolbar.vue    generator picker, seed field, re-roll, reset
     ExportBar.vue  SVG / PNG download
+    EffectsBar.vue   bloom / aberration / vignette / grain
     ShowcaseBar.vue  playback, speed, intensity, present
   composables/
     useGenerator.js  generator + seed + params -> scene

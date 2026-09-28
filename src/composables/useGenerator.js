@@ -3,6 +3,7 @@ import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
 import { applyTreatment, coerceTreatment, getPalette, paletteAtCycle } from '@/core/palettes.js'
 import { createRng, randomSeed } from '@/core/rng.js'
 import { paramsAt } from '@/core/showcase.js'
+import { buildEffects, coerceEffects } from '@/core/effects.js'
 import { buildGrain, coerceGrain } from '@/core/grain.js'
 import { getRatio } from '@/core/ratios.js'
 import { getGenerator } from '@/generators/index.js'
@@ -33,6 +34,9 @@ export function useGenerator(initial = {}) {
   // How the chosen palette is used, as opposed to which one it is. Canvas
   // state, because it applies to whatever piece is on screen.
   const treatment = ref(coerceTreatment(initial.treatment))
+
+  // Bloom, chromatic aberration and vignette. Canvas state like the grain.
+  const effects = ref(coerceEffects(initial.effects))
 
   const seed = ref(initial.seed || randomSeed())
   const params = ref(coerceAll(generator.value, initial.params))
@@ -87,9 +91,22 @@ export function useGenerator(initial = {}) {
     showcase.value = state
   }
 
-  const overlay = computed(() =>
-    buildGrain(grain.value, seed.value, canvas.value.width, canvas.value.height),
+  const built = computed(() =>
+    buildEffects(effects.value, seed.value, canvas.value.width, canvas.value.height),
   )
+
+  // Vignette sits under the grain, so grain textures the vignette too.
+  const overlay = computed(() => [
+    ...built.value.overlay,
+    ...buildGrain(grain.value, seed.value, canvas.value.width, canvas.value.height),
+  ])
+
+  const defs = computed(() => built.value.defs)
+  const artworkFilter = computed(() => built.value.filterId ?? '')
+
+  function setEffects(patch) {
+    effects.value = coerceEffects({ ...effects.value, ...patch })
+  }
 
   function setTreatment(patch) {
     treatment.value = coerceTreatment({ ...treatment.value, ...patch })
@@ -141,6 +158,7 @@ export function useGenerator(initial = {}) {
     generatorId.value = next.id
     ratioId.value = getRatio(state.ratioId).id
     grain.value = coerceGrain(state.grain)
+    effects.value = coerceEffects(state.effects)
     treatment.value = coerceTreatment(state.treatment)
     if (state.seed) seed.value = state.seed
     params.value = coerceAll(next, state.params)
@@ -152,6 +170,9 @@ export function useGenerator(initial = {}) {
     ratioId,
     canvas,
     grain,
+    effects,
+    defs,
+    artworkFilter,
     treatment,
     basePalette,
     livedPalette,
@@ -165,6 +186,7 @@ export function useGenerator(initial = {}) {
     selectGenerator,
     setRatio,
     setGrain,
+    setEffects,
     setTreatment,
     setSeed,
     reroll,

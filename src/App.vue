@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
-import GrainBar from '@/components/GrainBar.vue'
+import EffectsBar from '@/components/EffectsBar.vue'
 import PaletteBar from '@/components/PaletteBar.vue'
 import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
@@ -24,6 +24,9 @@ const {
   ratioId,
   canvas,
   grain,
+  effects,
+  defs,
+  artworkFilter,
   treatment,
   basePalette,
   overlay,
@@ -35,6 +38,7 @@ const {
   selectGenerator,
   setRatio,
   setGrain,
+  setEffects,
   setTreatment,
   setSeed,
   reroll,
@@ -230,7 +234,12 @@ async function copyLink() {
 
       <hr class="rule" />
 
-      <GrainBar :grain="grain" @update="setGrain" />
+      <EffectsBar
+        :effects="effects"
+        :grain="grain"
+        @update-effects="setEffects"
+        @update-grain="setGrain"
+      />
 
       <ExportBar
         :busy="exporting"
@@ -246,7 +255,13 @@ async function copyLink() {
     </aside>
 
     <main class="stage-area">
-      <SvgStage ref="stage" :scene="scene" :overlay="overlay" />
+      <SvgStage
+        ref="stage"
+        :scene="scene"
+        :overlay="overlay"
+        :defs="defs"
+        :artwork-filter="artworkFilter"
+      />
 
       <button v-if="presenting" type="button" class="leave" @click="leavePresent">
         Esc to exit

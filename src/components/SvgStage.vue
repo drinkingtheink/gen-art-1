@@ -13,8 +13,15 @@ import SvgNode from './SvgNode.vue'
  */
 const props = defineProps({
   scene: { type: Object, required: true },
-  /** Nodes drawn over the finished piece — grain, and anything like it. */
+  /** Nodes drawn over the finished piece — grain, vignette. */
   overlay: { type: Array, default: () => [] },
+  /** Filter and gradient definitions the above refer to. */
+  defs: { type: Array, default: () => [] },
+  /**
+   * Filter applied to the artwork group. Deliberately not to the background
+   * rect: channel-splitting a filled background would wreck the paper.
+   */
+  artworkFilter: { type: String, default: '' },
 })
 
 const svg = useTemplateRef('svg')
@@ -41,7 +48,11 @@ defineExpose({ svg })
       :height="scene.height"
       :fill="scene.background"
     />
-    <SvgNode v-for="(shape, i) in scene.shapes" :key="i" :node="shape" />
+    <SvgNode v-for="(node, i) in defs" :key="`defs-${i}`" :node="node" />
+
+    <g :filter="artworkFilter ? `url(#${artworkFilter})` : undefined">
+      <SvgNode v-for="(shape, i) in scene.shapes" :key="i" :node="shape" />
+    </g>
     <SvgNode v-for="(node, i) in overlay" :key="`overlay-${i}`" :node="node" />
   </svg>
 </template>

@@ -14,7 +14,7 @@ import { encodeState, decodeState } from '@/core/permalink.js'
  */
 const DEBOUNCE_MS = 200
 
-export function usePermalink({ generatorId, ratioId, grain, treatment, seed, params, applyState }) {
+export function usePermalink({ generatorId, ratioId, grain, effects, treatment, seed, params, applyState }) {
   let timer = null
   let pendingMode = 'replace'
 
@@ -23,6 +23,7 @@ export function usePermalink({ generatorId, ratioId, grain, treatment, seed, par
       generatorId: generatorId.value,
       ratioId: ratioId.value,
       grain: grain.value,
+      effects: effects.value,
       treatment: treatment.value,
       seed: seed.value,
       params: params.value,
@@ -52,6 +53,7 @@ export function usePermalink({ generatorId, ratioId, grain, treatment, seed, par
   watch(params, () => schedule('replace'), { deep: true })
   watch(grain, () => schedule('replace'), { deep: true })
   watch(treatment, () => schedule('replace'), { deep: true })
+  watch(effects, () => schedule('replace'), { deep: true })
 
   window.addEventListener('hashchange', readFromUrl)
   window.addEventListener('popstate', readFromUrl)
