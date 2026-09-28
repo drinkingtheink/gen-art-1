@@ -2,6 +2,7 @@
 import { ref, useTemplateRef } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
+import GrainBar from '@/components/GrainBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
@@ -18,12 +19,15 @@ const {
   generatorId,
   ratioId,
   canvas,
+  grain,
+  overlay,
   seed,
   params,
   scene,
   setParam,
   selectGenerator,
   setRatio,
+  setGrain,
   setSeed,
   reroll,
   resetParams,
@@ -117,9 +121,12 @@ async function copyLink() {
         {{ copied ? 'Link copied' : 'Copy link to this piece' }}
       </button>
 
+      <GrainBar :grain="grain" @update="setGrain" />
+
       <ExportBar
         :busy="exporting"
         :status="exportStatus"
+        :grain-on="grain.amount > 0"
         @export-svg="exportSvg"
         @export-png="exportPng"
       />
@@ -130,7 +137,7 @@ async function copyLink() {
     </aside>
 
     <main class="stage-area">
-      <SvgStage ref="stage" :scene="scene" />
+      <SvgStage ref="stage" :scene="scene" :overlay="overlay" />
     </main>
   </div>
 </template>

@@ -22,13 +22,14 @@ function parseQuery(raw) {
   )
 }
 
-export function encodeState({ generatorId, ratioId, seed, params }) {
+export function encodeState({ generatorId, ratioId, grain, seed, params }) {
   const encoded = Object.entries(params)
     .map(([key, value]) => `${key}:${encodeURIComponent(value)}`)
     .join(',')
   return (
     `g=${encodeURIComponent(generatorId)}` +
     `&r=${encodeURIComponent(ratioId)}` +
+    `&n=${grain.amount}:${grain.scale}:${encodeURIComponent(grain.blend)}` +
     `&s=${encodeURIComponent(seed)}` +
     `&p=${encoded}`
   )
@@ -61,9 +62,18 @@ export function decodeState(hash) {
     }
   }
 
-  // A link saved before ratios existed carries no `r`; getRatio() defaults it
-  // to square, which is the 1000x1000 canvas those pieces were authored at.
-  return { generatorId: safe(query.g), ratioId: safe(query.r), seed: safe(query.s), params }
+  // A link saved before ratios or grain existed carries no `r` or `n`; both
+  // default to what those pieces were authored with — a 1000x1000 square and
+  // no grain — so old links still render as they did.
+  const [amount, scale, blend] = (safe(query.n) ?? '').split(':')
+
+  return {
+    generatorId: safe(query.g),
+    ratioId: safe(query.r),
+    grain: query.n === undefined ? undefined : { amount, scale, blend },
+    seed: safe(query.s),
+    params,
+  }
 }
 
 /** State from the address bar right now, or null if there's nothing there. */

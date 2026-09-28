@@ -13,6 +13,8 @@ import SvgNode from './SvgNode.vue'
  */
 const props = defineProps({
   scene: { type: Object, required: true },
+  /** Nodes drawn over the finished piece — grain, and anything like it. */
+  overlay: { type: Array, default: () => [] },
 })
 
 const svg = useTemplateRef('svg')
@@ -40,6 +42,7 @@ defineExpose({ svg })
       :fill="scene.background"
     />
     <SvgNode v-for="(shape, i) in scene.shapes" :key="i" :node="shape" />
+    <SvgNode v-for="(node, i) in overlay" :key="`overlay-${i}`" :node="node" />
   </svg>
 </template>
 

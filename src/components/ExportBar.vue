@@ -1,18 +1,24 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 /**
  * Export controls. The work is done by the parent, which holds the stage
  * reference; this just collects the choice and reports what happened.
  */
-defineProps({
+const props = defineProps({
   busy: { type: Boolean, default: false },
   status: { type: String, default: '' },
+  grainOn: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['export-svg', 'export-png'])
 
 const scale = ref(2)
+
+// Noise is incompressible, so grain inflates a PNG by roughly 10-20x —
+// measured 1.1MB to 22MB at 4x. Better to say so than to hand someone a
+// surprise download.
+const heavy = computed(() => props.grainOn && scale.value >= 4)
 
 // 1000px authored, so 4x is 4000px — about 13in at 300dpi, enough to frame.
 const SCALES = [
@@ -34,6 +40,10 @@ const SCALES = [
         <option v-for="s in SCALES" :key="s.value" :value="s.value">{{ s.label }}</option>
       </select>
     </div>
+
+    <p v-if="heavy" class="status warn">
+      Grain makes PNGs 10–20× larger — expect ~20MB+ at this size. SVG is unaffected.
+    </p>
 
     <p v-if="status" class="status">{{ status }}</p>
   </div>
@@ -74,5 +84,9 @@ button:disabled {
   color: var(--ink-dim);
   font-size: 0.75rem;
   line-height: 1.4;
+}
+
+.warn {
+  color: #c9a24a;
 }
 </style>

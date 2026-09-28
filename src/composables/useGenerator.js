@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
 import { createRng, randomSeed } from '@/core/rng.js'
+import { buildGrain, coerceGrain } from '@/core/grain.js'
 import { getRatio } from '@/core/ratios.js'
 import { getGenerator } from '@/generators/index.js'
 
@@ -23,6 +24,10 @@ export function useGenerator(initial = {}) {
   const ratioId = ref(getRatio(initial.ratioId).id)
   const canvas = computed(() => getRatio(ratioId.value))
 
+  // Grain sits over the finished piece rather than inside it, so it's canvas
+  // state like the shape — generators never see it.
+  const grain = ref(coerceGrain(initial.grain))
+
   const seed = ref(initial.seed || randomSeed())
   const params = ref(coerceAll(generator.value, initial.params))
 
@@ -34,6 +39,14 @@ export function useGenerator(initial = {}) {
       height: canvas.value.height,
     }),
   )
+
+  const overlay = computed(() =>
+    buildGrain(grain.value, seed.value, canvas.value.width, canvas.value.height),
+  )
+
+  function setGrain(patch) {
+    grain.value = coerceGrain({ ...grain.value, ...patch })
+  }
 
   /** Set one param, coerced against its spec. Unknown keys are ignored. */
   function setParam(key, value) {
@@ -76,6 +89,7 @@ export function useGenerator(initial = {}) {
     const next = getGenerator(state.generatorId)
     generatorId.value = next.id
     ratioId.value = getRatio(state.ratioId).id
+    grain.value = coerceGrain(state.grain)
     if (state.seed) seed.value = state.seed
     params.value = coerceAll(next, state.params)
   }
@@ -85,12 +99,15 @@ export function useGenerator(initial = {}) {
     generator,
     ratioId,
     canvas,
+    grain,
+    overlay,
     seed,
     params,
     scene,
     setParam,
     selectGenerator,
     setRatio,
+    setGrain,
     setSeed,
     reroll,
     resetParams,

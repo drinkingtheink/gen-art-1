@@ -98,6 +98,26 @@ regenerated, not reflowed.
 A link with no `r` resolves to square, so permalinks saved before shapes existed still render
 byte-identically.
 
+## Grain
+
+A turbulence layer over the finished piece — the tooth of the paper rather than anything the
+generator drew. Like the aspect ratio it's canvas state, so generators stay pure and never see it.
+Its filter seed derives from the piece's seed, so the grain is part of the piece and reproduces
+with it.
+
+**It is a raster effect, and that matters here.** The exported SVG carries the filter instruction,
+and anything that understands filters — a browser, Illustrator — applies it. A pen plotter does
+not: it will draw the clean geometry underneath and the grain simply won't exist. Verified that it
+does survive PNG export (flat paper goes from 1 tone to 13), which is the case that could have
+silently failed.
+
+Noise is incompressible, so grain inflates a PNG roughly 10–20x — measured 1.13MB to 22MB at 4x.
+The export panel warns at large sizes. SVG is unaffected, since the filter is a few lines of
+markup whatever the amount.
+
+With grain at 0 no filter is emitted at all, so a piece without it exports exactly as it did
+before grain existed.
+
 ## Layout
 
 ```
@@ -107,6 +127,7 @@ src/
     noise.js       seeded 2D simplex + fBm
     ratios.js      canvas shapes at constant area
     simplify.js    deviation-bounded polyline simplification
+    grain.js       paper-grain overlay (raster)
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
