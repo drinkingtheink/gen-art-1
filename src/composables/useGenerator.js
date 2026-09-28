@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
 import { createRng, randomSeed } from '@/core/rng.js'
+import { getRatio } from '@/core/ratios.js'
 import { getGenerator } from '@/generators/index.js'
 
 /**
@@ -11,14 +12,16 @@ import { getGenerator } from '@/generators/index.js'
  * skips the work entirely when nothing changed.
  */
 
-// The art is authored in a fixed square coordinate space and scaled by CSS, so
-// the output is resolution-independent and a given seed looks the same on any
-// screen.
-const CANVAS = 1000
-
 export function useGenerator(initial = {}) {
   const generatorId = ref(getGenerator(initial.generatorId).id)
   const generator = computed(() => getGenerator(generatorId.value))
+
+  // The art is authored in a fixed coordinate space and scaled by CSS, so
+  // output is resolution-independent and a seed looks the same on any screen.
+  // Ratios hold area constant, so a margin or a grid count means the same
+  // density whatever the shape.
+  const ratioId = ref(getRatio(initial.ratioId).id)
+  const canvas = computed(() => getRatio(ratioId.value))
 
   const seed = ref(initial.seed || randomSeed())
   const params = ref(coerceAll(generator.value, initial.params))
@@ -27,8 +30,8 @@ export function useGenerator(initial = {}) {
     generator.value.generate({
       params: params.value,
       rng: createRng(seed.value),
-      width: CANVAS,
-      height: CANVAS,
+      width: canvas.value.width,
+      height: canvas.value.height,
     }),
   )
 
@@ -45,6 +48,14 @@ export function useGenerator(initial = {}) {
     if (next.id === generatorId.value) return
     generatorId.value = next.id
     params.value = defaultsFor(next)
+  }
+
+  /**
+   * Switching shape re-runs generate() on the new canvas with the same seed —
+   * the piece is regenerated, not reflowed.
+   */
+  function setRatio(id) {
+    ratioId.value = getRatio(id).id
   }
 
   function setSeed(value) {
@@ -64,6 +75,7 @@ export function useGenerator(initial = {}) {
   function applyState(state = {}) {
     const next = getGenerator(state.generatorId)
     generatorId.value = next.id
+    ratioId.value = getRatio(state.ratioId).id
     if (state.seed) seed.value = state.seed
     params.value = coerceAll(next, state.params)
   }
@@ -71,11 +83,14 @@ export function useGenerator(initial = {}) {
   return {
     generatorId,
     generator,
+    ratioId,
+    canvas,
     seed,
     params,
     scene,
     setParam,
     selectGenerator,
+    setRatio,
     setSeed,
     reroll,
     resetParams,

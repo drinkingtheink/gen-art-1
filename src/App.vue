@@ -16,11 +16,14 @@ usePermalink(piece)
 const {
   generator,
   generatorId,
+  ratioId,
+  canvas,
   seed,
   params,
   scene,
   setParam,
   selectGenerator,
+  setRatio,
   setSeed,
   reroll,
   resetParams,
@@ -100,8 +103,11 @@ async function copyLink() {
 
       <Toolbar
         :generator-id="generatorId"
+        :ratio-id="ratioId"
+        :canvas="canvas"
         :seed="seed"
         @select-generator="selectGenerator"
+        @set-ratio="setRatio"
         @set-seed="setSeed"
         @reroll="reroll"
         @reset="resetParams"

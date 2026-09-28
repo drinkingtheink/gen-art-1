@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { ratioOptions } from '@/core/ratios.js'
 import { generators } from '@/generators/index.js'
 
 /**
@@ -8,10 +9,14 @@ import { generators } from '@/generators/index.js'
  */
 const props = defineProps({
   generatorId: { type: String, required: true },
+  ratioId: { type: String, required: true },
+  canvas: { type: Object, required: true },
   seed: { type: String, required: true },
 })
 
-const emit = defineEmits(['select-generator', 'set-seed', 'reroll', 'reset'])
+const emit = defineEmits(['select-generator', 'set-ratio', 'set-seed', 'reroll', 'reset'])
+
+const shapes = ratioOptions
 
 const options = computed(() => generators)
 
@@ -35,6 +40,16 @@ function commit() {
         @change="emit('select-generator', $event.target.value)"
       >
         <option v-for="g in options" :key="g.id" :value="g.id">{{ g.name }}</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="field-label">
+        Shape
+        <span class="dims">{{ canvas.width }}×{{ canvas.height }}</span>
+      </span>
+      <select :value="ratioId" @change="emit('set-ratio', $event.target.value)">
+        <option v-for="s in shapes" :key="s.value" :value="s.value">{{ s.label }}</option>
       </select>
     </label>
 
@@ -72,10 +87,22 @@ function commit() {
 }
 
 .field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
   color: var(--ink-dim);
   font-size: 0.78rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.dims {
+  color: #6f6f7a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .seed-input {

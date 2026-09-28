@@ -56,7 +56,7 @@ Seeds are words — `quiet-heron-41` — so they survive being read aloud or ski
 state lives in the hash:
 
 ```
-#g=subdivision&s=quiet-heron-41&p=maxDepth:6,splitChance:0.88,palette:flame,…
+#g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,splitChance:0.88,palette:flame,…
 ```
 
 Readable and hand-editable on purpose. Every param is written out, including ones still at their
@@ -84,6 +84,20 @@ memory-hungry beyond it.
 Files are named for the piece — `gen-art-truchet-still-anvil-12.svg` — so a file on disk is still
 traceable back to the seed that made it.
 
+## Canvas shapes
+
+Seven ratios, from square to 16:9, and both A-series orientations. They hold **area** constant
+rather than a fixed edge, so a margin of 30 or a grid of 12 means the same density of work
+whatever the shape. Square lands on exactly 1000x1000 — what every piece made before ratios
+existed was authored at — and 1:√2 lands on 1189x841, which is A0 in millimetres, so an export
+scales to any A size exactly.
+
+Changing shape re-runs `generate()` on the new canvas with the same seed. The piece is
+regenerated, not reflowed.
+
+A link with no `r` resolves to square, so permalinks saved before shapes existed still render
+byte-identically.
+
 ## Layout
 
 ```
@@ -91,6 +105,7 @@ src/
   core/
     rng.js         seeded PRNG — xmur3 over mulberry32, plus speakable seeds
     noise.js       seeded 2D simplex + fBm
+    ratios.js      canvas shapes at constant area
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
@@ -136,8 +151,5 @@ A generator wanting tens of thousands of *elements* would still want a different
 Palettes run quiet → loud, which suits filled areas: the dominant colour sits nearest the paper.
 Line work wants the opposite, so flow field reads the weighting from the loud end — thin strokes
 in the quietest colour vanish against the background.
-
-The canvas is a fixed 1000x1000 square. Print and framing would want other ratios, which means
-generators can no longer assume square — a small change to each, but a real one.
 
 Not built yet, and nothing here precludes them: a favourites strip, an animated mode.

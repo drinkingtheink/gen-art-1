@@ -1,5 +1,5 @@
 /**
- * URL state, as `#g=subdivision&s=quiet-heron-41&p=maxDepth:6,gutter:5`.
+ * URL state, as `#g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,gutter:5`.
  *
  * Deliberately readable and hand-editable rather than base64 — a seed you can
  * spot and retype in a URL is worth more here than a few saved characters.
@@ -22,11 +22,16 @@ function parseQuery(raw) {
   )
 }
 
-export function encodeState({ generatorId, seed, params }) {
+export function encodeState({ generatorId, ratioId, seed, params }) {
   const encoded = Object.entries(params)
     .map(([key, value]) => `${key}:${encodeURIComponent(value)}`)
     .join(',')
-  return `g=${encodeURIComponent(generatorId)}&s=${encodeURIComponent(seed)}&p=${encoded}`
+  return (
+    `g=${encodeURIComponent(generatorId)}` +
+    `&r=${encodeURIComponent(ratioId)}` +
+    `&s=${encodeURIComponent(seed)}` +
+    `&p=${encoded}`
+  )
 }
 
 export function decodeState(hash) {
@@ -56,7 +61,9 @@ export function decodeState(hash) {
     }
   }
 
-  return { generatorId: safe(query.g), seed: safe(query.s), params }
+  // A link saved before ratios existed carries no `r`; getRatio() defaults it
+  // to square, which is the 1000x1000 canvas those pieces were authored at.
+  return { generatorId: safe(query.g), ratioId: safe(query.r), seed: safe(query.s), params }
 }
 
 /** State from the address bar right now, or null if there's nothing there. */
