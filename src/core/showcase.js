@@ -144,6 +144,27 @@ export const PRESETS = {
     { key: 'squash', wave: 'sine', amplitude: 0.14, period: 29, centre: 0.86 },
     { key: 'tilt', wave: 'drift', amplitude: 13, period: 23 },
   ],
+  halftone: [
+    // The grid never moves; only the dots resize as the field slides under it.
+    { key: 'phase', wave: 'ramp', amplitude: 8, period: 37, centre: 8 },
+    { key: 'fieldScale', wave: 'sine', amplitude: 0.5, period: 23, centre: 1.7 },
+    { key: 'contrast', wave: 'drift', amplitude: 1.1, period: 17, centre: 2.2 },
+    { key: 'angle', wave: 'sine', amplitude: 22, period: 29, centre: 24 },
+  ],
+  contour: [
+    // Phase flows the map; depth breathes the levels through the field.
+    { key: 'phase', wave: 'ramp', amplitude: 3.5, period: 67, centre: 3.5 },
+    { key: 'depth', wave: 'sine', amplitude: 0.5, period: 19, centre: 0.5 },
+    { key: 'fieldScale', wave: 'drift', amplitude: 0.16, period: 41, centre: 1.2 },
+    { key: 'range', wave: 'sine', amplitude: 0.1, period: 23, centre: 0.82 },
+  ],
+  weave: [
+    // The cloth ripples without the strand count ever changing.
+    { key: 'phase', wave: 'ramp', amplitude: 3.14, period: 11, centre: 3.14 },
+    { key: 'wave', wave: 'sine', amplitude: 0.3, period: 13, centre: 0.42 },
+    { key: 'ribbon', wave: 'sine', amplitude: 0.22, period: 17, centre: 0.7 },
+    { key: 'skew', wave: 'drift', amplitude: 16, period: 23 },
+  ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
     { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },

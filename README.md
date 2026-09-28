@@ -206,8 +206,8 @@ feel right; snapping during playback holds a param still for several frames then
 reads as judder — measured as a median per-frame change of exactly zero with all the movement
 arriving in spikes.
 
-Five pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
-**attractor**, **canopy** and **strata**.
+Eight pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
+**attractor**, **canopy**, **strata**, **halftone**, **contour** and **weave**.
 The trick is to spend the rng entirely up front, on a noise field or a set of pendulum ratios, and
 have every param after that transform fixed geometry. Both end up with 10 of their range params
 animatable, the strongest motion of any piece, and 2-5ms generation.
@@ -244,6 +244,9 @@ src/
     attractor.js
     canopy.js
     strata.js
+    halftone.js
+    contour.js
+    weave.js
   components/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer
