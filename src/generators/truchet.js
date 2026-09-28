@@ -163,14 +163,20 @@ export default {
       place(x + half, y + half, half, depth + 1)
     }
 
-    // Square cells on a square canvas, centred in whatever the margin leaves.
-    const span = Math.min(width, height) - p.margin * 2
-    const size = span / p.grid
-    const originX = (width - span) / 2
-    const originY = (height - span) / 2
+    // Tiles must stay square — the edge-midpoint trick is what makes
+    // neighbours connect — so `grid` counts cells along the short edge and the
+    // long edge takes however many fit. Density then reads the same whatever
+    // the canvas shape. Any remainder is split evenly as a centred inset.
+    const availWidth = width - p.margin * 2
+    const availHeight = height - p.margin * 2
+    const size = Math.min(availWidth, availHeight) / p.grid
+    const cols = Math.max(1, Math.round(availWidth / size))
+    const rows = Math.max(1, Math.round(availHeight / size))
+    const originX = p.margin + (availWidth - cols * size) / 2
+    const originY = p.margin + (availHeight - rows * size) / 2
 
-    for (let row = 0; row < p.grid; row += 1) {
-      for (let col = 0; col < p.grid; col += 1) {
+    for (let row = 0; row < rows; row += 1) {
+      for (let col = 0; col < cols; col += 1) {
         place(originX + col * size, originY + row * size, size, 0)
       }
     }

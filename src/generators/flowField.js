@@ -94,8 +94,14 @@ export default {
     const spanX = Math.max(1, right - left)
     const spanY = Math.max(1, bottom - top)
 
+    // Both axes divide by the same number. Normalising each against its own
+    // dimension would stretch the field on a non-square canvas — the piece
+    // still renders, it's just smeared along one axis, which reads as a style
+    // choice rather than a bug. The geometric mean is 1000 on any canvas the
+    // app builds, since ratios hold area constant.
+    const unit = Math.sqrt(width * height)
     const angleAt = (x, y) =>
-      fbm(noise, (x / width) * p.noiseScale, (y / height) * p.noiseScale, p.octaves) *
+      fbm(noise, (x / unit) * p.noiseScale, (y / unit) * p.noiseScale, p.octaves) *
       Math.PI *
       p.angleTurns
 
