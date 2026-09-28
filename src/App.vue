@@ -13,10 +13,10 @@ import { presetFor } from '@/core/showcase.js'
 import { useShowcase } from '@/composables/useShowcase.js'
 import { useGenerator } from '@/composables/useGenerator.js'
 import { usePermalink } from '@/composables/usePermalink.js'
-import { readHash } from '@/core/permalink.js'
+import { readUrl } from '@/core/permalink.js'
 
 // A shared link is the starting state; otherwise a fresh random seed.
-const piece = useGenerator(readHash() ?? {})
+const piece = useGenerator(readUrl() ?? {})
 usePermalink(piece)
 
 const {

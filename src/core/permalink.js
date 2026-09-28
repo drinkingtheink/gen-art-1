@@ -1,11 +1,17 @@
 /**
- * URL state, as `#g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,gutter:5`.
+ * URL state, as `?g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,gutter:5`.
  *
  * Deliberately readable and hand-editable rather than base64 — a seed you can
  * spot and retype in a URL is worth more here than a few saved characters.
  * Every param is written out, including ones still at their default, so a
  * shared link keeps rendering the same piece even if a default is retuned
  * later.
+ *
+ * This lives in the query string rather than the fragment because a fragment
+ * never leaves the browser. Putting it after `?` means the server sees which
+ * piece a link points at, which is what lets a shared link carry a preview
+ * image of the actual artwork. Links written before this — where the same
+ * fields sat after `#` — are still read, and get rewritten on load.
  *
  * Nothing here validates against a schema; coerceAll does that on the way in.
  */
@@ -80,8 +86,8 @@ export function encodeState({ generatorId, ratioId, grain, effects, treatment, s
   )
 }
 
-export function decodeState(hash) {
-  const raw = String(hash).replace(/^#/, '')
+export function decodeState(search) {
+  const raw = String(search).replace(/^[?#]/, '')
   if (!raw) return null
 
   const query = parseQuery(raw)
@@ -128,7 +134,14 @@ export function decodeState(hash) {
   }
 }
 
-/** State from the address bar right now, or null if there's nothing there. */
-export function readHash() {
-  return typeof window === 'undefined' ? null : decodeState(window.location.hash)
+/**
+ * State from the address bar right now, or null if there's nothing there.
+ *
+ * The query string wins; the fragment is the fallback for links shared before
+ * the move, and for the only case where both are present — an old link that
+ * has just been opened on a path that already carried a query.
+ */
+export function readUrl() {
+  if (typeof window === 'undefined') return null
+  return decodeState(window.location.search) ?? decodeState(window.location.hash)
 }

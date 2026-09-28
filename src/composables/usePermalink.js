@@ -1,5 +1,5 @@
 import { onScopeDispose, watch } from 'vue'
-import { encodeState, decodeState } from '../core/permalink.js'
+import { encodeState, readUrl } from '../core/permalink.js'
 
 /**
  * Two-way sync between the piece on screen and the address bar.
@@ -9,8 +9,8 @@ import { encodeState, decodeState } from '../core/permalink.js'
  * slider replaces instead, so one gesture doesn't bury the history under
  * eighty entries.
  *
- * The loop guard is the hash comparison itself: applying state from the URL
- * regenerates the identical hash, so the write that follows is a no-op.
+ * The loop guard is the comparison itself: applying state from the URL
+ * regenerates the identical query string, so the write that follows is a no-op.
  */
 const DEBOUNCE_MS = 200
 
@@ -19,7 +19,7 @@ export function usePermalink({ generatorId, ratioId, grain, effects, treatment, 
   let pendingMode = 'replace'
 
   function write() {
-    const hash = `#${encodeState({
+    const search = `?${encodeState({
       generatorId: generatorId.value,
       ratioId: ratioId.value,
       grain: grain.value,
@@ -28,9 +28,11 @@ export function usePermalink({ generatorId, ratioId, grain, effects, treatment, 
       seed: seed.value,
       params: params.value,
     })}`
-    if (hash === window.location.hash) return
-    if (pendingMode === 'push') window.history.pushState(null, '', hash)
-    else window.history.replaceState(null, '', hash)
+    // Writing a bare `?…` keeps the path and drops any fragment, which is how
+    // an old `#…` link gets rewritten into the current form on arrival.
+    if (search === window.location.search && !window.location.hash) return
+    if (pendingMode === 'push') window.history.pushState(null, '', search)
+    else window.history.replaceState(null, '', search)
   }
 
   function schedule(mode) {
@@ -45,7 +47,7 @@ export function usePermalink({ generatorId, ratioId, grain, effects, treatment, 
   }
 
   function readFromUrl() {
-    const state = decodeState(window.location.hash)
+    const state = readUrl()
     if (state) applyState(state)
   }
 
@@ -55,6 +57,8 @@ export function usePermalink({ generatorId, ratioId, grain, effects, treatment, 
   watch(treatment, () => schedule('replace'), { deep: true })
   watch(effects, () => schedule('replace'), { deep: true })
 
+  // popstate covers Back/Forward across query strings. hashchange stays for
+  // the case of someone editing an old `#…` link in place.
   window.addEventListener('hashchange', readFromUrl)
   window.addEventListener('popstate', readFromUrl)
 
