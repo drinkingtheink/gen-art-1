@@ -82,6 +82,7 @@ src/
     index.js       the registry — add a line here
     subdivision.js
     flowField.js
+    truchet.js
   components/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer
@@ -107,6 +108,10 @@ a single `<path>`, so 650 curves is 650 nodes, not 650 × its length.
 hundreds of coordinates. Flow field rounds to 1dp and simplifies with a deviation bound of 0.6
 units — sub-pixel at a 1000px display — which cuts markup by about 40% with no visible change.
 Worth knowing if you add a generator that draws long paths.
+
+Truchet shows the third lever: thousands of tiles share the same handful of paint attributes, so
+they're grouped into a `<g>` per colour-and-width and the children carry only `d`. That's a 56%
+cut in markup for free, and it's what the scene contract's `children` is for.
 
 A generator wanting tens of thousands of *elements* would still want a different surface.
 
