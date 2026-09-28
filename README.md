@@ -68,6 +68,22 @@ Discrete choices (a new seed, a different generator, reset) push a history entry
 through the pieces you looked at. Slider drags replace instead, so one gesture doesn't bury the
 history.
 
+## Getting work out
+
+**SVG** is the real thing: the stage is already vector, so export is a matter of removing what the
+app added (Vue's scoped-style attributes, layout classes) and giving the file an explicit size —
+Firefox won't rasterise one without it. The result opens in Illustrator or Inkscape and goes
+straight to a pen plotter, which reads SVG natively. Truchet and flow field suit plotting
+especially well, being stroke-based already.
+
+**PNG** rasterises the same serialised SVG through a canvas at 1–8x. At 4x that's 4000px, roughly
+13 inches at 300dpi. The scene references no external images or fonts, so the canvas doesn't taint
+and `toBlob` works. Anything past an 8192px edge is clamped, because browsers get unreliable and
+memory-hungry beyond it.
+
+Files are named for the piece — `gen-art-truchet-still-anvil-12.svg` — so a file on disk is still
+traceable back to the seed that made it.
+
 ## Layout
 
 ```
@@ -78,6 +94,7 @@ src/
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
+    export.js      SVG serialisation and PNG rasterising
   generators/
     index.js       the registry — add a line here
     subdivision.js
@@ -88,6 +105,7 @@ src/
     SvgNode.vue    recursive { tag, attrs, children } renderer
     ControlPanel.vue / ParamControl.vue   built from the schema
     Toolbar.vue    generator picker, seed field, re-roll, reset
+    ExportBar.vue  SVG / PNG download
   composables/
     useGenerator.js  generator + seed + params -> scene
     usePermalink.js  two-way URL sync
@@ -119,4 +137,7 @@ Palettes run quiet → loud, which suits filled areas: the dominant colour sits 
 Line work wants the opposite, so flow field reads the weighting from the loud end — thin strokes
 in the quietest colour vanish against the background.
 
-Not built yet, and nothing here precludes them: PNG export, a favourites strip, an animated mode.
+The canvas is a fixed 1000x1000 square. Print and framing would want other ratios, which means
+generators can no longer assume square — a small change to each, but a real one.
+
+Not built yet, and nothing here precludes them: a favourites strip, an animated mode.

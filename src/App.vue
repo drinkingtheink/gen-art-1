@@ -1,8 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
+import ExportBar from '@/components/ExportBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
+import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
 import { useGenerator } from '@/composables/useGenerator.js'
 import { usePermalink } from '@/composables/usePermalink.js'
 import { readHash } from '@/core/permalink.js'
@@ -23,6 +25,53 @@ const {
   reroll,
   resetParams,
 } = piece
+
+const stage = useTemplateRef('stage')
+const exporting = ref(false)
+const exportStatus = ref('')
+
+/** The live <svg> inside SvgStage — what both exports serialise. */
+const stageSvg = () => stage.value?.svg
+
+async function runExport(job) {
+  if (exporting.value) return
+  exporting.value = true
+  exportStatus.value = ''
+  try {
+    // Yield once so the disabled state paints before a big raster blocks us.
+    await new Promise((r) => setTimeout(r, 0))
+    exportStatus.value = await job()
+  } catch (error) {
+    exportStatus.value = `Export failed: ${error.message}`
+  } finally {
+    exporting.value = false
+  }
+}
+
+function exportSvg() {
+  return runExport(async () => {
+    const svg = stageSvg()
+    if (!svg) throw new Error('the stage is not ready')
+    const { markup } = serializeScene(svg)
+    const name = buildFilename(generatorId.value, seed.value, 'svg')
+    downloadBlob(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }), name)
+    return `Saved ${name} — ${(markup.length / 1024).toFixed(0)}KB of vector.`
+  })
+}
+
+function exportPng(scale) {
+  return runExport(async () => {
+    const svg = stageSvg()
+    if (!svg) throw new Error('the stage is not ready')
+    const { blob, width, height, clamped } = await renderToPngBlob(svg, scale)
+    const name = buildFilename(generatorId.value, seed.value, 'png')
+    downloadBlob(blob, name)
+    return (
+      `Saved ${name} — ${width}x${height}, ${(blob.size / 1024 / 1024).toFixed(1)}MB` +
+      (clamped ? ' (size clamped to what the browser can raster).' : '.')
+    )
+  })
+}
 
 const copied = ref(false)
 let copyTimer = null
@@ -62,13 +111,20 @@ async function copyLink() {
         {{ copied ? 'Link copied' : 'Copy link to this piece' }}
       </button>
 
+      <ExportBar
+        :busy="exporting"
+        :status="exportStatus"
+        @export-svg="exportSvg"
+        @export-png="exportPng"
+      />
+
       <hr class="rule" />
 
       <ControlPanel :generator="generator" :params="params" @update="setParam" />
     </aside>
 
     <main class="stage-area">
-      <SvgStage :scene="scene" />
+      <SvgStage ref="stage" :scene="scene" />
     </main>
   </div>
 </template>
