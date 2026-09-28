@@ -118,6 +118,35 @@ markup whatever the amount.
 With grain at 0 no filter is emitted at all, so a piece without it exports exactly as it did
 before grain existed.
 
+## Showcase mode
+
+Press play and the piece animates: several params modulate on independent waves, and the palette
+cross-fades between sets. **Present** fills the screen with no interface, for screen recording.
+Space toggles play, Escape leaves.
+
+The constraint that shapes all of this: generators consume the rng **in sequence**, so a param that
+changes *how much* randomness is drawn reshuffles the piece rather than moving it. Modulating one
+of those flickers. Every range param was swept and checked for shape-count stability across frames;
+the ones that reshuffle carry `structural: true` in their schema and the showcase UI won't offer
+them. That's why `pathCount`, `grid`, `squareness` and `iterations` aren't animatable while almost
+everything else is.
+
+Per-frame change was calibrated against known bounds — a still frame scores 0, re-seeding every
+frame scores 0.575. Roughly 0.01–0.05 reads as filmic, ~0.10 as energetic breathing, 0.18+ as
+churn. The shipped presets sit around 0.02–0.03.
+
+Two things worth knowing:
+
+Modulated values are deliberately **not** snapped to each param's `step`. Step exists so sliders
+feel right; snapping during playback holds a param still for several frames then jumps it, which
+reads as judder — measured as a median per-frame change of exactly zero with all the movement
+arriving in spikes.
+
+**Differential growth can't play live.** At ~300ms a frame it manages about 3fps. Its motion is
+clean, it simply can't be watched in real time — it would need offline frame rendering.
+Subdivision plays fine but animates mostly through colour and stroke weight, since nearly all of
+its geometric params reshuffle.
+
 ## Layout
 
 ```
@@ -128,6 +157,7 @@ src/
     ratios.js      canvas shapes at constant area
     simplify.js    deviation-bounded polyline simplification
     grain.js       paper-grain overlay (raster)
+    showcase.js    time-based param modulation
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
@@ -144,6 +174,7 @@ src/
     ControlPanel.vue / ParamControl.vue   built from the schema
     Toolbar.vue    generator picker, seed field, re-roll, reset
     ExportBar.vue  SVG / PNG download
+    ShowcaseBar.vue  playback, speed, intensity, present
   composables/
     useGenerator.js  generator + seed + params -> scene
     usePermalink.js  two-way URL sync

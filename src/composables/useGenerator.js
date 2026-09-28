@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
+import { paletteAtCycle } from '@/core/palettes.js'
 import { createRng, randomSeed } from '@/core/rng.js'
+import { paramsAt } from '@/core/showcase.js'
 import { buildGrain, coerceGrain } from '@/core/grain.js'
 import { getRatio } from '@/core/ratios.js'
 import { getGenerator } from '@/generators/index.js'
@@ -31,14 +33,38 @@ export function useGenerator(initial = {}) {
   const seed = ref(initial.seed || randomSeed())
   const params = ref(coerceAll(generator.value, initial.params))
 
+  // Showcase mode, when running, replaces the params and palette for the
+  // current instant. Everything downstream — export, permalink, the stage —
+  // is unchanged by it, because a modulated frame is just another set of
+  // params through the same pure generator.
+  const showcase = ref(null)
+
+  const livedParams = computed(() => {
+    const s = showcase.value
+    if (!s?.active) return params.value
+    return paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
+  })
+
+  const livedPalette = computed(() => {
+    const s = showcase.value
+    if (!s?.active || !s.cyclePalette) return null
+    return paletteAtCycle(s.palettePosition)
+  })
+
   const scene = computed(() =>
     generator.value.generate({
-      params: params.value,
+      params: livedParams.value,
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,
+      palette: livedPalette.value ?? undefined,
     }),
   )
+
+  /** Showcase feeds its live state in here each frame. */
+  function setShowcase(state) {
+    showcase.value = state
+  }
 
   const overlay = computed(() =>
     buildGrain(grain.value, seed.value, canvas.value.width, canvas.value.height),
@@ -103,7 +129,9 @@ export function useGenerator(initial = {}) {
     overlay,
     seed,
     params,
+    livedParams,
     scene,
+    setShowcase,
     setParam,
     selectGenerator,
     setRatio,

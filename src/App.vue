@@ -1,11 +1,14 @@
 <script setup>
-import { ref, useTemplateRef } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GrainBar from '@/components/GrainBar.vue'
+import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
+import { presetFor } from '@/core/showcase.js'
+import { useShowcase } from '@/composables/useShowcase.js'
 import { useGenerator } from '@/composables/useGenerator.js'
 import { usePermalink } from '@/composables/usePermalink.js'
 import { readHash } from '@/core/permalink.js'
@@ -25,6 +28,7 @@ const {
   params,
   scene,
   setParam,
+  setShowcase,
   selectGenerator,
   setRatio,
   setGrain,
@@ -32,6 +36,78 @@ const {
   reroll,
   resetParams,
 } = piece
+
+// --- showcase -------------------------------------------------------------
+const show = useShowcase()
+
+// Motion is per-piece, and resets when the piece changes so a preset built for
+// flow field never lands on subdivision.
+const modulators = ref(presetFor(generator.value))
+watch(generator, (g) => { modulators.value = presetFor(g) })
+
+const modulatedKeys = computed(() =>
+  modulators.value.map((m) => generator.value.params.find((p) => p.key === m.key)?.label ?? m.key),
+)
+
+// Push the live clock down to the scene on every change.
+watchEffect(() => {
+  setShowcase({
+    active: show.playing.value,
+    time: show.time.value,
+    intensity: show.intensity.value,
+    modulators: modulators.value,
+    cyclePalette: show.cyclePalette.value,
+    palettePosition: show.palettePosition.value,
+  })
+})
+
+function updateShowcase(patch) {
+  for (const [key, value] of Object.entries(patch)) {
+    if (key in show) show[key].value = value
+  }
+}
+
+// Presentation mode: the piece fills the screen with no interface, so a screen
+// recording captures only the work. Escape leaves; the browser's own fullscreen
+// exit is handled by the change listener.
+const presenting = ref(false)
+
+async function present() {
+  try {
+    await document.documentElement.requestFullscreen()
+  } catch {
+    // Fullscreen refused (permissions, unsupported) — still hide the UI, which
+    // is the part that matters for recording.
+  }
+  presenting.value = true
+  if (!show.playing.value) show.play()
+}
+
+function leavePresent() {
+  presenting.value = false
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+}
+
+function onFullscreenChange() {
+  if (!document.fullscreenElement) presenting.value = false
+}
+
+function onKey(event) {
+  if (event.key === 'Escape' && presenting.value) leavePresent()
+  if (event.key === ' ' && event.target === document.body) {
+    event.preventDefault()
+    show.toggle()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+  window.addEventListener('keydown', onKey)
+})
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+  window.removeEventListener('keydown', onKey)
+})
 
 const stage = useTemplateRef('stage')
 const exporting = ref(false)
@@ -98,7 +174,7 @@ async function copyLink() {
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">
         <h1 class="wordmark">gen<span>·</span>art</h1>
@@ -121,6 +197,22 @@ async function copyLink() {
         {{ copied ? 'Link copied' : 'Copy link to this piece' }}
       </button>
 
+      <ShowcaseBar
+        :playing="show.playing.value"
+        :speed="show.speed.value"
+        :intensity="show.intensity.value"
+        :cycle-palette="show.cyclePalette.value"
+        :fps="show.fps.value"
+        :frame-ms="show.frameMs.value"
+        :modulated="modulatedKeys"
+        @toggle="show.toggle"
+        @reset="show.reset"
+        @update="updateShowcase"
+        @present="present"
+      />
+
+      <hr class="rule" />
+
       <GrainBar :grain="grain" @update="setGrain" />
 
       <ExportBar
@@ -138,6 +230,10 @@ async function copyLink() {
 
     <main class="stage-area">
       <SvgStage ref="stage" :scene="scene" :overlay="overlay" />
+
+      <button v-if="presenting" type="button" class="leave" @click="leavePresent">
+        Esc to exit
+      </button>
     </main>
   </div>
 </template>
@@ -147,6 +243,34 @@ async function copyLink() {
   display: grid;
   grid-template-columns: var(--sidebar) 1fr;
   height: 100%;
+}
+
+/* Presentation mode — nothing on screen but the work. */
+.app.presenting {
+  grid-template-columns: 1fr;
+  background: #000;
+  cursor: none;
+}
+
+.app.presenting .sidebar {
+  display: none;
+}
+
+.app.presenting .stage-area {
+  padding: 0;
+}
+
+.leave {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.leave:hover,
+.leave:focus-visible {
+  opacity: 1;
 }
 
 .sidebar {

@@ -13,7 +13,7 @@ import { getPalette, paletteOptions } from '@/core/palettes.js'
  */
 
 const params = [
-  { key: 'grid', type: 'range', label: 'Grid', min: 2, max: 40, step: 1, default: 12 },
+  { key: 'grid', type: 'range', label: 'Grid', min: 2, max: 40, step: 1, default: 12, structural: true },
   { key: 'tileSet', type: 'select', label: 'Tile', options: [
     { value: 'arcs', label: 'Quarter arcs' },
     { value: 'lines', label: 'Straight joins' },
@@ -21,8 +21,8 @@ const params = [
     { value: 'mixed', label: 'Arcs + diagonals' },
     { value: 'quarterFill', label: 'Filled quarters' },
   ], default: 'arcs' },
-  { key: 'subdivideChance', type: 'range', label: 'Subdivide', min: 0, max: 1, step: 0.01, default: 0.22 },
-  { key: 'maxSubdivide', type: 'range', label: 'Subdivide depth', min: 0, max: 3, step: 1, default: 1 },
+  { key: 'subdivideChance', type: 'range', label: 'Subdivide', min: 0, max: 1, step: 0.01, default: 0.22, structural: true },
+  { key: 'maxSubdivide', type: 'range', label: 'Subdivide depth', min: 0, max: 3, step: 1, default: 1, structural: true },
   { key: 'lineWeight', type: 'range', label: 'Line weight', min: 0.02, max: 0.6, step: 0.01, default: 0.28 },
   { key: 'inset', type: 'range', label: 'Tile gap', min: 0, max: 0.3, step: 0.01, default: 0 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 120, step: 2, default: 30 },
@@ -96,8 +96,10 @@ export default {
   blurb: 'One motif, random orientations. The grid knits paths nobody drew.',
   params,
 
-  generate({ params: p, rng, width, height }) {
-    const palette = getPalette(p.palette)
+  generate({ params: p, rng, width, height, palette: override }) {
+    // Showcase mode can hand in a blended palette; otherwise use the one
+    // the params name.
+    const palette = override ?? getPalette(p.palette)
     // Tiles are the subject sitting on the paper, so weight from the loud end
     // — the same reason flow field does.
     const inks = [...palette.colors].reverse()

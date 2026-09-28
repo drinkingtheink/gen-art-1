@@ -103,3 +103,56 @@ export const paletteOptions = PALETTES.map((p) => ({ value: p.id, label: p.name 
 export function getPalette(id) {
   return paletteById[id] ?? PALETTES[0]
 }
+
+/** '#rrggbb' or '#rgb' -> [r,g,b]. */
+function toRgb(hex) {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ]
+}
+
+const toHex = (rgb) => '#' + rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
+
+/**
+ * Blend two palettes colour by colour.
+ *
+ * Straight sRGB interpolation, which can pass through a slightly muddy midpoint
+ * between complementary hues. Perceptual blending would avoid that, but these
+ * palettes are close enough in lightness that it doesn't show, and this keeps
+ * the hot path cheap — it runs every frame during playback.
+ */
+export function mixPalettes(a, b, t) {
+  if (t <= 0) return a
+  if (t >= 1) return b
+  const lerp = (x, y) => x + (y - x) * t
+  const mixHex = (h1, h2) => {
+    const c1 = toRgb(h1)
+    const c2 = toRgb(h2)
+    return toHex([lerp(c1[0], c2[0]), lerp(c1[1], c2[1]), lerp(c1[2], c2[2])])
+  }
+  return {
+    id: `${a.id}~${b.id}`,
+    name: `${a.name} / ${b.name}`,
+    bg: mixHex(a.bg, b.bg),
+    colors: a.colors.map((c, i) => mixHex(c, b.colors[i] ?? c)),
+  }
+}
+
+/**
+ * Where a continuously advancing cycle sits: which two palettes, and how far
+ * between them. `hold` is the fraction of each step spent settled on a single
+ * palette rather than in transition.
+ */
+export function paletteAtCycle(position, hold = 0.55) {
+  const n = PALETTES.length
+  const index = Math.floor(position) % n
+  const from = PALETTES[(index + n) % n]
+  const to = PALETTES[(index + 1) % n]
+  const within = position - Math.floor(position)
+  const t = within < hold ? 0 : (within - hold) / (1 - hold)
+  return mixPalettes(from, to, t)
+}

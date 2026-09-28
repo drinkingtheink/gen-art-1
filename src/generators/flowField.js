@@ -15,7 +15,7 @@ import { createPathBuilder, DEFAULT_TOLERANCE } from '@/core/simplify.js'
  */
 
 const params = [
-  { key: 'pathCount', type: 'range', label: 'Curves', min: 50, max: 2000, step: 25, default: 650 },
+  { key: 'pathCount', type: 'range', label: 'Curves', min: 50, max: 2000, step: 25, default: 650, structural: true },
   { key: 'steps', type: 'range', label: 'Curve length', min: 10, max: 250, step: 5, default: 90 },
   { key: 'stepLength', type: 'range', label: 'Step size', min: 1, max: 12, step: 0.5, default: 4 },
   { key: 'noiseScale', type: 'range', label: 'Field scale', min: 0.2, max: 5, step: 0.1, default: 1.4 },
@@ -45,8 +45,10 @@ export default {
   blurb: 'A noise field gives every point an angle. Follow it and see where you end up.',
   params,
 
-  generate({ params: p, rng, width, height }) {
-    const palette = getPalette(p.palette)
+  generate({ params: p, rng, width, height, palette: override }) {
+    // Showcase mode can hand in a blended palette; otherwise use the one
+    // the params name.
+    const palette = override ?? getPalette(p.palette)
     const noise = createNoise2D(rng)
 
     // Palettes run quiet -> loud, which suits filled areas: the dominant

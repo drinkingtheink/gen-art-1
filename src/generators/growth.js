@@ -20,16 +20,16 @@ import { simplifyPath } from '@/core/simplify.js'
 
 const params = [
   { key: 'startNodes', type: 'range', label: 'Seed nodes', min: 3, max: 40, step: 1, default: 12 },
-  { key: 'iterations', type: 'range', label: 'Generations', min: 10, max: 400, step: 10, default: 200 },
+  { key: 'iterations', type: 'range', label: 'Generations', min: 10, max: 400, step: 10, default: 200, structural: true },
   { key: 'restLength', type: 'range', label: 'Node spacing', min: 2, max: 24, step: 0.5, default: 9 },
   { key: 'repulsionRadius', type: 'range', label: 'Personal space', min: 4, max: 60, step: 1, default: 40 },
   { key: 'repulsion', type: 'range', label: 'Push', min: 0.05, max: 1, step: 0.01, default: 0.32 },
   { key: 'attraction', type: 'range', label: 'Pull', min: 0.05, max: 1, step: 0.01, default: 0.36 },
-  { key: 'maxNodes', type: 'range', label: 'Node budget', min: 200, max: 5000, step: 100, default: 3000 },
+  { key: 'maxNodes', type: 'range', label: 'Node budget', min: 200, max: 5000, step: 100, default: 3000, structural: true },
   { key: 'growthRate', type: 'range', label: 'Growth rate', min: 0.005, max: 0.12, step: 0.005, default: 0.04 },
   { key: 'jitter', type: 'range', label: 'Growth noise', min: 0, max: 1, step: 0.01, default: 0.35 },
   { key: 'showHistory', type: 'toggle', label: 'Growth rings', default: true },
-  { key: 'historyEvery', type: 'range', label: 'Ring spacing', min: 4, max: 60, step: 2, default: 16 },
+  { key: 'historyEvery', type: 'range', label: 'Ring spacing', min: 4, max: 60, step: 2, default: 16, structural: true },
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0.3, max: 6, step: 0.1, default: 1.4 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 2, default: 50 },
   { key: 'palette', type: 'select', label: 'Palette', options: paletteOptions, default: 'moss' },
@@ -83,8 +83,10 @@ export default {
   blurb: 'A loop that pulls itself tight and pushes itself apart. It has to buckle.',
   params,
 
-  generate({ params: p, rng, width, height }) {
-    const palette = getPalette(p.palette)
+  generate({ params: p, rng, width, height, palette: override }) {
+    // Showcase mode can hand in a blended palette; otherwise use the one
+    // the params name.
+    const palette = override ?? getPalette(p.palette)
     const inks = [...palette.colors].reverse()
 
     const left = p.margin

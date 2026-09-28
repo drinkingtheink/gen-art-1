@@ -14,15 +14,15 @@ import { getPalette, paletteOptions } from '@/core/palettes.js'
  */
 
 const params = [
-  { key: 'maxDepth', type: 'range', label: 'Max depth', min: 1, max: 9, step: 1, default: 6 },
-  { key: 'splitChance', type: 'range', label: 'Split chance', min: 0, max: 1, step: 0.01, default: 0.88 },
-  { key: 'ratioSpread', type: 'range', label: 'Cut spread', min: 0, max: 0.45, step: 0.01, default: 0.22 },
-  { key: 'squareness', type: 'range', label: 'Squareness', min: 0, max: 1, step: 0.01, default: 0.72 },
-  { key: 'minSize', type: 'range', label: 'Min cell', min: 8, max: 200, step: 1, default: 44 },
-  { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 120, step: 2, default: 28 },
+  { key: 'maxDepth', type: 'range', label: 'Max depth', min: 1, max: 9, step: 1, default: 6, structural: true },
+  { key: 'splitChance', type: 'range', label: 'Split chance', min: 0, max: 1, step: 0.01, default: 0.88, structural: true },
+  { key: 'ratioSpread', type: 'range', label: 'Cut spread', min: 0, max: 0.45, step: 0.01, default: 0.22, structural: true },
+  { key: 'squareness', type: 'range', label: 'Squareness', min: 0, max: 1, step: 0.01, default: 0.72, structural: true },
+  { key: 'minSize', type: 'range', label: 'Min cell', min: 8, max: 200, step: 1, default: 44, structural: true },
+  { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 120, step: 2, default: 28, structural: true },
   { key: 'gutter', type: 'range', label: 'Gutter', min: 0, max: 24, step: 0.5, default: 5 },
   { key: 'cornerRadius', type: 'range', label: 'Corner radius', min: 0, max: 40, step: 1, default: 0 },
-  { key: 'motifChance', type: 'range', label: 'Motifs', min: 0, max: 1, step: 0.01, default: 0.22 },
+  { key: 'motifChance', type: 'range', label: 'Motifs', min: 0, max: 1, step: 0.01, default: 0.22, structural: true },
   { key: 'palette', type: 'select', label: 'Palette', options: paletteOptions, default: 'flame' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.1, default: 1 },
   { key: 'stroke', type: 'color', label: 'Stroke', default: '#1a1a1a' },
@@ -113,8 +113,10 @@ export default {
   blurb: 'Split, recurse, stop, fill. Grids and slivers from five rules.',
   params,
 
-  generate({ params: p, rng, width, height }) {
-    const palette = getPalette(p.palette)
+  generate({ params: p, rng, width, height, palette: override }) {
+    // Showcase mode can hand in a blended palette; otherwise use the one
+    // the params name.
+    const palette = override ?? getPalette(p.palette)
     const shapes = []
 
     // Clip-path ids must be unique in the document. Seeding the token from the
