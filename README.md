@@ -100,11 +100,19 @@ byte-identically.
 
 ## Palettes
 
-Twenty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
+Forty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
 should be visible. Each is scored on luminance range x mean saturation; anything below ~0.35 reads
-as bland or midtone-heavy on screen and isn't kept. That measurement retired four sets (a greyscale
-at 0.00, and three whose colours all sat at the same value) and every remaining set scores 0.41 or
-better.
+as bland or midtone-heavy on screen and isn't kept. That measurement retired four sets from the
+first twenty (a greyscale at 0.00, and three whose colours all sat at the same value), and killed
+three of the second twenty before they shipped — including a near-monochrome one that failed the
+same bar the greyscale did, which would have been the rule bending for a set I liked.
+
+The second twenty were chosen to even out the first, which ran 13 light backgrounds to 7 dark and
+leaned yellow/red/cyan/orange. Backgrounds are now 20/20. Dominant hue families still lean warm at
+a 2.5-8.5 spread: the first twenty are kept, so perfect evenness isn't reachable by adding alone.
+
+No two sets share three or more colours, and none are near-identical by mean nearest-colour
+distance.
 
 **Palette use** is separate from *which* palette, and sits beside it:
 

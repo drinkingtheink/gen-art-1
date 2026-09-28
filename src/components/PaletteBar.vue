@@ -134,14 +134,29 @@ function toggleMute(index) {
 
 .chips {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.3rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+  /* Forty chips is a wall in a 288px column, so the grid scrolls rather than
+     pushing every other control off the panel. */
+  max-height: 148px;
+  overflow-y: auto;
+  padding-right: 0.15rem;
   margin-bottom: 0.15rem;
+  scrollbar-width: thin;
+}
+
+.chips::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chips::-webkit-scrollbar-thumb {
+  background: var(--panel-edge);
+  border-radius: 3px;
 }
 
 .chip {
   display: flex;
-  height: 24px;
+  height: 22px;
   padding: 0;
   overflow: hidden;
   background: none;

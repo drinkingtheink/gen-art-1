@@ -145,7 +145,132 @@ const PALETTES = [
     bg: '#10002b',
     colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
   },
+// --- second set: chosen to even out the spread. The first twenty ran
+  // 13 light backgrounds to 7 dark and leaned yellow/red/cyan/orange, so
+  // these are 13 dark to 7 light and weighted toward green, blue, violet
+  // and magenta.
+  {
+    id: 'forest',
+    name: 'Forest',
+    bg: '#04140c',
+    colors: ['#123a22', '#2f7d4f', '#7fd694', '#d8f58a', '#fff6c2'],
+  },
+  {
+    id: 'cobalt',
+    name: 'Cobalt',
+    bg: '#050d1f',
+    colors: ['#14275c', '#2f5fd0', '#5e9cff', '#a9d4ff', '#ffe066'],
+  },
+  {
+    id: 'orchid',
+    name: 'Orchid',
+    bg: '#17061f',
+    colors: ['#3b1152', '#7b2ea8', '#c25ce0', '#ff8ad8', '#ffd6f2'],
+  },
+  {
+    id: 'rust',
+    name: 'Rust',
+    bg: '#150a06',
+    colors: ['#3a1a0e', '#8c3b17', '#d96a2b', '#f0a556', '#ffe2b0'],
+  },
+  {
+    id: 'abyss',
+    name: 'Abyss',
+    bg: '#021012',
+    colors: ['#0b3038', '#14697a', '#2fb5b5', '#7ff0dc', '#e6fffb'],
+  },
+  {
+    id: 'fuchsia',
+    name: 'Fuchsia',
+    bg: '#0a0410',
+    colors: ['#2e0a2c', '#8a1063', '#e0229c', '#ff6fc8', '#ffd1ec'],
+  },
+  {
+    id: 'lime',
+    name: 'Lime',
+    bg: '#0b1004',
+    colors: ['#1e3308', '#4c7a10', '#8fd11a', '#d4f53a', '#f4ffb0'],
+  },
+  {
+    id: 'ultraviolet',
+    name: 'Ultraviolet',
+    bg: '#0b0417',
+    colors: ['#26104a', '#5a1fb0', '#9b4dff', '#d9a0ff', '#5cffd0'],
+  },
+  {
+    id: 'spectrum',
+    name: 'Spectrum',
+    bg: '#060608',
+    colors: ['#2b2b6e', '#1fa9c9', '#3ecf6b', '#ffc93c', '#ff3d6e'],
+  },
+  {
+    id: 'ice',
+    name: 'Ice',
+    bg: '#060f1c',
+    colors: ['#123049', '#2f6f96', '#68b6d9', '#b8e6f5', '#7cffd4'],
+  },
+  {
+    id: 'magma',
+    name: 'Magma',
+    bg: '#0c0304',
+    colors: ['#3d0812', '#93132a', '#e03e1f', '#ff9020', '#ffe15c'],
+  },
+  {
+    id: 'indigo',
+    name: 'Indigo',
+    bg: '#0a0a2e',
+    colors: ['#1e1b5e', '#3f39a8', '#7a6ff0', '#b6a8ff', '#f0e6ff'],
+  },
+  {
+    id: 'verdigris',
+    name: 'Verdigris',
+    bg: '#0b1512',
+    colors: ['#17362e', '#2d7a63', '#5fbfa0', '#c2e8b0', '#e8a33d'],
+  },
+  {
+    id: 'sage',
+    name: 'Sage',
+    bg: '#f2f5ec',
+    colors: ['#dbe8c4', '#9ac46a', '#3f8f3a', '#14532d', '#e2451f'],
+  },
+  {
+    id: 'cerulean',
+    name: 'Cerulean',
+    bg: '#f2f9ff',
+    colors: ['#dbeeff', '#8fc7ef', '#2f8ccf', '#0b4f8a', '#ff7b3d'],
+  },
+  {
+    id: 'peony',
+    name: 'Peony',
+    bg: '#fff5f7',
+    colors: ['#ffd9e4', '#ff9ab8', '#e8477f', '#8c1742', '#2b1020'],
+  },
+  {
+    id: 'marigold',
+    name: 'Marigold',
+    bg: '#fffaeb',
+    colors: ['#ffeeb8', '#ffd23f', '#f2a007', '#c25e00', '#3d2308'],
+  },
+  {
+    id: 'denim',
+    name: 'Denim',
+    bg: '#eef2f7',
+    colors: ['#c3d7ee', '#6f9ed6', '#2563a8', '#0d2f5c', '#ffb020'],
+  },
+  {
+    id: 'terracotta',
+    name: 'Terracotta',
+    bg: '#fbf3ea',
+    colors: ['#f0d9c0', '#d99a6c', '#b05432', '#6e2a17', '#2f8a7a'],
+  },
+  {
+    id: 'mint',
+    name: 'Mint',
+    bg: '#f0fffa',
+    colors: ['#c8f5e4', '#6fd9b8', '#17a882', '#0a5c4a', '#ff5c7a'],
+  },
 ]
+
 
 export const palettes = PALETTES
 
