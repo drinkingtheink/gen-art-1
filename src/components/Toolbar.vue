@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { ratioOptions } from '@/core/ratios.js'
-import { generators } from '@/generators/index.js'
+import { ratioOptions } from '../core/ratios.js'
+import { generators } from '../generators/index.js'
 
 /**
  * Which piece, which seed. The seed is an editable text field, not just a

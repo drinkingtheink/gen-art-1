@@ -1,19 +1,19 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
-import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
+import { coerce, coerceAll, defaultsFor } from '../core/params.js'
 import {
   applyTreatment,
   coerceTreatment,
   getPalette,
   paletteAtCycle,
   paletteIdAtCycle,
-} from '@/core/palettes.js'
-import { createRng, randomSeed } from '@/core/rng.js'
-import { paramsAt } from '@/core/showcase.js'
-import { useFlicker } from '@/composables/useFlicker.js'
-import { buildEffects, coerceEffects } from '@/core/effects.js'
-import { buildGrain, coerceGrain } from '@/core/grain.js'
-import { getRatio } from '@/core/ratios.js'
-import { getGenerator } from '@/generators/index.js'
+} from '../core/palettes.js'
+import { createRng, randomSeed } from '../core/rng.js'
+import { paramsAt } from '../core/showcase.js'
+import { useFlicker } from '../composables/useFlicker.js'
+import { buildEffects, coerceEffects } from '../core/effects.js'
+import { buildGrain, coerceGrain } from '../core/grain.js'
+import { getRatio } from '../core/ratios.js'
+import { getGenerator } from '../generators/index.js'
 
 /**
  * The piece currently on the stage: which generator, what seed, what params.

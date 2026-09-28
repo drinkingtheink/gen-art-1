@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { palettes } from '@/core/palettes.js'
+import { palettes } from '../core/palettes.js'
 
 /**
  * One control, chosen by the param's `type`. Adding a new param type means

@@ -1,6 +1,6 @@
-import { createNoise2D, fbm } from '@/core/noise.js'
-import { getPalette, paletteOptions } from '@/core/palettes.js'
-import { createPathBuilder, DEFAULT_TOLERANCE } from '@/core/simplify.js'
+import { createNoise2D, fbm } from '../core/noise.js'
+import { getPalette, paletteOptions } from '../core/palettes.js'
+import { createPathBuilder, DEFAULT_TOLERANCE } from '../core/simplify.js'
 
 /**
  * Flow field.

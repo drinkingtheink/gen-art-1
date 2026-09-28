@@ -1,4 +1,4 @@
-import { getPalette, paletteOptions } from '@/core/palettes.js'
+import { getPalette, paletteOptions } from '../core/palettes.js'
 
 /**
  * Lens.

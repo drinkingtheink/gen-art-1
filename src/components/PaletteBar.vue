@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { applyTreatment, backgroundChoices, palettes } from '@/core/palettes.js'
+import { applyTreatment, backgroundChoices, palettes } from '../core/palettes.js'
 
 /**
  * How the chosen palette gets used — which colour is paper, which dominates,

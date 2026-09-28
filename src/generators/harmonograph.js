@@ -1,5 +1,5 @@
-import { getPalette, paletteOptions } from '@/core/palettes.js'
-import { createPathBuilder } from '@/core/simplify.js'
+import { getPalette, paletteOptions } from '../core/palettes.js'
+import { createPathBuilder } from '../core/simplify.js'
 
 /**
  * Harmonograph.

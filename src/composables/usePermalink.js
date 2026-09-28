@@ -1,5 +1,5 @@
 import { onScopeDispose, watch } from 'vue'
-import { encodeState, decodeState } from '@/core/permalink.js'
+import { encodeState, decodeState } from '../core/permalink.js'
 
 /**
  * Two-way sync between the piece on screen and the address bar.

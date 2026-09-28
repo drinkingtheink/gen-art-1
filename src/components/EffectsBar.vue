@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { BLEND_MODES } from '@/core/grain.js'
-import { INTERFERENCE_BLENDS } from '@/core/effects.js'
+import { BLEND_MODES } from '../core/grain.js'
+import { INTERFERENCE_BLENDS } from '../core/effects.js'
 
 /**
  * Post effects, grouped together because they all act on the finished piece

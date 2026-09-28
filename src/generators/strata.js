@@ -1,5 +1,5 @@
-import { createNoise2D, fbm } from '@/core/noise.js'
-import { getPalette, paletteOptions } from '@/core/palettes.js'
+import { createNoise2D, fbm } from '../core/noise.js'
+import { getPalette, paletteOptions } from '../core/palettes.js'
 
 /**
  * Strata.
