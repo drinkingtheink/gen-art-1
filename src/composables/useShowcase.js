@@ -62,11 +62,6 @@ export function useShowcase() {
     playing.value ? pause() : play()
   }
 
-  function reset() {
-    time.value = 0
-    samples.value = []
-  }
-
   /** Where the palette cycle sits right now, in whole-palette units. */
   const palettePosition = computed(() =>
     cyclePalette.value && paletteSeconds.value > 0 ? time.value / paletteSeconds.value : 0,
@@ -87,6 +82,5 @@ export function useShowcase() {
     play,
     pause,
     toggle,
-    reset,
   }
 }

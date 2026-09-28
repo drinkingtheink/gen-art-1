@@ -147,6 +147,10 @@ Press play and the piece animates: several params modulate on independent waves,
 cross-fades between sets. **Present** fills the screen with no interface, for screen recording.
 Space toggles play, Escape leaves.
 
+There's no restart, deliberately. The modulators are endless periodic waves, so `t=0` is an
+arbitrary phase rather than a beginning — and reloading the page already gives a reproducible
+start, since time begins at zero and the seed comes from the URL.
+
 The constraint that shapes all of this: generators consume the rng **in sequence**, so a param that
 changes *how much* randomness is drawn reshuffles the piece rather than moving it. Modulating one
 of those flickers. Every range param was swept and checked for shape-count stability across frames;

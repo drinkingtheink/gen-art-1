@@ -210,7 +210,6 @@ async function copyLink() {
         :frame-ms="show.frameMs.value"
         :modulated="modulatedKeys"
         @toggle="show.toggle"
-        @reset="show.reset"
         @update="updateShowcase"
         @present="present"
       />

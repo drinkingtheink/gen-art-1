@@ -9,7 +9,7 @@ defineProps({
   modulated: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['toggle', 'reset', 'update', 'present'])
+const emit = defineEmits(['toggle', 'update', 'present'])
 </script>
 
 <template>
@@ -23,7 +23,6 @@ const emit = defineEmits(['toggle', 'reset', 'update', 'present'])
       <button type="button" class="play" @click="emit('toggle')">
         {{ playing ? 'Pause' : 'Play' }}
       </button>
-      <button type="button" @click="emit('reset')">Restart</button>
       <button type="button" title="Fill the screen with no interface — for screen recording" @click="emit('present')">
         Present
       </button>
@@ -72,7 +71,7 @@ const emit = defineEmits(['toggle', 'reset', 'update', 'present'])
 }
 .fps.poor { color: #d08a4a; }
 
-.buttons { display: grid; grid-template-columns: 1fr auto auto; gap: 0.4rem; }
+.buttons { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem; }
 
 .play { background: var(--accent); color: #1a1408; border-color: #c99a36; font-weight: 600; }
 .play:hover { background: #eec161; border-color: #c99a36; }
