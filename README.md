@@ -53,20 +53,49 @@ Param types are `range`, `select`, `color` and `toggle`. Adding a new one means 
 ## Seeds and permalinks
 
 Seeds are words — `quiet-heron-41` — so they survive being read aloud or skimmed in a URL. The full
-state lives in the hash:
+state lives in the query string:
 
 ```
-#g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,splitChance:0.88,palette:flame,…
+?g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,splitChance:0.88,palette:flame,…
 ```
 
 Readable and hand-editable on purpose. Every param is written out, including ones still at their
 default, so a link keeps rendering the same piece even if a default is retuned later. Anything
-invalid in the hash — out-of-range numbers, an unknown palette, broken percent-encoding — is
-clamped or defaulted by `coerce()` rather than producing a blank stage.
+invalid — out-of-range numbers, an unknown palette, broken percent-encoding — is clamped or
+defaulted by `coerce()` rather than producing a blank stage.
+
+This used to sit after `#`. It moved to `?` so the server can see which piece a link points at,
+which is what makes the link previews below possible. Links in the old form are still read, from
+the fragment, and rewritten on arrival.
 
 Discrete choices (a new seed, a different generator, reset) push a history entry, so Back walks
 through the pieces you looked at. Slider drags replace instead, so one gesture doesn't bury the
 history.
+
+## Link previews
+
+Paste a link anywhere that unfurls URLs and the preview is the piece that link points at, not a
+generic card. There is no database and no stored image: a permalink carries every parameter, and
+generators are pure functions of `(params, seeded rng)`, so the image is re-derived from the URL
+on request.
+
+Two pieces, both under `netlify/`:
+
+- **`functions/og.mjs`** serves `/og?<the same query>`. It resolves the state, renders the scene
+  through `core/svg.js` — a string serialiser, no DOM — and rasterises with `@resvg/resvg-wasm`.
+  The piece is letterboxed into 1200×630 against its own background colour, so every ratio gives
+  one card shape without cropping the art. Around 20–240 ms depending on the piece, and cached
+  `immutable`, since a different piece is by definition a different URL.
+- **`edge-functions/share.js`** rewrites the `SHARE-META` block in `index.html` as it goes past,
+  filling in `og:title`, `og:description`, `og:url`, `og:image` and the Twitter equivalents. It
+  only needs the words, so it calls `previewMeta()` and never generates art. Any failure falls
+  through to the static tags in `index.html`, so this layer can't take the page down.
+
+Effects and grain are left out of the preview image. They are SVG filters and resvg's filter
+support is partial, so including them would produce a card that quietly disagreed with the page.
+
+Neither runs under `npm run dev` — Vite serves `index.html` untouched, so local previews show the
+fallback tags. `netlify dev` runs both.
 
 ## Getting work out
 

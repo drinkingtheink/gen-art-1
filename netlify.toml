@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 8 requires ^20.19 || >=22.12; Netlify's default is older than that.
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  # resvg ships its rasteriser as a .wasm file. esbuild bundles JS and would
+  # otherwise leave it behind, so it has to be named explicitly.
+  included_files = ["node_modules/@resvg/resvg-wasm/index_bg.wasm"]

@@ -28,7 +28,7 @@ function renderNode(node) {
  * that rasterise — Firefox, and resvg — need a concrete size and will refuse
  * or guess without one.
  */
-export function renderSvg(scene, { defs = [], artworkFilter = '', overlay = [] } = {}) {
+export function renderSvg(scene, { defs = [], artworkFilter = '', overlay = [], frame = null } = {}) {
   const body = [
     ...defs.map(renderNode),
     `<rect x="0" y="0" width="${scene.width}" height="${scene.height}" fill="${escape(scene.background)}"/>`,
@@ -38,8 +38,25 @@ export function renderSvg(scene, { defs = [], artworkFilter = '', overlay = [] }
     ...overlay.map(renderNode),
   ].join('')
 
+  if (!frame) {
+    return (
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.width}" height="${scene.height}" ` +
+      `viewBox="0 0 ${scene.width} ${scene.height}">${body}</svg>`
+    )
+  }
+
+  // A framed render letterboxes the piece inside a fixed outer size, filling
+  // the surround with the piece's own background so the mat looks deliberate
+  // rather than like a crop. Link previews want one shape whatever ratio the
+  // piece is; the art keeps its own.
+  const fit = Math.min(frame.width / scene.width, frame.height / scene.height)
+  const x = (frame.width - scene.width * fit) / 2
+  const y = (frame.height - scene.height * fit) / 2
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.width}" height="${scene.height}" ` +
-    `viewBox="0 0 ${scene.width} ${scene.height}">${body}</svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${frame.width}" height="${frame.height}" ` +
+    `viewBox="0 0 ${frame.width} ${frame.height}">` +
+    `<rect x="0" y="0" width="${frame.width}" height="${frame.height}" fill="${escape(scene.background)}"/>` +
+    `<g transform="translate(${x.toFixed(3)} ${y.toFixed(3)}) scale(${fit.toFixed(6)})">${body}</g>` +
+    `</svg>`
   )
 }
