@@ -106,6 +106,7 @@ src/
     rng.js         seeded PRNG — xmur3 over mulberry32, plus speakable seeds
     noise.js       seeded 2D simplex + fBm
     ratios.js      canvas shapes at constant area
+    simplify.js    deviation-bounded polyline simplification
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
     permalink.js   hash encode/decode
@@ -115,6 +116,7 @@ src/
     subdivision.js
     flowField.js
     truchet.js
+    growth.js
   components/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer
@@ -145,6 +147,11 @@ Worth knowing if you add a generator that draws long paths.
 Truchet shows the third lever: thousands of tiles share the same handful of paint attributes, so
 they're grouped into a `<g>` per colour-and-width and the children carry only `d`. That's a 56%
 cut in markup for free, and it's what the scene contract's `children` is for.
+
+Differential growth is the exception to all of this: it's a simulation, so its cost is
+generations x nodes rather than output size. It's the slowest piece by an order of magnitude
+(~300ms at the defaults against 14ms for flow field), and dragging its sliders lags accordingly.
+Generations and node budget are capped as a product for that reason.
 
 A generator wanting tens of thousands of *elements* would still want a different surface.
 

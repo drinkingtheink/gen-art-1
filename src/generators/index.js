@@ -1,4 +1,5 @@
 import flowField from './flowField.js'
+import growth from './growth.js'
 import subdivision from './subdivision.js'
 import truchet from './truchet.js'
 
@@ -6,7 +7,7 @@ import truchet from './truchet.js'
  * The registry. Adding a piece of art is an import and an entry here —
  * controls, seeding and permalinks come for free from the schema.
  */
-export const generators = [subdivision, flowField, truchet]
+export const generators = [subdivision, flowField, truchet, growth]
 
 export const generatorById = Object.fromEntries(generators.map((g) => [g.id, g]))
 
