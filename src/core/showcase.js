@@ -121,6 +121,29 @@ export const PRESETS = {
     { key: 'spanTurns', wave: 'drift', amplitude: 4, period: 37, centre: 15 },
     { key: 'separation', wave: 'sine', amplitude: 26, period: 23, centre: 28 },
   ],
+  attractor: [
+    // The four constants are the instrument. Tiny, slow, out-of-phase moves
+    // keep the figure reorganising without ever settling into a loop.
+    { key: 'a', wave: 'drift', amplitude: 0.1, period: 23, centre: 1.4 },
+    { key: 'b', wave: 'sine', amplitude: 0.09, period: 31, centre: -2.3, phase: 0.2 },
+    { key: 'c', wave: 'drift', amplitude: 0.12, period: 19, centre: 2.4, phase: 0.55 },
+    { key: 'd', wave: 'sine', amplitude: 0.09, period: 37, centre: -2.1, phase: 0.8 },
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 71, centre: 180 },
+  ],
+  canopy: [
+    // Branch angle and lean together read as wind through the whole tree.
+    { key: 'spread', wave: 'sine', amplitude: 7, period: 13, centre: 27 },
+    { key: 'lean', wave: 'drift', amplitude: 11, period: 17 },
+    { key: 'lengthRatio', wave: 'sine', amplitude: 0.045, period: 23, centre: 0.755 },
+    { key: 'curl', wave: 'sine', amplitude: 0.3, period: 19, phase: 0.4 },
+  ],
+  strata: [
+    // Phase slides the field through the boundaries, so the stack undulates.
+    { key: 'phase', wave: 'ramp', amplitude: 10, period: 41, centre: 10 },
+    { key: 'warp', wave: 'sine', amplitude: 46, period: 17, centre: 86 },
+    { key: 'squash', wave: 'sine', amplitude: 0.14, period: 29, centre: 0.86 },
+    { key: 'tilt', wave: 'drift', amplitude: 13, period: 23 },
+  ],
   growth: [
     { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
     { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },
