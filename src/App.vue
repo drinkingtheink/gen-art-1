@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
+import JhMonogram from '@/components/JhMonogram.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
 import PaletteBar from '@/components/PaletteBar.vue'
 import ShowcaseBar from '@/components/ShowcaseBar.vue'
@@ -205,7 +206,7 @@ async function copyLink() {
   <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">
-        <h1 class="wordmark">gen<span>·</span>art</h1>
+        <h1 class="wordmark"><JhMonogram />gen<span>·</span>art</h1>
         <p class="blurb">{{ generator.blurb }}</p>
       </header>
 
@@ -338,6 +339,9 @@ async function copyLink() {
 }
 
 .wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;

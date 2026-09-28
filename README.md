@@ -327,6 +327,7 @@ src/
     ExportBar.vue  SVG / PNG download
     EffectsBar.vue   bloom / aberration / vignette / grain
     ShowcaseBar.vue  playback, speed, intensity, present
+    JhMonogram.vue   shared JH mark
   composables/
     useGenerator.js  generator + seed + params -> scene
     usePermalink.js  two-way URL sync
