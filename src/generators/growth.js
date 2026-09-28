@@ -20,12 +20,12 @@ import { simplifyPath } from '@/core/simplify.js'
 
 const params = [
   { key: 'startNodes', type: 'range', label: 'Seed nodes', min: 3, max: 40, step: 1, default: 12 },
-  { key: 'iterations', type: 'range', label: 'Generations', min: 10, max: 400, step: 10, default: 200, structural: true },
+  { key: 'iterations', type: 'range', label: 'Generations', min: 10, max: 400, step: 10, default: 150, structural: true },
   { key: 'restLength', type: 'range', label: 'Node spacing', min: 2, max: 24, step: 0.5, default: 9 },
   { key: 'repulsionRadius', type: 'range', label: 'Personal space', min: 4, max: 60, step: 1, default: 40 },
   { key: 'repulsion', type: 'range', label: 'Push', min: 0.05, max: 1, step: 0.01, default: 0.32 },
   { key: 'attraction', type: 'range', label: 'Pull', min: 0.05, max: 1, step: 0.01, default: 0.36 },
-  { key: 'maxNodes', type: 'range', label: 'Node budget', min: 200, max: 5000, step: 100, default: 3000, structural: true },
+  { key: 'maxNodes', type: 'range', label: 'Node budget', min: 200, max: 5000, step: 100, default: 2400, structural: true },
   { key: 'growthRate', type: 'range', label: 'Growth rate', min: 0.005, max: 0.12, step: 0.005, default: 0.04 },
   { key: 'jitter', type: 'range', label: 'Growth noise', min: 0, max: 1, step: 0.01, default: 0.35 },
   { key: 'showHistory', type: 'toggle', label: 'Growth rings', default: true },
@@ -64,22 +64,42 @@ const MAX_NEIGHBOURS = 160
  * Buckets nodes into cells the size of the repulsion radius, so each node only
  * tests the 9 cells around it instead of every other node. Without this the
  * step is O(n^2) and a 4000-node loop over 400 generations is hopeless.
+ *
+ * A counting sort into flat Int32Arrays rather than a Map of arrays: the
+ * repulsion scan is about 80% of this piece's cost, and the Map's hashing plus
+ * one allocated array per occupied cell per generation is pure overhead on
+ * top of it. Nodes land in each cell in ascending index order, exactly as they
+ * did when pushed into a bucket, so the sampling below picks the same
+ * neighbours it always did.
  */
-function buildGrid(xs, ys, cell) {
-  const grid = new Map()
-  for (let i = 0; i < xs.length; i += 1) {
-    // Integer key rather than a string — this is the hot path.
-    const key = (Math.floor(xs[i] / cell) << 16) ^ (Math.floor(ys[i] / cell) & 0xffff)
-    const bucket = grid.get(key)
-    if (bucket) bucket.push(i)
-    else grid.set(key, [i])
+function buildGrid(xs, ys, n, cell, grid) {
+  const { cols, rows, counts, items, cursor } = grid
+  counts.fill(0)
+
+  for (let i = 0; i < n; i += 1) {
+    const cx = Math.min(cols - 1, Math.max(0, (xs[i] / cell) | 0))
+    const cy = Math.min(rows - 1, Math.max(0, (ys[i] / cell) | 0))
+    counts[cy * cols + cx + 1] += 1
   }
-  return grid
+  for (let c = 0; c < counts.length - 1; c += 1) counts[c + 1] += counts[c]
+  cursor.set(counts.subarray(0, counts.length - 1))
+
+  for (let i = 0; i < n; i += 1) {
+    const cx = Math.min(cols - 1, Math.max(0, (xs[i] / cell) | 0))
+    const cy = Math.min(rows - 1, Math.max(0, (ys[i] / cell) | 0))
+    items[cursor[cy * cols + cx]++] = i
+  }
 }
 
 export default {
   id: 'growth',
   name: 'Differential Growth',
+  /**
+   * The only piece that simulates rather than places, and the only one whose
+   * cost is generations x nodes. Marked so the app throttles regeneration
+   * while a control is being dragged, instead of blocking on every input.
+   */
+  heavy: true,
   blurb: 'A loop that pulls itself tight and pushes itself apart. It has to buckle.',
   params,
 
@@ -99,12 +119,12 @@ export default {
     // Start as a small ring. Everything interesting comes from what happens
     // to it, so the starting shape is deliberately dull.
     const startRadius = Math.min(right - left, bottom - top) * 0.06
-    const xs = []
-    const ys = []
+    const seedX = []
+    const seedY = []
     for (let i = 0; i < p.startNodes; i += 1) {
       const a = (i / p.startNodes) * Math.PI * 2
-      xs.push(cx + Math.cos(a) * startRadius)
-      ys.push(cy + Math.sin(a) * startRadius)
+      seedX.push(cx + Math.cos(a) * startRadius)
+      seedY.push(cy + Math.sin(a) * startRadius)
     }
 
     const history = []
@@ -112,12 +132,37 @@ export default {
     const radiusSq = radius * radius
     const iterations = Math.max(10, Math.min(p.iterations, Math.floor(WORK_BUDGET / p.maxNodes)))
 
+    // Typed arrays throughout, with insertion by copyWithin — a memmove —
+    // instead of Array.splice. A run makes a few thousand insertions into a
+    // list that grows to several thousand, and splice is the slower way to
+    // shift that many elements.
+    const capacity = p.maxNodes + 8
+    const xs = new Float64Array(capacity)
+    const ys = new Float64Array(capacity)
+    let count = seedX.length
+    xs.set(seedX)
+    ys.set(seedY)
+
+    const cols = Math.max(1, Math.ceil(width / radius) + 2)
+    const rows = Math.max(1, Math.ceil(height / radius) + 2)
+    const grid = {
+      cols,
+      rows,
+      counts: new Int32Array(cols * rows + 1),
+      items: new Int32Array(capacity),
+      cursor: new Int32Array(cols * rows),
+    }
+
+    const dx = new Float64Array(capacity)
+    const dy = new Float64Array(capacity)
+    // Cell ranges for the 9 cells around a node, reused every node.
+    const nearFrom = new Int32Array(9)
+    const nearTo = new Int32Array(9)
+
     for (let step = 0; step < iterations; step += 1) {
-      const n = xs.length
-      const grid = buildGrid(xs, ys, radius)
-      const dx = new Float64Array(n)
-      const dy = new Float64Array(n)
-      const nearby = []
+      const n = count
+      buildGrid(xs, ys, n, radius, grid)
+      const { counts, items } = grid
 
       for (let i = 0; i < n; i += 1) {
         const x = xs[i]
@@ -127,7 +172,8 @@ export default {
 
         // Pull toward each ring neighbour, but only once the edge has
         // stretched past its rest length — otherwise the loop shrinks shut.
-        for (const j of [(i - 1 + n) % n, (i + 1) % n]) {
+        for (let side = 0; side < 2; side += 1) {
+          const j = side === 0 ? (i - 1 + n) % n : (i + 1) % n
           const ax = xs[j] - x
           const ay = ys[j] - y
           const d = Math.hypot(ax, ay)
@@ -140,27 +186,35 @@ export default {
 
         // Push away from anything close in space, whether or not it's close
         // along the ring. This is what stops the loop passing through itself.
-        const gx = Math.floor(x / radius)
-        const gy = Math.floor(y / radius)
+        const gx = Math.min(cols - 1, Math.max(0, (x / radius) | 0))
+        const gy = Math.min(rows - 1, Math.max(0, (y / radius) | 0))
 
-        nearby.length = 0
+        let cells = 0
         let crowd = 0
         for (let ox = -1; ox <= 1; ox += 1) {
+          const cx = gx + ox
+          if (cx < 0 || cx >= cols) continue
           for (let oy = -1; oy <= 1; oy += 1) {
-            const bucket = grid.get(((gx + ox) << 16) ^ ((gy + oy) & 0xffff))
-            if (bucket) {
-              nearby.push(bucket)
-              crowd += bucket.length
-            }
+            const cy = gy + oy
+            if (cy < 0 || cy >= rows) continue
+            const at = cy * cols + cx
+            const from = counts[at]
+            const to = counts[at + 1]
+            if (from === to) continue
+            nearFrom[cells] = from
+            nearTo[cells] = to
+            cells += 1
+            crowd += to - from
           }
         }
 
         const stride = crowd > MAX_NEIGHBOURS ? Math.ceil(crowd / MAX_NEIGHBOURS) : 1
         const weight = p.repulsion * stride
 
-        for (const bucket of nearby) {
-          for (let k = 0; k < bucket.length; k += stride) {
-            const j = bucket[k]
+        for (let c = 0; c < cells; c += 1) {
+          const to = nearTo[c]
+          for (let k = nearFrom[c]; k < to; k += stride) {
+            const j = items[k]
             if (j === i) continue
             const rx = x - xs[j]
             const ry = y - ys[j]
@@ -210,27 +264,33 @@ export default {
       // ring grows into a slightly larger perfect ring.
       const wobble = p.jitter * p.restLength * 0.5
       const splitEdge = (i) => {
-        const j = (i + 1) % xs.length
+        const j = (i + 1) % count
         const ex = xs[j] - xs[i]
         const ey = ys[j] - ys[i]
-        xs.splice(i + 1, 0, xs[i] + ex / 2 + rng.gauss(0, wobble))
-        ys.splice(i + 1, 0, ys[i] + ey / 2 + rng.gauss(0, wobble))
+        const nx = xs[i] + ex / 2 + rng.gauss(0, wobble)
+        const ny = ys[i] + ey / 2 + rng.gauss(0, wobble)
+        const at = i + 1
+        xs.copyWithin(at + 1, at, count)
+        ys.copyWithin(at + 1, at, count)
+        xs[at] = nx
+        ys[at] = ny
+        count += 1
       }
 
-      const additions = Math.ceil(xs.length * p.growthRate)
-      for (let k = 0; k < additions && xs.length < p.maxNodes; k += 1) {
-        splitEdge(rng.int(0, xs.length - 1))
+      const additions = Math.ceil(count * p.growthRate)
+      for (let k = 0; k < additions && count < p.maxNodes; k += 1) {
+        splitEdge(rng.int(0, count - 1))
       }
 
       // Keep resolution even where the loop has been stretched by repulsion.
       const splitAt = p.restLength * 2
-      for (let i = xs.length - 1; i >= 0 && xs.length < p.maxNodes; i -= 1) {
-        const j = (i + 1) % xs.length
+      for (let i = count - 1; i >= 0 && count < p.maxNodes; i -= 1) {
+        const j = (i + 1) % count
         if (Math.hypot(xs[j] - xs[i], ys[j] - ys[i]) > splitAt) splitEdge(i)
       }
 
       if (p.showHistory && step % p.historyEvery === 0 && step > 0) {
-        history.push({ xs: [...xs], ys: [...ys] })
+        history.push({ xs: xs.slice(0, count), ys: ys.slice(0, count) })
       }
     }
 
@@ -263,7 +323,7 @@ export default {
       })
     })
 
-    const final = ringToPath(xs, ys)
+    const final = ringToPath(xs.subarray(0, count), ys.subarray(0, count))
     if (final) {
       shapes.push({
         tag: 'path',

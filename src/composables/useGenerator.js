@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
 import {
   applyTreatment,
@@ -82,9 +82,59 @@ export function useGenerator(initial = {}) {
   const livedPalette = computed(() => applyTreatment(basePalette.value, treatment.value))
 
 
+  /**
+   * What the stage actually renders from.
+   *
+   * For most pieces this is just livedParams. Differential growth takes over
+   * a tenth of a second to build, and regenerating on every input event while
+   * a slider is dragged blocks the main thread solid — so a heavy generator
+   * updates at most every THROTTLE_MS, which leaves gaps for the interface to
+   * stay responsive in. The slider itself still moves immediately; only the
+   * canvas waits.
+   *
+   * Showcase playback is unaffected: it drives livedParams through its own
+   * clock, and `params` doesn't change while it runs.
+   */
+  const THROTTLE_MS = 140
+  const renderParams = ref(livedParams.value)
+  let throttleTimer = null
+  let lastRender = 0
+
+  watch(
+    livedParams,
+    (next) => {
+      if (!generator.value.heavy) {
+        renderParams.value = next
+        return
+      }
+      const now = performance.now()
+      const wait = Math.max(0, THROTTLE_MS - (now - lastRender))
+      if (throttleTimer) clearTimeout(throttleTimer)
+      throttleTimer = setTimeout(() => {
+        lastRender = performance.now()
+        throttleTimer = null
+        renderParams.value = livedParams.value
+      }, wait)
+    },
+    { flush: 'post' },
+  )
+
+  // Switching pieces must land immediately — a pending throttle from the old
+  // one would otherwise paint stale params onto the new generator.
+  watch(generatorId, () => {
+    if (throttleTimer) clearTimeout(throttleTimer)
+    throttleTimer = null
+    lastRender = 0
+    renderParams.value = livedParams.value
+  })
+
+  onScopeDispose(() => {
+    if (throttleTimer) clearTimeout(throttleTimer)
+  })
+
   const scene = computed(() =>
     generator.value.generate({
-      params: livedParams.value,
+      params: renderParams.value,
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,

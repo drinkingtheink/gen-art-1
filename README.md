@@ -235,8 +235,19 @@ The trick is to spend the rng entirely up front, on a noise field or a set of pe
 have every param after that transform fixed geometry. Both end up with 10 of their range params
 animatable, the strongest motion of any piece, and 2-5ms generation.
 
-**Differential growth can't play live.** At ~300ms a frame it manages about 3fps. Its motion is
-clean, it simply can't be watched in real time — it would need offline frame rendering.
+**Differential growth is the expensive one.** It's the only piece that simulates rather than
+places, so its cost is generations x nodes rather than output size, and profiling put about 80% of
+that in the repulsion scan — roughly 96 million distance checks at the old defaults.
+
+Three things brought ~300ms down to ~125ms. Typed arrays and a counting-sort grid in place of a
+Map of arrays gave 1.13x with the output byte-identical. Cheaper defaults (150 generations, 2400
+nodes) gave the rest; the form comes out about 83% of its former size, and because permalinks
+encode every param explicitly, no existing link is affected — the old settings on the new code
+still produce the old piece exactly.
+
+It still can't play live at 8fps. What it can do now is not block the interface: the generator is
+marked `heavy`, and a heavy generator's canvas updates at most every 140ms while a control is
+dragged. The slider still moves immediately; only the render waits.
 Subdivision plays fine but animates mostly through colour and stroke weight, since nearly all of
 its geometric params reshuffle.
 
