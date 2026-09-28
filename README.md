@@ -121,6 +121,15 @@ cycling introduced, so no generator needed changing.
 `bg` indexes the palette's *original* colours, so the swatch you click is the colour you get
 whatever muting and rotation are doing to the ink order.
 
+Switching palette eases rather than cuts. Because generators are pure and take a resolved palette,
+the *palette data* is interpolated rather than the rendered scene being cross-faded — geometry
+stays byte-identical throughout and only colour moves, so there's no second scene and no flicker
+risk. The cycle's own hold-to-transition ramp is smoothstepped for the same reason: a linear
+cross-fade reads as a wipe, an eased one reads as a dissolve.
+
+During playback the cycle walks *from* the palette you chose, and choosing one restarts the cycle
+from it. Otherwise the sequence is decided purely by elapsed time and your pick is discarded.
+
 ## Grain
 
 A turbulence layer over the finished piece — the tooth of the paper rather than anything the

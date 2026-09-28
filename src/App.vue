@@ -49,6 +49,10 @@ const show = useShowcase()
 const modulators = ref(presetFor(generator.value))
 watch(generator, (g) => { modulators.value = presetFor(g) })
 
+// Choosing a palette restarts the cycle from it, so the pick is visible
+// straight away instead of waiting for the cycle to come round.
+watch(() => params.value.palette, () => show.anchorPalette())
+
 const modulatedKeys = computed(() =>
   modulators.value.map((m) => generator.value.params.find((p) => p.key === m.key)?.label ?? m.key),
 )

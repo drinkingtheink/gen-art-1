@@ -201,14 +201,21 @@ export function mixPalettes(a, b, t) {
  * Where a continuously advancing cycle sits: which two palettes, and how far
  * between them. `hold` is the fraction of each step spent settled on a single
  * palette rather than in transition.
+ *
+ * `startId` anchors the walk to a chosen palette rather than always beginning
+ * at the first one. Without it a running cycle ignores the palette you picked,
+ * because the sequence is decided entirely by elapsed time.
  */
-export function paletteAtCycle(position, hold = 0.55) {
+export function paletteAtCycle(position, startId = null, hold = 0.55) {
   const n = PALETTES.length
-  const index = Math.floor(position) % n
-  const from = PALETTES[(index + n) % n]
-  const to = PALETTES[(index + 1) % n]
-  const within = position - Math.floor(position)
-  const t = within < hold ? 0 : (within - hold) / (1 - hold)
+  const anchor = Math.max(0, PALETTES.findIndex((p) => p.id === startId))
+  const step = Math.floor(position)
+  const from = PALETTES[(anchor + step) % n]
+  const to = PALETTES[(anchor + step + 1) % n]
+  const within = position - step
+  const linear = within < hold ? 0 : (within - hold) / (1 - hold)
+  // Smoothstep: a linear cross-fade reads as a wipe, easing reads as a dissolve.
+  const t = linear * linear * (3 - 2 * linear)
   return mixPalettes(from, to, t)
 }
 

@@ -16,6 +16,11 @@ export function useShowcase() {
   const cyclePalette = ref(true)
   const paletteSeconds = ref(14)
 
+  // The clock time the palette cycle counts from. Picking a palette moves this
+  // to now, so the chosen set shows at once rather than the cycle carrying on
+  // from wherever it happened to be.
+  const paletteOrigin = ref(0)
+
   // Frame rate is the number that decides whether a recording will look good,
   // and it can't be known ahead of time — it depends on the piece, the
   // settings and the machine. So the app measures and reports it.
@@ -64,8 +69,15 @@ export function useShowcase() {
 
   /** Where the palette cycle sits right now, in whole-palette units. */
   const palettePosition = computed(() =>
-    cyclePalette.value && paletteSeconds.value > 0 ? time.value / paletteSeconds.value : 0,
+    cyclePalette.value && paletteSeconds.value > 0
+      ? Math.max(0, time.value - paletteOrigin.value) / paletteSeconds.value
+      : 0,
   )
+
+  /** Restart the palette cycle from here — called when a palette is chosen. */
+  function anchorPalette() {
+    paletteOrigin.value = time.value
+  }
 
   onScopeDispose(pause)
 
@@ -77,6 +89,7 @@ export function useShowcase() {
     cyclePalette,
     paletteSeconds,
     palettePosition,
+    anchorPalette,
     fps,
     frameMs,
     play,

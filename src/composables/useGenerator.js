@@ -3,6 +3,7 @@ import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
 import { applyTreatment, coerceTreatment, getPalette, paletteAtCycle } from '@/core/palettes.js'
 import { createRng, randomSeed } from '@/core/rng.js'
 import { paramsAt } from '@/core/showcase.js'
+import { usePaletteFade } from '@/composables/usePaletteFade.js'
 import { buildGrain, coerceGrain } from '@/core/grain.js'
 import { getRatio } from '@/core/ratios.js'
 import { getGenerator } from '@/generators/index.js'
@@ -62,12 +63,23 @@ export function useGenerator(initial = {}) {
    */
   const basePalette = computed(() => {
     const s = showcase.value
+    // The cycle walks *from* the chosen palette, so picking one mid-playback
+    // takes effect immediately and the cycle carries on from there.
     return s?.active && s.cyclePalette
-      ? paletteAtCycle(s.palettePosition)
+      ? paletteAtCycle(s.palettePosition, params.value.palette)
       : getPalette(params.value.palette)
   })
 
   const livedPalette = computed(() => applyTreatment(basePalette.value, treatment.value))
+
+  /**
+   * Changes only on a deliberate switch. The cycle moves livedPalette every
+   * frame and must not be mistaken for one.
+   */
+  const paletteKey = computed(() => `${generatorId.value}|${params.value.palette}`)
+
+  /** What actually gets drawn — livedPalette, eased on a switch. */
+  const shownPalette = usePaletteFade(livedPalette, paletteKey)
 
   const scene = computed(() =>
     generator.value.generate({
@@ -75,7 +87,7 @@ export function useGenerator(initial = {}) {
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,
-      palette: livedPalette.value,
+      palette: shownPalette.value,
     }),
   )
 
@@ -152,6 +164,7 @@ export function useGenerator(initial = {}) {
     treatment,
     basePalette,
     livedPalette,
+    shownPalette,
     overlay,
     seed,
     params,
