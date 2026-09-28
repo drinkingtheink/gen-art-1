@@ -179,8 +179,17 @@ export function useGenerator(initial = {}) {
     params.value = coerceAll(generator.value, { ...frozen, palette }, { snap: false })
   }
 
+  // Static bursts are a function of the showcase clock, so the effects layer
+  // is rebuilt as it advances. It's a handful of nodes; the artwork is not
+  // regenerated.
   const built = computed(() =>
-    buildEffects(effects.value, seed.value, canvas.value.width, canvas.value.height),
+    buildEffects(
+      effects.value,
+      seed.value,
+      canvas.value.width,
+      canvas.value.height,
+      showcase.value?.active ? showcase.value.time : 0,
+    ),
   )
 
   // Vignette sits under the grain, so grain textures the vignette too.

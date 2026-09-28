@@ -10,6 +10,49 @@
  * Nothing here validates against a schema; coerceAll does that on the way in.
  */
 
+/**
+ * The effects field, in order. New effects append here and nowhere else.
+ *
+ * Glitch was added to the *front* once, which meant a link written before it
+ * had nine fields shifted by two and had to be special-cased. Every shape this
+ * field has ever had is listed below instead, and a link is matched to its
+ * own by length — which is why appending is the only safe way to grow it.
+ */
+export const EFFECT_FIELDS = [
+  'glitch',
+  'glitchScale',
+  'bloom',
+  'bloomRadius',
+  'bloomThreshold',
+  'aberration',
+  'aberrationAngle',
+  'vignette',
+  'vignetteSpread',
+  'interference',
+  'interferenceScale',
+  'interferenceBlend',
+  'interferenceBurst',
+]
+
+/** Field order as it stood when links of each length were written. */
+const EFFECT_HISTORY = {
+  7: EFFECT_FIELDS.slice(2, 9), // before glitch
+  9: EFFECT_FIELDS.slice(0, 9), // before static
+  12: EFFECT_FIELDS.slice(0, 12), // before static bursts
+  13: EFFECT_FIELDS,
+}
+
+function decodeEffects(raw) {
+  if (raw === undefined) return undefined
+  const parts = raw.split(':')
+  const order = EFFECT_HISTORY[parts.length] ?? EFFECT_FIELDS
+  const out = {}
+  order.forEach((key, i) => {
+    if (parts[i] !== undefined && parts[i] !== '') out[key] = parts[i]
+  })
+  return out
+}
+
 function parseQuery(raw) {
   return Object.fromEntries(
     raw
@@ -31,17 +74,7 @@ export function encodeState({ generatorId, ratioId, grain, effects, treatment, s
     `&r=${encodeURIComponent(ratioId)}` +
     `&n=${grain.amount}:${grain.scale}:${encodeURIComponent(grain.blend)}` +
     `&t=${treatment.bg}:${treatment.rotate}:${treatment.invert ? 1 : 0}:${treatment.muted.join('.')}` +
-    `&e=${[
-      effects.glitch,
-      effects.glitchScale,
-      effects.bloom,
-      effects.bloomRadius,
-      effects.bloomThreshold,
-      effects.aberration,
-      effects.aberrationAngle,
-      effects.vignette,
-      effects.vignetteSpread,
-    ].join(':')}` +
+    `&e=${EFFECT_FIELDS.map((key) => effects[key]).join(':')}` +
     `&s=${encodeURIComponent(seed)}` +
     `&p=${encoded}`
   )
@@ -79,12 +112,7 @@ export function decodeState(hash) {
   // no grain — so old links still render as they did.
   const [amount, scale, blend] = (safe(query.n) ?? '').split(':')
   const [bg, rotate, invert, muted] = (safe(query.t) ?? '').split(':')
-  // Order matters and is append-only: glitch went on the front when it was
-  // added, so the two new fields are read first and older links — which have
-  // seven fields, not nine — would misread. They're read from the end instead.
-  const eParts = (safe(query.e) ?? '').split(':')
-  const [glitch, glitchScale, bloom, bloomRadius, bloomThreshold, aberration, aberrationAngle, vignette, vignetteSpread] =
-    eParts.length >= 9 ? eParts : [undefined, undefined, ...eParts]
+  const effects = decodeEffects(safe(query.e))
 
   return {
     generatorId: safe(query.g),
@@ -94,17 +122,7 @@ export function decodeState(hash) {
     effects:
       query.e === undefined
         ? undefined
-        : {
-            glitch,
-            glitchScale,
-            bloom,
-            bloomRadius,
-            bloomThreshold,
-            aberration,
-            aberrationAngle,
-            vignette,
-            vignetteSpread,
-          },
+        : effects,
     seed: safe(query.s),
     params,
   }

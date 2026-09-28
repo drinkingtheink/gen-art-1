@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { BLEND_MODES } from '@/core/grain.js'
+import { INTERFERENCE_BLENDS } from '@/core/effects.js'
 
 /**
  * Post effects, grouped together because they all act on the finished piece
@@ -14,9 +15,11 @@ const props = defineProps({
 const emit = defineEmits(['update-effects', 'update-grain'])
 
 const blends = BLEND_MODES
+const staticBlends = INTERFERENCE_BLENDS
 
 const anyOn = computed(
   () =>
+    props.effects.interference > 0 ||
     props.effects.glitch > 0 ||
     props.effects.bloom > 0 ||
     props.effects.aberration > 0 ||
@@ -26,6 +29,7 @@ const anyOn = computed(
 
 function reset() {
   emit('update-effects', {
+    interference: 0, interferenceScale: 0.05, interferenceBlend: 'screen', interferenceBurst: 0.5,
     glitch: 0, glitchScale: 0.06,
     bloom: 0, bloomRadius: 8, bloomThreshold: 0.35,
     aberration: 0, aberrationAngle: 0, vignette: 0, vignetteSpread: 0.55,
@@ -37,6 +41,28 @@ function reset() {
 <template>
   <div class="fx">
     <span class="field-label">Effects</span>
+
+    <label class="row">
+      <span class="lbl"><span>Static</span><output>{{ effects.interference.toFixed(2) }}</output></span>
+      <input type="range" min="0" max="1" step="0.01" :value="effects.interference"
+             @input="emit('update-effects', { interference: Number($event.target.value) })" />
+    </label>
+    <template v-if="effects.interference > 0">
+      <label class="row sub">
+        <span class="lbl"><span>Burst</span><output>{{ effects.interferenceBurst.toFixed(2) }}</output></span>
+        <input type="range" min="0" max="1" step="0.01" :value="effects.interferenceBurst"
+               @input="emit('update-effects', { interferenceBurst: Number($event.target.value) })" />
+      </label>
+      <label class="row sub">
+        <span class="lbl"><span>Streak</span><output>{{ effects.interferenceScale.toFixed(3) }}</output></span>
+        <input type="range" min="0.005" max="0.6" step="0.005" :value="effects.interferenceScale"
+               @input="emit('update-effects', { interferenceScale: Number($event.target.value) })" />
+      </label>
+      <select class="sub-select" :value="effects.interferenceBlend" aria-label="Static blend mode"
+              @change="emit('update-effects', { interferenceBlend: $event.target.value })">
+        <option v-for="b in staticBlends" :key="b.value" :value="b.value">{{ b.label }}</option>
+      </select>
+    </template>
 
     <label class="row">
       <span class="lbl"><span>Glitchy</span><output>{{ effects.glitch.toFixed(2) }}</output></span>

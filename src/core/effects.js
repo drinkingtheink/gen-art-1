@@ -16,6 +16,10 @@
  */
 
 export const EFFECT_DEFAULTS = {
+  interference: 0,
+  interferenceScale: 0.05,
+  interferenceBlend: 'screen',
+  interferenceBurst: 0.5,
   glitch: 0,
   glitchScale: 0.06,
   bloom: 0,
@@ -27,6 +31,17 @@ export const EFFECT_DEFAULTS = {
   vignetteSpread: 0.55,
 }
 
+/**
+ * Screen adds light and suits a dark piece; multiply eats it and suits paper.
+ * Overlay pushes both ends and reads hardest.
+ */
+export const INTERFERENCE_BLENDS = [
+  { value: 'screen', label: 'Screen · snow' },
+  { value: 'overlay', label: 'Overlay · harsh' },
+  { value: 'multiply', label: 'Multiply · dropout' },
+  { value: 'difference', label: 'Difference · invert' },
+]
+
 const clamp = (n, lo, hi, fallback) => {
   const v = Number(n)
   return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback
@@ -36,6 +51,12 @@ const round = (n, dp = 2) => Number(n.toFixed(dp))
 
 export function coerceEffects(raw = {}) {
   return {
+    interference: round(clamp(raw.interference, 0, 1, EFFECT_DEFAULTS.interference)),
+    interferenceScale: round(clamp(raw.interferenceScale, 0.005, 0.6, EFFECT_DEFAULTS.interferenceScale), 3),
+    interferenceBlend: INTERFERENCE_BLENDS.some((b) => b.value === raw.interferenceBlend)
+      ? raw.interferenceBlend
+      : EFFECT_DEFAULTS.interferenceBlend,
+    interferenceBurst: round(clamp(raw.interferenceBurst, 0, 1, EFFECT_DEFAULTS.interferenceBurst)),
     glitch: round(clamp(raw.glitch, 0, 1, EFFECT_DEFAULTS.glitch)),
     glitchScale: round(clamp(raw.glitchScale, 0.01, 0.3, EFFECT_DEFAULTS.glitchScale), 3),
     bloom: round(clamp(raw.bloom, 0, 1, EFFECT_DEFAULTS.bloom)),
@@ -177,7 +198,57 @@ function artworkFilter(e, id) {
  * `defs` and `filterId` apply to the artwork group; `overlay` is drawn above
  * everything, alongside the grain.
  */
-export function buildEffects(effects, seed, width, height) {
+/** Deterministic 0..1 from an integer, so a given burst always behaves the same. */
+function slotHash(n) {
+  const x = Math.sin(n * 12.9898 + 4.1) * 43758.5453
+  return x - Math.floor(x)
+}
+
+/**
+ * How much static is showing at this instant.
+ *
+ * Constant static is wallpaper — it stops reading as interference and starts
+ * reading as texture. This chops time into slots, fires only some of them, and
+ * cuts hard in and out within the ones that fire, so the effect interrupts
+ * rather than sits there.
+ *
+ * `burst` at 0 leaves it on permanently. Higher makes the interruptions rarer
+ * and shorter.
+ *
+ * Slot zero always fires, so a piece that has never been played still shows
+ * what the slider is doing rather than appearing broken.
+ */
+export function burstEnvelope(time, burst) {
+  if (burst <= 0) return 1
+
+  // Faster burst means shorter slots as well as fewer firings.
+  const rate = 0.7 + burst * 2.6
+  const slot = Math.floor(time * rate)
+  const within = time * rate - slot
+  if (slot <= 0) return 1
+
+  const duty = 1 - burst * 0.82
+  const fires = slotHash(slot)
+  if (fires > duty) return 0
+
+  const length = 0.12 + slotHash(slot + 7919) * 0.4
+  if (within > length) return 0
+
+  // Vary the strength between firings so it doesn't pulse mechanically.
+  return 0.55 + slotHash(slot + 104729) * 0.45
+}
+
+/** feTurbulence takes an integer seed, so the piece's seed string is hashed down. */
+function seedToInt(seed) {
+  let h = 2166136261
+  for (let i = 0; i < seed.length; i += 1) {
+    h ^= seed.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0) % 10000
+}
+
+export function buildEffects(effects, seed, width, height, time = 0) {
   const id = `fx-${String(seed).replace(/[^a-z0-9]/gi, '').slice(0, 10) || 'x'}`
   const filter = artworkFilter(effects, id)
 
@@ -185,6 +256,58 @@ export function buildEffects(effects, seed, width, height) {
   const overlay = []
 
   if (filter) defs.push(filter)
+
+  const staticNow = effects.interference * burstEnvelope(time, effects.interferenceBurst)
+
+  if (staticNow > 0.001) {
+    const staticId = `${id}-static`
+    defs.push({
+      tag: 'filter',
+      attrs: { id: staticId, x: '0%', y: '0%', width: '100%', height: '100%' },
+      children: [
+        {
+          // Low frequency across, high down: the value barely changes along a
+          // row and changes fast between rows, which is what draws the noise
+          // into horizontal streaks. The other way round — which is what this
+          // had first — gives vertical striping, and equal frequencies give
+          // even snow that just reads as film grain.
+          tag: 'feTurbulence',
+          attrs: {
+            type: 'fractalNoise',
+            baseFrequency: `${round(effects.interferenceScale, 4)} 0.9`,
+            numOctaves: 2,
+            seed: seedToInt(String(seed)) + 1,
+            stitchTiles: 'stitch',
+            result: 'snow',
+          },
+        },
+        { tag: 'feColorMatrix', attrs: { type: 'saturate', values: '0', result: 'grey' } },
+        {
+          // Crushed to a few discrete levels. Smooth turbulence looks like
+          // haze; hard steps look like interference.
+          tag: 'feComponentTransfer',
+          attrs: { in: 'grey' },
+          children: [
+            { tag: 'feFuncR', attrs: { type: 'discrete', tableValues: '0 0 0 0.45 0.8 1' } },
+            { tag: 'feFuncG', attrs: { type: 'discrete', tableValues: '0 0 0 0.45 0.8 1' } },
+            { tag: 'feFuncB', attrs: { type: 'discrete', tableValues: '0 0 0 0.45 0.8 1' } },
+          ],
+        },
+      ],
+    })
+    overlay.push({
+      tag: 'rect',
+      attrs: {
+        x: 0,
+        y: 0,
+        width,
+        height,
+        filter: `url(#${staticId})`,
+        opacity: round(staticNow, 3),
+        style: `mix-blend-mode:${effects.interferenceBlend}`,
+      },
+    })
+  }
 
   if (effects.vignette > 0) {
     const gradientId = `${id}-vig`

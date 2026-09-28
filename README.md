@@ -151,6 +151,16 @@ from it. Otherwise the sequence is decided purely by elapsed time and your pick 
 Glitch, bloom, chromatic aberration and a vignette, grouped with the grain because they all act on
 the finished piece rather than on how it was made. Canvas state, so no generator knows they exist.
 
+Static is broadcast interference: turbulence drawn out into horizontal streaks — low frequency
+across, high down — then crushed to a few discrete levels, because smooth turbulence reads as haze
+and hard steps read as a signal breaking up.
+
+It interrupts rather than sits there. Constant static stops reading as interference and becomes
+texture, so time is chopped into slots, only some fire, and the ones that do cut hard in and out at
+varying strength. `Burst` at 0 leaves it on permanently; higher makes the interruptions rarer and
+shorter. Slot zero always fires, so a piece that has never been played still shows what the slider
+is doing. When it's off no node is emitted at all.
+
 Glitch is horizontal slice displacement — the scanline tear. Turbulence stretched almost flat
 across and steep down varies only by row; quantising it to a handful of discrete levels turns a
 smooth gradient into hard bands, which is the difference between a warp and a tear. A displacement
