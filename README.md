@@ -157,9 +157,13 @@ and hard steps read as a signal breaking up.
 
 It interrupts rather than sits there. Constant static stops reading as interference and becomes
 texture, so time is chopped into slots, only some fire, and the ones that do cut hard in and out at
-varying strength. `Burst` at 0 leaves it on permanently; higher makes the interruptions rarer and
-shorter. Slot zero always fires, so a piece that has never been played still shows what the slider
-is doing. When it's off no node is emitted at all.
+varying strength — about 20% of the time at the default. `Burst` at 0 leaves it on permanently;
+higher makes the interruptions rarer and shorter. When it's quiet no node is emitted at all.
+
+The bursts run on **their own clock**, not the showcase one. Driving them from showcase meant they
+only ever fired during playback, so a piece sitting still showed static permanently — the opposite
+of interference. The clock runs only while static is on and bursting, so a piece without it costs
+nothing.
 
 Glitch is horizontal slice displacement — the scanline tear. Turbulence stretched almost flat
 across and steep down varies only by row; quantising it to a handful of discrete levels turns a
