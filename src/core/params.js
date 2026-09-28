@@ -16,14 +16,21 @@ function decimalsOf(step) {
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
 
-/** Clamp, snap and type-check one value against its spec. */
-export function coerce(spec, raw) {
+/**
+ * Clamp, snap and type-check one value against its spec.
+ *
+ * `snap` exists for the one case that must not snap: freezing a showcase
+ * frame. Modulation runs continuous on purpose, so rounding the frozen values
+ * to slider steps would shift the piece off the frame you paused on.
+ */
+export function coerce(spec, raw, { snap = true } = {}) {
   switch (spec.type) {
     case 'range': {
       const n = Number(raw)
       if (!Number.isFinite(n)) return spec.default
-      const step = spec.step ?? 1
       const clamped = Math.min(spec.max, Math.max(spec.min, n))
+      if (!snap) return clamped
+      const step = spec.step ?? 1
       const snapped = spec.min + Math.round((clamped - spec.min) / step) * step
       return Number(Math.min(spec.max, snapped).toFixed(decimalsOf(step)))
     }
@@ -52,11 +59,11 @@ export function defaultsFor(generator) {
  * A complete, valid param set built from whatever partial object is supplied.
  * Unknown keys are dropped; missing keys take their default.
  */
-export function coerceAll(generator, raw = {}) {
+export function coerceAll(generator, raw = {}, options) {
   return Object.fromEntries(
     generator.params.map((spec) => [
       spec.key,
-      spec.key in raw ? coerce(spec, raw[spec.key]) : spec.default,
+      spec.key in raw ? coerce(spec, raw[spec.key], options) : spec.default,
     ]),
   )
 }

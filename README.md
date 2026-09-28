@@ -184,6 +184,19 @@ Press play and the piece animates: several params modulate on independent waves,
 cross-fades between sets. **Present** fills the screen with no interface, for screen recording.
 Space toggles play, Escape leaves.
 
+Pausing keeps what's on screen. The live values are written into the params
+before the clock stops, so the paused frame is a piece in its own right —
+sliders, permalink and canvas all agreeing, ready to adjust or export. Without
+that, pausing dropped back to the base params and the piece visibly jumped.
+
+The one thing that can't be captured exactly is the palette: a cycling piece
+shows a blend of two sets, and a blend has no id to put in a param or a link,
+so pausing snaps to whichever it's nearer.
+
+Frozen values are deliberately **not** snapped to slider steps. Modulation runs
+continuous, so rounding on commit shifts the piece off the frame you paused on
+— it did, on all fifteen pieces, until `coerce` grew a `snap` option.
+
 There's no restart, deliberately. The modulators are endless periodic waves, so `t=0` is an
 arbitrary phase rather than a beginning — and reloading the page already gives a reproducible
 start, since time begins at zero and the seed comes from the URL.

@@ -282,6 +282,24 @@ export function applyTreatment(palette, treatment) {
   return { ...palette, colors, bg }
 }
 
+/**
+ * The nearest whole palette to where the cycle currently sits.
+ *
+ * A cycling piece is usually showing a blend of two sets, and a blend has no
+ * id — it can't be stored in a param or a link. Pausing therefore snaps to
+ * whichever of the two it's nearer, which shifts the colour slightly but makes
+ * the state something that can actually be written down.
+ */
+export function paletteIdAtCycle(position, startId = null, hold = 0.55) {
+  const n = PALETTES.length
+  const anchor = Math.max(0, PALETTES.findIndex((p) => p.id === startId))
+  const step = Math.floor(position)
+  const within = position - step
+  const linear = within < hold ? 0 : (within - hold) / (1 - hold)
+  const t = linear * linear * (3 - 2 * linear)
+  return PALETTES[(anchor + step + (t < 0.5 ? 0 : 1)) % n].id
+}
+
 /** Swatch sources for the background picker, in the order they're shown. */
 export function backgroundChoices(palette) {
   return [

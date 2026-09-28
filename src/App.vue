@@ -35,6 +35,7 @@ const {
   scene,
   setParam,
   setShowcase,
+  commitLive,
   selectGenerator,
   setRatio,
   setGrain,
@@ -73,6 +74,20 @@ watchEffect(() => {
   })
 })
 
+/**
+ * Pausing keeps what's on screen: the live values are written into the params
+ * before the clock stops, so the paused frame is a piece you can adjust,
+ * export and link to.
+ */
+function toggleShowcase() {
+  if (show.playing.value) {
+    commitLive()
+    show.pause()
+  } else {
+    show.play()
+  }
+}
+
 function updateShowcase(patch) {
   for (const [key, value] of Object.entries(patch)) {
     if (key in show) show[key].value = value
@@ -108,7 +123,7 @@ function onKey(event) {
   if (event.key === 'Escape' && presenting.value) leavePresent()
   if (event.key === ' ' && event.target === document.body) {
     event.preventDefault()
-    show.toggle()
+    toggleShowcase()
   }
 }
 
@@ -217,7 +232,7 @@ async function copyLink() {
         :fps="show.fps.value"
         :frame-ms="show.frameMs.value"
         :modulated="modulatedKeys"
-        @toggle="show.toggle"
+        @toggle="toggleShowcase"
         @update="updateShowcase"
         @present="present"
       />

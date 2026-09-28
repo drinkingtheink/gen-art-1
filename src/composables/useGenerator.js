@@ -1,6 +1,12 @@
 import { computed, ref } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '@/core/params.js'
-import { applyTreatment, coerceTreatment, getPalette, paletteAtCycle } from '@/core/palettes.js'
+import {
+  applyTreatment,
+  coerceTreatment,
+  getPalette,
+  paletteAtCycle,
+  paletteIdAtCycle,
+} from '@/core/palettes.js'
 import { createRng, randomSeed } from '@/core/rng.js'
 import { paramsAt } from '@/core/showcase.js'
 import { buildEffects, coerceEffects } from '@/core/effects.js'
@@ -89,6 +95,33 @@ export function useGenerator(initial = {}) {
   /** Showcase feeds its live state in here each frame. */
   function setShowcase(state) {
     showcase.value = state
+  }
+
+  /**
+   * Freeze what's on screen into the params.
+   *
+   * Without this, pausing drops back to the base params and the piece visibly
+   * jumps — and the panel never showed what you were actually looking at, so
+   * a link copied mid-playback reproduced something else. Called on pause, so
+   * the paused frame is a piece in its own right: sliders, permalink and
+   * canvas all agreeing.
+   *
+   * The palette is the one thing that can't be captured exactly. A cycling
+   * piece shows a blend of two sets and a blend has no id, so this snaps to
+   * whichever it's nearer.
+   */
+  function commitLive() {
+    const s = showcase.value
+    if (!s?.active) return
+
+    const frozen = paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
+    const palette = s.cyclePalette
+      ? paletteIdAtCycle(s.palettePosition, params.value.palette)
+      : params.value.palette
+
+    // Not snapped to slider steps: modulation runs continuous, so rounding
+    // here would shift the piece off the frame being paused on.
+    params.value = coerceAll(generator.value, { ...frozen, palette }, { snap: false })
   }
 
   const built = computed(() =>
