@@ -24,6 +24,22 @@ export function useShowcase() {
   // Frame rate is the number that decides whether a recording will look good,
   // and it can't be known ahead of time — it depends on the piece, the
   // settings and the machine. So the app measures and reports it.
+  /**
+   * Seconds spent easing from the still params into the modulated ones.
+   *
+   * Without it, pressing play swapped the params for the preset's values in a
+   * single frame — measured at up to 58% of a param's range in one step, which
+   * reads as a blink rather than a start.
+   *
+   * 1.5s rather than something shorter because the pieces with the largest
+   * jumps need the room: truchet's worst single frame during the ease drops
+   * from 0.194 to 0.133 between 0.8s and 1.5s, and chladni's from 0.168 to
+   * 0.103. Past about 2s it stops helping and only feels sluggish — what's
+   * left by then is each piece's own motion, not the ease.
+   */
+  const RAMP_SECONDS = 1.5
+  const rampFrom = ref(0)
+
   const fps = ref(0)
   const frameMs = ref(0)
   const samples = shallowRef([])
@@ -51,6 +67,10 @@ export function useShowcase() {
 
   function play() {
     if (playing.value) return
+    // Anchored to now, not to zero: the clock keeps running across a
+    // pause/resume, so a fixed origin would put a resume past the ramp and
+    // blink again.
+    rampFrom.value = time.value
     playing.value = true
     last = 0
     samples.value = []
@@ -66,6 +86,13 @@ export function useShowcase() {
   function toggle() {
     playing.value ? pause() : play()
   }
+
+  /** 0 at the instant play is pressed, 1 once the motion is at full strength. */
+  const rampProgress = computed(() =>
+    RAMP_SECONDS <= 0
+      ? 1
+      : Math.min(1, Math.max(0, (time.value - rampFrom.value) / RAMP_SECONDS)),
+  )
 
   /** Where the palette cycle sits right now, in whole-palette units. */
   const palettePosition = computed(() =>
@@ -89,6 +116,7 @@ export function useShowcase() {
     cyclePalette,
     paletteSeconds,
     palettePosition,
+    rampProgress,
     anchorPalette,
     fps,
     frameMs,

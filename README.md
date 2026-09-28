@@ -227,6 +227,18 @@ Rounding to even 5 decimals is no better: the attractor iterates a chaotic map 2
 1e-5 change in its constants moved points by 956 units. Full precision makes a paused permalink
 longer — about 221 characters of params against 153 at the defaults — and it also makes it exact.
 
+Playback **eases in** rather than cutting. Pressing play used to swap the params for the preset's
+values in a single frame — up to 58% of a param's range in one step, which reads as a blink. The
+motion now ramps from whatever is already on screen over 1.5s, so the first frame of playback is
+byte-identical to the still frame it started from, on all eighteen pieces.
+
+1.5s rather than less because the pieces with the biggest jumps need the room: truchet's worst
+single frame during the ease drops from 0.194 to 0.133 between 0.8s and 1.5s. Past about 2s it
+stops helping and only feels slow — what's left by then is each piece's own motion, not the ease.
+
+Measured live frame rates, once the app was in a foreground tab: truchet, attractor and cells at
+60fps; moire 40; flow field 25; differential growth 6.
+
 There's no restart, deliberately. The modulators are endless periodic waves, so `t=0` is an
 arbitrary phase rather than a beginning — and reloading the page already gives a reproducible
 start, since time begins at zero and the seed comes from the URL.

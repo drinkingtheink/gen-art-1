@@ -57,7 +57,26 @@ export function useGenerator(initial = {}) {
   const livedParams = computed(() => {
     const s = showcase.value
     if (!s?.active) return params.value
-    return paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
+
+    const modulated = paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
+
+    // Ease in from wherever the piece was sitting. At ramp 0 this returns the
+    // still params exactly, so play starts from the frame already on screen
+    // instead of cutting to the preset's values.
+    const ramp = s.ramp ?? 1
+    if (ramp >= 1) return modulated
+
+    const eased = ramp * ramp * (3 - 2 * ramp)
+    const blended = { ...modulated }
+    for (const spec of generator.value.params) {
+      if (spec.type !== 'range') continue
+      const from = params.value[spec.key]
+      const to = modulated[spec.key]
+      if (typeof from === 'number' && typeof to === 'number') {
+        blended[spec.key] = from + (to - from) * eased
+      }
+    }
+    return blended
   })
 
   /**
@@ -165,7 +184,10 @@ export function useGenerator(initial = {}) {
     const s = showcase.value
     if (!s?.active) return
 
-    const frozen = paramsAt(s.time, params.value, s.modulators, generator.value.params, s.intensity)
+    // livedParams is exactly what the stage is drawing, ramp and all —
+    // recomputing the modulation here would miss the ease-in and put a jump
+    // back on pause.
+    const frozen = livedParams.value
     const palette = s.cyclePalette
       ? paletteIdAtCycle(s.palettePosition, params.value.palette)
       : params.value.palette

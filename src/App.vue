@@ -71,6 +71,7 @@ watchEffect(() => {
     modulators: modulators.value,
     cyclePalette: show.cyclePalette.value,
     palettePosition: show.palettePosition.value,
+    ramp: show.rampProgress.value,
   })
 })
 
