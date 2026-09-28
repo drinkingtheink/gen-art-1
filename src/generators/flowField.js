@@ -1,5 +1,6 @@
 import { createNoise2D, fbm } from '@/core/noise.js'
 import { getPalette, paletteOptions } from '@/core/palettes.js'
+import { createPathBuilder, DEFAULT_TOLERANCE } from '@/core/simplify.js'
 
 /**
  * Flow field.
@@ -35,41 +36,8 @@ const params = [
 /** 1dp is finer than a pixel at any sane display size, and halves the markup. */
 const r1 = (n) => Math.round(n * 10) / 10
 
-/**
- * How far, in canvas units, the drawn line may stray from where the particle
- * actually went. 0.6 is sub-pixel at a 1000px display, so the simplification
- * is invisible.
- *
- * An earlier version dropped points by angle change instead. That's cheaper
- * but its error is unbounded — deviation accumulates over a long run of
- * individually-small turns, measured at up to 3.5 units. Bounding the
- * deviation directly is both more accurate and drops more points.
- */
-const SIMPLIFY_TOLERANCE = 0.6
-const SIMPLIFY_TOLERANCE_SQ = SIMPLIFY_TOLERANCE * SIMPLIFY_TOLERANCE
-
-/**
- * Largest squared distance from any skipped point to the segment a->b, i.e.
- * the error we'd accept by drawing a->b and throwing the rest away.
- * Squared throughout to keep a sqrt out of the inner loop.
- */
-function maxDeviationSq(skipped, ax, ay, bx, by) {
-  const vx = bx - ax
-  const vy = by - ay
-  const lenSq = vx * vx + vy * vy
-  let worst = 0
-  for (let i = 0; i < skipped.length; i += 2) {
-    const px = skipped[i]
-    const py = skipped[i + 1]
-    let t = lenSq === 0 ? 0 : ((px - ax) * vx + (py - ay) * vy) / lenSq
-    t = t < 0 ? 0 : t > 1 ? 1 : t
-    const dx = px - (ax + t * vx)
-    const dy = py - (ay + t * vy)
-    const d = dx * dx + dy * dy
-    if (d > worst) worst = d
-  }
-  return worst
-}
+/** Sub-pixel on a 1000-unit canvas, so the simplification is invisible. */
+const SIMPLIFY_TOLERANCE = DEFAULT_TOLERANCE
 
 export default {
   id: 'flow-field',
@@ -148,16 +116,7 @@ export default {
     const traceFrom = (startX, startY, heading) => {
       let x = startX
       let y = startY
-
-      let d = `M${r1(x)},${r1(y)}`
-      let kept = 1
-
-      // anchor = last point committed to the path; skipped = candidates being
-      // considered for removal, as a flat x,y,x,y list to avoid per-point
-      // allocation in the hot loop.
-      let anchorX = x
-      let anchorY = y
-      const skipped = []
+      const path = createPathBuilder(x, y, SIMPLIFY_TOLERANCE, r1)
 
       for (let step = 0; step < p.steps; step += 1) {
         const angle = angleAt(x, y)
@@ -166,31 +125,13 @@ export default {
 
         if (nextX < left || nextX > right || nextY < top || nextY > bottom) break
 
-        if (
-          skipped.length > 0 &&
-          maxDeviationSq(skipped, anchorX, anchorY, nextX, nextY) > SIMPLIFY_TOLERANCE_SQ
-        ) {
-          // Straightening this far would show, so commit the last point we
-          // were holding and start measuring again from there.
-          anchorY = skipped[skipped.length - 1]
-          anchorX = skipped[skipped.length - 2]
-          d += `L${r1(anchorX)},${r1(anchorY)}`
-          kept += 1
-          skipped.length = 0
-        }
-
-        skipped.push(nextX, nextY)
+        path.push(nextX, nextY)
         x = nextX
         y = nextY
       }
 
-      // Whatever is still held ends the curve where the particle stopped.
-      if (skipped.length > 0) {
-        d += `L${r1(skipped[skipped.length - 2])},${r1(skipped[skipped.length - 1])}`
-        kept += 1
-      }
-
-      return kept < 2 ? null : d
+      const { d, points } = path.finish()
+      return points < 2 ? null : d
     }
 
     for (const [startX, startY] of seeds) {
