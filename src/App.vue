@@ -58,7 +58,7 @@ const {
   setEffects,
   setTreatment,
   setSeed,
-  reroll,
+  regen,
   resetParams,
   applyState,
 } = piece
@@ -279,7 +279,7 @@ async function copyLink() {
         @select-generator="selectGenerator"
         @set-ratio="setRatio"
         @set-seed="setSeed"
-        @reroll="reroll"
+        @regen="regen"
         @reset="resetParams"
       />
 

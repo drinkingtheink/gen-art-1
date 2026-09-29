@@ -63,7 +63,7 @@ export function previewMeta(search) {
     title: `${generator.name} \u00b7 ${seed}`,
     description:
       `A generative ${generator.name.toLowerCase()} piece in ${palette.name}, ${shape} format. ` +
-      `Open it to change every parameter and re-roll the seed.`,
+      `Open it to change every parameter and re-gen from a new seed.`,
   }
 }
 

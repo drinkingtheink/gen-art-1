@@ -285,7 +285,7 @@ export function useGenerator(initial = {}) {
     if (trimmed) seed.value = trimmed
   }
 
-  function reroll() {
+  function regen() {
     seed.value = randomSeed()
   }
 
@@ -331,7 +331,7 @@ export function useGenerator(initial = {}) {
     setEffects,
     setTreatment,
     setSeed,
-    reroll,
+    regen,
     resetParams,
     applyState,
   }

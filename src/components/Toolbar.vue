@@ -14,7 +14,7 @@ const props = defineProps({
   seed: { type: String, required: true },
 })
 
-const emit = defineEmits(['select-generator', 'set-ratio', 'set-seed', 'reroll', 'reset'])
+const emit = defineEmits(['select-generator', 'set-ratio', 'set-seed', 'regen', 'reset'])
 
 const shapes = ratioOptions
 
@@ -67,7 +67,7 @@ function commit() {
     </label>
 
     <div class="buttons">
-      <button type="button" class="primary" @click="emit('reroll')">Re-roll</button>
+      <button type="button" class="primary" @click="emit('regen')">Re-gen</button>
       <button type="button" @click="emit('reset')">Reset</button>
     </div>
   </div>

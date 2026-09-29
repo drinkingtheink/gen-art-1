@@ -497,7 +497,7 @@ src/
     SvgStage.vue   viewBox + background; delegates to SvgNode
     SvgNode.vue    recursive { tag, attrs, children } renderer
     ControlPanel.vue / ParamControl.vue   built from the schema
-    Toolbar.vue    generator picker, seed field, re-roll, reset
+    Toolbar.vue    generator picker, seed field, re-gen, reset
     ExportBar.vue  SVG / PNG download
     EffectsBar.vue   bloom / aberration / vignette / grain
     ShowcaseBar.vue  playback, speed, intensity, present

@@ -45,7 +45,7 @@ export function usePermalink(
   }
 
   function schedule(mode) {
-    // A push anywhere in the debounce window wins: re-rolling mid-drag should
+    // A push anywhere in the debounce window wins: re-genning mid-drag should
     // still leave a history entry behind.
     if (mode === 'push') pendingMode = 'push'
     clearTimeout(timer)
