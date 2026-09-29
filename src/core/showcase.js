@@ -175,12 +175,28 @@ export const PRESETS = {
     { key: 'pitch', wave: 'sine', amplitude: 0.13, period: 37, centre: 0.5 },
   ],
   packing: [
-    // Positions never move; the field decides how much room each disc claims.
-    { key: 'phase', wave: 'ramp', amplitude: 7, period: 31, centre: 7 },
-    { key: 'maxRadius', wave: 'sine', amplitude: 0.05, period: 19, centre: 0.14 },
-    { key: 'bite', wave: 'sine', amplitude: 0.3, period: 13, centre: 0.55 },
-    { key: 'drift', wave: 'sine', amplitude: 0.9, period: 11, centre: 1.1 },
-    { key: 'fieldScale', wave: 'drift', amplitude: 0.5, period: 23, centre: 1.3 },
+    // Only the radii move. The piece's own note says positions never do, and
+    // it was the one preset that broke its own rule: `drift` displaced every
+    // disc, measured at 11.4px a frame, which is what made it read as churn
+    // rather than as breathing.
+    //
+    // Every centre here equals the param's default, which matters more than it
+    // looks. Intensity scales a modulator's amplitude but not its centre, so a
+    // centre set away from the default shifts the piece by a fixed amount no
+    // matter how low intensity goes — this preset used to land 7.7px per disc
+    // away from the still frame even at 0.15. Centred on the defaults, zero
+    // intensity is the still frame exactly and low intensity is genuinely
+    // slight.
+    //
+    // `phase` is left out for the same reason: it sweeps the noise field, and
+    // since it bottoms out at its own minimum there is no way to centre it on
+    // its default without half the cycle clamping flat.
+    //
+    // Three slow waves on long, mutually awkward periods, so the breathing
+    // never lines up into an obvious loop.
+    { key: 'bite', wave: 'sine', amplitude: 0.2, period: 11, phase: 0.35, centre: 0.55 },
+    { key: 'maxRadius', wave: 'sine', amplitude: 0.04, period: 17, centre: 0.13 },
+    { key: 'fieldScale', wave: 'drift', amplitude: 0.55, period: 23, centre: 1.2 },
   ],
   rosette: [
     // Each ring turns at its own rate, so it never repeats while staying
