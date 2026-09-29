@@ -79,8 +79,8 @@ onUnmounted(() => {
       <header class="head">
         <h1 id="launch-title" class="wordmark"><JhMonogram />gen<span>·</span>art</h1>
         <p class="blurb">
-          {{ pieces.length }} generative pieces, drawn as real SVG. Pick one to open the studio, or
-          let chance choose.
+          Artwork for a wall or a homepage. Move every parameter until a piece is yours, then keep
+          the moment you stopped on — vector, or big enough to print.
         </p>
       </header>
 
@@ -202,7 +202,9 @@ onUnmounted(() => {
 }
 
 .blurb {
-  max-width: 54ch;
+  /* Wide enough that the sentence sets in two lines rather than leaving a
+     single word stranded on a third, and still inside a comfortable measure. */
+  max-width: 72ch;
   margin: 0;
   color: var(--launch-dim);
   font-size: 0.92rem;
