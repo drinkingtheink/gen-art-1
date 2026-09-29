@@ -50,6 +50,48 @@ come from the schema — there is nothing to wire up.
 Param types are `range`, `select`, `color` and `toggle`. Adding a new one means one branch in
 `src/components/ParamControl.vue` and one in `coerce()` in `src/core/params.js`, and nowhere else.
 
+A `range` may also carry `structural: true`, meaning it decides how much work ends up on the page,
+and `wander`, how far a random roll may take it from its default — both are read by the randomiser
+described under *Opening on nothing*.
+
+## Opening on nothing
+
+A visit with no query string names no piece, so rather than dropping into whichever generator
+happens to be first, the site opens on a panel of all eighteen. Each card is generated, never
+stored: the thumbnail **is** the piece clicking it opens — same seed, same defaults — so the grid
+can't promise something the studio then fails to deliver. Each card's seed is derived from the
+generator's id, which keeps it the same on every visit without a list of hand-picked seeds to
+maintain.
+
+Thumbnails are built one per animation frame. Together they cost around 280ms, and a single piece
+can be most of that, so built in one pass the panel would be frozen before it appeared; a frame at
+a time, the browser paints between pieces and the grid visibly fills in. Each goes into an `<img>`
+as a blob URL rather than inline SVG — the browser rasterises it once, and eighteen inline
+documents would mean eighteen sets of clip-path ids sharing one namespace and about two megabytes
+of live DOM for a screen of thumbnails.
+
+**Randomize piece** rolls everything: generator, canvas shape, every parameter. The whole choice
+derives from one word-seed, so a roll is reproducible from that seed alone, and the rng it draws on
+is namespaced apart from the one the art itself draws on.
+
+Rolling every param uniformly is worse than it sounds. Each one lands near an extreme about as
+often as anywhere else, and a piece needs only one or two of those at a time — a margin at 140, a
+count at its minimum, opacity at 0.05 — to come out blank. So a range param is drawn from a window
+centred on its authored default, `wander` wide as a fraction of its range, slid back inside the
+bounds rather than clipped against them. Most pieces need no protecting: rolled fully uniform,
+fifteen of the eighteen produce something worth looking at essentially every time. The exceptions
+are the ones whose params decide whether there is a figure at all — the four constants of a chaotic
+map, the golden angle a phyllotaxis packs at, a line width whose range reaches zero — and those
+declare a `wander` of their own beside the param it protects, with the reason next to it.
+
+Measured by rasterising 1,080 rolls each and counting the ones that mark less than 2% of the
+canvas: **10.6% blank uniform, 4.4% with the windows**, and most of what remains is sparse rather
+than empty.
+
+While the panel is up the address bar stays bare, because the URL is what decides the panel is
+there — stamping the piece sitting behind it would mean a reload skipped the panel and opened
+something nobody chose. Choosing pushes a history entry, so Back comes back to the panel.
+
 ## Seeds and permalinks
 
 Seeds are words — `quiet-heron-41` — so they survive being read aloud or skimmed in a URL. The full
