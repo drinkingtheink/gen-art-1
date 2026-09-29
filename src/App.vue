@@ -404,9 +404,12 @@ async function copyLink() {
   align-items: center;
   gap: 0.45rem;
   margin: 0;
-  /* Set so the caps stand as tall as the mark beside them. The mark is sized
-     to cap height, so the pair scale together from this one number. */
-  font-size: 1.9rem;
+  /* The mark is sized to cap height, so the two stand level whatever this is
+     set to and the pair scale together from this one number. A modest step up
+     from the 1.05rem it was — enough that the name carries the header, short
+     of the 1.9rem needed to hold the mark at its old size, which made a
+     sidebar header look like a hero. */
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
