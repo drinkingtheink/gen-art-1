@@ -284,6 +284,29 @@ export function getPalette(id) {
   return paletteById[id] ?? PALETTES[0]
 }
 
+/** Perceived lightness of '#rgb' or '#rrggbb', 0-255. */
+export function lightness(hex) {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16))
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/**
+ * The inks in a palette that separate from its own paper.
+ *
+ * Every set carries a colour or two sitting close to its background, which is
+ * fine in a field of thousands of marks and not fine in a piece built from a
+ * handful of large areas: there, an invisible ink is not texture, it is a hole
+ * in the picture. Falls back to the full set rather than returning something
+ * unusable.
+ */
+export function legibleInks(palette, gap = 26) {
+  const paper = lightness(palette.bg)
+  const kept = palette.colors.filter((ink) => Math.abs(lightness(ink) - paper) > gap)
+  return kept.length >= 2 ? kept : palette.colors
+}
+
 /**
  * A palette at random, never the one named by `not`.
  *

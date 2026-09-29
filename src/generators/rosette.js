@@ -1,4 +1,4 @@
-import { getPalette, paletteOptions } from '../core/palettes.js'
+import { getPalette, legibleInks, paletteOptions } from '../core/palettes.js'
 
 /**
  * Rosette.
@@ -63,14 +63,6 @@ const params = [
 
 const r1 = (n) => Math.round(n * 10) / 10
 
-/** Perceived lightness of '#rgb' or '#rrggbb', 0-255. */
-function lightness(hex) {
-  const h = hex.replace('#', '')
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16))
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
 const KINDS = ['petal', 'star', 'scallop', 'beads', 'needle']
 
 /** Seeds are spent for the largest ring count, so `rings` only ever truncates. */
@@ -85,13 +77,9 @@ export default {
   generate({ params: p, rng, width, height, palette: override }) {
     const palette = override ?? getPalette(p.palette)
 
-    // Every palette carries a colour or two sitting close to its own paper,
-    // which is fine in a field of thousands of marks and not fine here: a
-    // rosette has perhaps six bands, and one of them turning invisible is a
-    // sixth of the figure gone. Bands are drawn from the inks that separate
-    // from the background, loudest first, so the middle is the strongest.
-    const legible = palette.colors.filter((ink) => Math.abs(lightness(ink) - lightness(palette.bg)) > 26)
-    const inks = (legible.length >= 2 ? legible : palette.colors).slice().reverse()
+    // Bands are drawn from the inks that separate from the paper, loudest
+    // first, so the middle of the figure is the strongest.
+    const inks = legibleInks(palette).slice().reverse()
 
     // Every random draw happens here, up front, in a fixed quantity — nine
     // rings whether nine are drawn or one. Nothing downstream touches the rng,
