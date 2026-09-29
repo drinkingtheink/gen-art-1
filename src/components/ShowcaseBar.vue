@@ -15,7 +15,7 @@ const emit = defineEmits(['toggle', 'update', 'present'])
 <template>
   <div class="showcase">
     <span class="field-label">
-      <span>Showcase</span>
+      <span>Animate</span>
       <output v-if="playing && fps" class="fps" :class="{ poor: fps < 20 }">{{ fps }}fps · {{ frameMs }}ms</output>
     </span>
 
