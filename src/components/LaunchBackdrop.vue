@@ -17,10 +17,27 @@ import { getPalette } from '../core/palettes.js'
  * so it is different on every visit and costs nothing to ship.
  */
 
-// 16:9 regardless of the window: the SVG is scaled to cover, so the viewBox
-// only needs to be roughly the shape of a screen.
-const WIDTH = 1600
-const HEIGHT = 900
+/**
+ * The canvas is shaped to the window rather than to a fixed 16:9.
+ *
+ * Scaling a 16:9 canvas to cover works, but it crops — on a tall window most
+ * of the piece is outside the screen, and on a wide one the top and bottom
+ * go. Generating at the window's own proportions means the piece is composed
+ * for the shape it is actually shown at, edge to edge, with nothing cut off.
+ *
+ * Area is held constant, the same bargain `ratios.js` makes for the stage, so
+ * a grid count or a cell size means the same density whatever the shape of the
+ * window — a piece doesn't get coarse just because the window is narrow.
+ */
+const TARGET_AREA = 1600 * 900
+
+function canvasForWindow() {
+  const aspect = Math.max(0.3, Math.min(4, (window.innerWidth || 16) / (window.innerHeight || 9)))
+  const width = Math.round(Math.sqrt(TARGET_AREA * aspect))
+  return { width, height: Math.round(width / aspect) }
+}
+
+const canvas = ref(canvasForWindow())
 
 const piece = backdropPiece()
 const palette = getPalette(piece.params.palette)
@@ -37,8 +54,8 @@ const build = (time) =>
   piece.generator.generate({
     params: paramsAt(time, piece.params, piece.modulators, piece.generator.params, 0.85),
     rng: createRng(piece.seed),
-    width: WIDTH,
-    height: HEIGHT,
+    width: canvas.value.width,
+    height: canvas.value.height,
     palette,
   })
 
@@ -49,20 +66,41 @@ const scene = shallowRef(build(0))
 
 let frame = 0
 let start = 0
+let elapsed = 0
 
 function tick(now) {
   if (!start) start = now
-  scene.value = build(((now - start) / 1000) * RATE)
+  elapsed = ((now - start) / 1000) * RATE
+  scene.value = build(elapsed)
   frame = requestAnimationFrame(tick)
+}
+
+// Reshaping means regenerating, so it waits for the drag to stop rather than
+// running once per resize event.
+let resizeTimer = 0
+function onResize() {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    const next = canvasForWindow()
+    if (next.width === canvas.value.width && next.height === canvas.value.height) return
+    canvas.value = next
+    // A paused backdrop still has to redraw at the new shape.
+    if (still) scene.value = build(elapsed)
+  }, 180)
 }
 
 onMounted(() => {
   if (!still) frame = requestAnimationFrame(tick)
+  window.addEventListener('resize', onResize)
 })
 
-onUnmounted(() => cancelAnimationFrame(frame))
+onUnmounted(() => {
+  cancelAnimationFrame(frame)
+  clearTimeout(resizeTimer)
+  window.removeEventListener('resize', onResize)
+})
 
-const viewBox = `0 0 ${WIDTH} ${HEIGHT}`
+const viewBox = computed(() => `0 0 ${canvas.value.width} ${canvas.value.height}`)
 </script>
 
 <template>
@@ -73,7 +111,7 @@ const viewBox = `0 0 ${WIDTH} ${HEIGHT}`
       preserveAspectRatio="xMidYMid slice"
       shape-rendering="optimizeSpeed"
     >
-      <rect x="0" y="0" :width="WIDTH" :height="HEIGHT" :fill="scene.background" />
+      <rect x="0" y="0" :width="canvas.width" :height="canvas.height" :fill="scene.background" />
       <SvgNode v-for="(shape, i) in scene.shapes" :key="i" :node="shape" />
     </svg>
   </div>

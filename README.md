@@ -67,15 +67,37 @@ Behind the panel, a piece plays. It is a real generator on a real showcase prese
 random with a random palette on every visit, not a video and not a canned loop — so the studio has
 demonstrated itself before a word of the panel has been read, and it costs nothing to ship.
 
-The candidates are curated on two counts. Generation has to be cheap, because this regenerates
-every frame while the thumbnail grid is still building, but so does the *markup*, because each
-frame is also a DOM patch. Measured at 1600x900, attractor and dendrite generate in under 10ms yet
-emit over 300KB of path data per frame, which is the more expensive half — so the list is the six
-pieces under 2ms and under 60KB that also have a preset worth watching: rosette, phyllotaxis,
-cells, truchet, lens and strata. Authored defaults rather than randomised params, because a full
-roll can land on a dud and the one thing this screen must never do is open on an empty canvas. It
-runs at half the preset's speed: scenery behind glass shouldn't pull the eye off the panel in front
-of it, and `prefers-reduced-motion` holds it on a single frame.
+A backdrop has to reach the edges, which rules most pieces out. Rasterising every one at 16:9 and
+measuring ink in the leftmost and rightmost 7% of the frame splits them cleanly: attractor,
+rosette, phyllotaxis, harmonograph and dendrite all measure **0%**, because they compose a single
+figure in the middle and leave plain background either side. Behind a full-width panel that reads
+as a blank screen with something small happening in the centre. Blocks manages 5%, for the same
+reason.
+
+What survives is the allover fields, and then only the cheap ones — this regenerates every frame
+while the thumbnail grid is still building, and each frame is also a DOM patch, so markup size
+counts as much as generation time. Moire covers the frame well but costs 13.6ms and 304KB a frame;
+flow field, chladni and contour are both slower and sparser at the edges.
+
+| piece | ink | L/R edges | ms | markup |
+| --- | --- | --- | --- | --- |
+| subdivision | 99% | 99% | 0.1 | 7KB |
+| strata | 99% | 97% | 0.8 | 42KB |
+| cells | 71% | 89% | 0.9 | 12KB |
+| packing | 53% | 53% | 2.4 | 44KB |
+| truchet | 57% | 50% | 0.4 | 62KB |
+
+Margin is forced to zero and any `margin` modulator dropped, or the piece keeps a border of its
+own background colour — and truchet's preset sweeps margin between 18 and 102, so that border
+would breathe. The canvas is shaped to the window rather than to a fixed 16:9, holding area
+constant the way `ratios.js` does for the stage, so the piece is composed for the shape it is
+actually shown at instead of being cropped to fit, and a resize regenerates it once the drag
+stops.
+
+Authored defaults rather than randomised params, because a full roll can land on a dud and the one
+thing this screen must never do is open on an empty canvas. It runs at half the preset's speed:
+scenery behind glass shouldn't pull the eye off the panel in front of it, and
+`prefers-reduced-motion` holds it on a single frame.
 
 Frosted glass covers the whole screen rather than just the panel, so the piece reads as movement
 and colour right across the background instead of only where the sheet overlaps it. Getting the
