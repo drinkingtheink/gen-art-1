@@ -7,12 +7,17 @@
  * it stable across visits and across machines without a list of hand-picked
  * seeds to maintain.
  *
+ * The palette is the exception: it is rolled once per visit, so the grid is a
+ * different eighteen colourways each time the panel opens rather than the same
+ * wall of pieces in the sets they were written in. It is rolled here, into the
+ * state the card carries, precisely so the thumbnail and the click still agree.
+ *
  * Thumbnails are square because every piece was authored at 1000x1000, and
  * because a grid of cards wants one shape.
  */
 
 import { defaultsFor } from './params.js'
-import { getPalette, palettes } from './palettes.js'
+import { getPalette, palettes, randomPaletteId } from './palettes.js'
 import { createRng, randomSeed } from './rng.js'
 import { getRatio } from './ratios.js'
 import { presetFor } from './showcase.js'
@@ -25,7 +30,7 @@ export const launchPieces = generators.map((generator) => ({
     generatorId: generator.id,
     ratioId: 'square',
     seed: randomSeed(createRng(`launch:${generator.id}`)),
-    params: defaultsFor(generator),
+    params: { ...defaultsFor(generator), palette: randomPaletteId() },
   },
 }))
 

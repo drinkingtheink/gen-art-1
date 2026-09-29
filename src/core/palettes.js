@@ -284,6 +284,26 @@ export function getPalette(id) {
   return paletteById[id] ?? PALETTES[0]
 }
 
+/**
+ * A palette at random, never the one named by `not`.
+ *
+ * Deliberately outside the seeded rng. Which set a piece opens in is a choice
+ * the interface makes on your behalf, not part of what a seed reproduces — and
+ * every permalink writes the palette out explicitly, so a shared link still
+ * pins the one it was saved with. Pass an rng where the choice does have to be
+ * repeatable.
+ *
+ * Excluding the current palette matters when this is used to change pieces:
+ * one time in forty the roll would land on what is already on screen and the
+ * switch would look like it had not taken.
+ */
+export function randomPaletteId(not = null, rng = null) {
+  const float = rng ? rng.float : Math.random
+  const pool = not ? PALETTES.filter((palette) => palette.id !== not) : PALETTES
+  const from = pool.length ? pool : PALETTES
+  return from[Math.floor(float() * from.length)].id
+}
+
 /** '#rrggbb' or '#rgb' -> [r,g,b]. */
 function toRgb(hex) {
   const h = hex.replace('#', '')

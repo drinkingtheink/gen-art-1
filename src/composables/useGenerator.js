@@ -6,6 +6,7 @@ import {
   getPalette,
   paletteAtCycle,
   paletteIdAtCycle,
+  randomPaletteId,
 } from '../core/palettes.js'
 import { createRng, randomSeed } from '../core/rng.js'
 import { paramsAt } from '../core/showcase.js'
@@ -264,12 +265,26 @@ export function useGenerator(initial = {}) {
     params.value = { ...params.value, [key]: coerce(spec, value) }
   }
 
-  /** Switch generators, starting from that generator's own defaults. */
+  /**
+   * Switch generators, starting from that generator's own defaults — except
+   * the palette, which is rolled.
+   *
+   * Each piece was authored in one set, so every piece appeared to come in one
+   * colour: truchet was the flame piece, growth was the green one. The sets are
+   * all general-purpose and there are forty of them, and which one a piece
+   * happens to have been written in says nothing about which one suits it.
+   *
+   * Never the set already on screen, so the change always reads as a change.
+   */
   function selectGenerator(id) {
     const next = getGenerator(id)
     if (next.id === generatorId.value) return
     generatorId.value = next.id
-    params.value = defaultsFor(next)
+    const wants = next.params.some((spec) => spec.type === 'palette')
+    params.value = {
+      ...defaultsFor(next),
+      ...(wants ? { palette: randomPaletteId(params.value.palette) } : null),
+    }
   }
 
   /**
