@@ -14,10 +14,14 @@
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#16161a" />
 
-    <!-- Favicon inline as a data URI: no file, no request. Every character the
-         HTML parser or the URI grammar could choke on is percent-encoded, and
-         the SVG's own attributes are single-quoted. -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='-20%20-20%20325%20358'%3E%3Crect%20x='-20'%20y='-20'%20width='325'%20height='358'%20fill='%2316161a'/%3E%3Cg%20fill='%2383e377'%3E%3Cpolygon%20points='257.18%2073.95%20285.06%2063.13%20218.06%2063.13%20218.06%2089.13%20218.08%2089.12%20218.08%20132.85%20203.06%20132.85%20203.06%20157.5%20218.08%20157.5%20218.08%20209.13%20218.06%20209.13%20218.06%20235.13%20218.08%20235.13%20257.18%20235.13%20285.06%20235.13%20257.18%20224.31%20257.18%2073.95'/%3E%3Cpath%20d='M154,6.87H25v67L37.89,40.65H156.48v98.77H131.1V70.36H131V70H64L92,80.86V231.14L64,242h67v-.3h.1V164.07h25.38v52.16c0,51.39-20,73.75-64.24,73.75-24.26,0-49-13.32-67.09-40.92L-.06,273.33C21.82,309,58.46,325.19,93.2,325.19c77.55,0,103.72-47.58,103.72-105.63V6.87Z'%20transform='translate(0.06%20-6.87)'/%3E%3C/g%3E%3C/svg%3E" />
+    <!-- Favicon inline as a data URI: no file, no request. The same two shapes
+         as the mark in the header, in the accent colour, on nothing — no
+         background plate, so it sits on whatever the browser puts behind it.
+         Every character the HTML parser or the URI grammar could choke on is
+         percent-encoded, and the SVG's own attributes are single-quoted.
+         Padded into a square viewBox so a browser fitting it to a square slot
+         centres it instead of stranding it against one edge. -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='-26.81%20-9.00%20168.48%20168.48'%20fill='%232dd4bf'%3E%3Cpath%20d='M111.23,85.84H3.62s0-85.84,0-85.84h107.61s0,85.84,0,85.84ZM100.51,75.19l-.02-64.58H14.36s-.02,64.58-.02,64.58h86.17Z'/%3E%3Cpolygon%20points='93.29%20123.6%2021.57%20123.55%2021.56%20150.42%2010.81%20150.47%2010.83%20123.63%200%20123.61%20.06%20111.04%20114.78%20111.04%20114.86%20123.54%20104.01%20123.64%20104.04%20150.44%2093.29%20150.48%2093.29%20123.6'/%3E%3C/svg%3E" />
 
     <!-- Social previews.
 

@@ -1,5 +1,5 @@
 /**
- * URL state, as `?g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,gutter:5`.
+ * URL state, as `?g=subdivision&r=square&s=quiet-rothko-41&p=maxDepth:6,gutter:5`.
  *
  * Deliberately readable and hand-editable rather than base64 — a seed you can
  * spot and retype in a URL is worth more here than a few saved characters.

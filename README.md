@@ -145,11 +145,14 @@ something nobody chose. Choosing pushes a history entry, so Back comes back to t
 
 ## Seeds and permalinks
 
-Seeds are words — `quiet-heron-41` — so they survive being read aloud or skimmed in a URL. The full
-state lives in the query string:
+Seeds are words — `wayward-kandinsky-42` — so they survive being read aloud or skimmed in a URL.
+A descriptor, a painter and a number: the painters run from Hokusai to Sol LeWitt, by way of the
+people who first did this on plotters in the sixties — Molnár, Mohr, Nake, Noll. All ASCII and
+single-word, because a seed has to be retypable from a URL bar. The full state lives in the query
+string:
 
 ```
-?g=subdivision&r=square&s=quiet-heron-41&p=maxDepth:6,splitChance:0.88,palette:flame,…
+?g=subdivision&r=square&s=wayward-kandinsky-42&p=maxDepth:6,splitChance:0.88,palette:flame,…
 ```
 
 Readable and hand-editable on purpose. Every param is written out, including ones still at their
@@ -203,7 +206,7 @@ especially well, being stroke-based already.
 and `toBlob` works. Anything past an 8192px edge is clamped, because browsers get unreliable and
 memory-hungry beyond it.
 
-Files are named for the piece — `gen-art-truchet-still-anvil-12.svg` — so a file on disk is still
+Files are named for the piece — `gen-art-truchet-still-hokusai-12.svg` — so a file on disk is still
 traceable back to the seed that made it.
 
 ## Canvas shapes

@@ -102,14 +102,28 @@ const ADJECTIVES = [
   'distant', 'humming', 'bramble', 'slow', 'ember', 'wayward', 'dusty', 'still',
 ]
 
-const NOUNS = [
-  'heron', 'lantern', 'meadow', 'signal', 'harbor', 'thistle', 'orbit', 'kiln',
-  'marrow', 'atlas', 'fathom', 'pylon', 'moth', 'quarry', 'cinder', 'wren',
-  'gable', 'current', 'vesper', 'ledger', 'plume', 'anvil', 'fern', 'compass',
+/**
+ * Painters, and the people who got here first.
+ *
+ * The last twelve are the lineage this project sits in — Albers and Riley
+ * making rule-driven work by hand, then Molnar, Mohr, Nake and Noll doing it on
+ * plotters in the sixties, and LeWitt writing wall drawings as instructions for
+ * someone else to execute, which is what a generator is.
+ *
+ * ASCII and single-word on purpose: a seed has to survive being read down a
+ * phone and retyped from a URL bar, so no diacritics (Molnár, Vasarely's
+ * Hungarian) and nothing hyphenated. Kept clear of words that are also plain
+ * English — Bacon, Close, Martin — which would read as descriptors, and of
+ * Truchet and Chladni, who are already pieces.
+ */
+const ARTISTS = [
+  'klee', 'kahlo', 'monet', 'rothko', 'turner', 'hokusai', 'mondrian', 'escher',
+  'vermeer', 'matisse', 'picasso', 'kandinsky', 'klimt', 'goya', 'pollock', 'seurat',
+  'albers', 'vasarely', 'riley', 'molnar', 'mohr', 'nake', 'noll', 'lewitt',
 ]
 
 /**
- * A speakable seed like "quiet-heron-41" — easier to read aloud, remember and
+ * A speakable seed like "quiet-rothko-41" — easier to read aloud, remember and
  * spot in a URL than a raw hex string.
  *
  * Pass an rng to draw the words deterministically instead: the opening panel
@@ -119,5 +133,5 @@ const NOUNS = [
 export function randomSeed(rng = null) {
   const float = rng ? rng.float : Math.random
   const pick = (list) => list[Math.floor(float() * list.length)]
-  return `${pick(ADJECTIVES)}-${pick(NOUNS)}-${Math.floor(float() * 100)}`
+  return `${pick(ADJECTIVES)}-${pick(ARTISTS)}-${Math.floor(float() * 100)}`
 }

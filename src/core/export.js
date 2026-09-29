@@ -82,7 +82,7 @@ export async function renderToPngBlob(svgEl, scale) {
   }
 }
 
-/** `gen-art-truchet-still-anvil-12.svg` — the piece is identifiable from the filename alone. */
+/** `gen-art-truchet-still-hokusai-12.svg` — the piece is identifiable from the filename alone. */
 export function buildFilename(generatorId, seed, extension) {
   const safe = (s) => String(s).replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()
   return `gen-art-${safe(generatorId)}-${safe(seed)}.${extension}`
