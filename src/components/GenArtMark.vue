@@ -35,25 +35,24 @@
 .mark {
   display: block;
   flex: none;
-  /* Sized so the frame matches the wordmark's cap height.
+  /* Sized so the whole mark matches the wordmark's cap height.
      
-     The frame is the top 57% of the artwork — the rest is the gap and the
-     stand — so a mark of 1.3em puts the frame at 1.03x the caps, measured
-     against this font rather than assumed. The previous 1.7em was set from a
-     guessed cap height of 0.7em; measured, the caps are 10.62px at this size
-     and that made the frame 1.34x them and the whole mark 2.35x, which is why
-     it out-shouted the name.
+     Cap height measures 0.722em in this face, so that is the mark's height and
+     the two stand exactly level — the frame's top on the cap line, the stand's
+     feet on the baseline, nothing overshooting either.
      
-     Everything is in em, so the same numbers hold beside the 1.05rem sidebar
-     wordmark and the 1.5rem one on the launch panel. */
-  height: 1.3em;
+     It means the frame itself is only the top 57% of that, with the gap and
+     the stand taking the rest, so the mark reads smaller than its height
+     suggests. The wordmark is set larger in both places it appears to keep the
+     lockup from shrinking with it.
+     
+     In em, so one number holds at any size the wordmark is set at. */
+  height: 0.722em;
   width: auto;
-  /* Lifts the frame off the line box's centre and onto the cap band: the box
-     is centred on a line that includes descender space the uppercase wordmark
-     never uses, which lands it low. At this offset the frame's top sits on the
-     cap line and its bottom on the baseline, to within a third of a pixel,
-     leaving the stand to hang below like a descender. */
-  transform: translateY(-0.08em);
+  /* Off the line box's centre and onto the cap band. The box is centred on a
+     line that includes descender space an uppercase wordmark never uses, which
+     lands it low. */
+  transform: translateY(-0.356em);
   fill: var(--accent);
 }
 </style>

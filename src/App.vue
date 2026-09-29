@@ -404,7 +404,9 @@ async function copyLink() {
   align-items: center;
   gap: 0.45rem;
   margin: 0;
-  font-size: 1.05rem;
+  /* Set so the caps stand as tall as the mark beside them. The mark is sized
+     to cap height, so the pair scale together from this one number. */
+  font-size: 1.9rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

@@ -191,7 +191,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.6rem;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 2.7rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
