@@ -4,7 +4,17 @@
   --panel-edge: #2c2c35;
   --ink: #e8e8ea;
   --ink-dim: #9a9aa4;
-  --accent: #e2b04a;
+  /* Teal, chosen to carry the same weight the previous gold did rather than
+     just to be teal: 9.69:1 against the background where the gold was 9.06:1,
+     and 9.18:1 for the dark ink that sits on it where the gold gave 9.19:1.
+     Swapping the hue alone would have changed how loud the accent reads. */
+  --accent: #2dd4bf;
+  /* The three that go with it. These used to be hardcoded hexes repeated
+     across five components, which is why the accent was not really one
+     value. */
+  --accent-edge: #23ab9a;
+  --accent-hot: #5ce0d0;
+  --accent-ink: #05211e;
   --radius: 6px;
   --sidebar: 288px;
 

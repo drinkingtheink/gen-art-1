@@ -201,7 +201,7 @@ function toggleMute(index) {
 .band { min-width: 3px; }
 
 .flip { font-size: 0.72rem; }
-.flip.on { background: var(--accent); color: #1a1408; border-color: #c99a36; }
+.flip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-edge); }
 
 .clear { width: 100%; color: var(--ink-dim); font-size: 0.75rem; }
 </style>

@@ -217,15 +217,15 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 0.35rem;
   padding: 1.5rem 1.25rem;
-  color: #1a1408;
+  color: var(--accent-ink);
   background: var(--accent);
-  border-color: #c99a36;
+  border-color: var(--accent-edge);
   text-align: left;
 }
 
 .dice:hover {
-  background: #eec161;
-  border-color: #c99a36;
+  background: var(--accent-hot);
+  border-color: var(--accent-edge);
 }
 
 .dice-label {

@@ -73,8 +73,8 @@ const emit = defineEmits(['toggle', 'update', 'present'])
 
 .buttons { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem; }
 
-.play { background: var(--accent); color: #1a1408; border-color: #c99a36; font-weight: 600; }
-.play:hover { background: #eec161; border-color: #c99a36; }
+.play { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-edge); font-weight: 600; }
+.play:hover { background: var(--accent-hot); border-color: var(--accent-edge); }
 
 .row { display: flex; flex-direction: column; gap: 0.2rem; }
 

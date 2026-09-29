@@ -118,13 +118,13 @@ function commit() {
 
 .primary {
   background: var(--accent);
-  color: #1a1408;
-  border-color: #c99a36;
+  color: var(--accent-ink);
+  border-color: var(--accent-edge);
   font-weight: 600;
 }
 
 .primary:hover {
-  background: #eec161;
-  border-color: #c99a36;
+  background: var(--accent-hot);
+  border-color: var(--accent-edge);
 }
 </style>
