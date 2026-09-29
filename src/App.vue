@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
-import JhMonogram from '@/components/JhMonogram.vue'
+import GenArtMark from '@/components/GenArtMark.vue'
 import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
 import PaletteBar from '@/components/PaletteBar.vue'
@@ -267,7 +267,7 @@ async function copyLink() {
   <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">
-        <h1 class="wordmark"><JhMonogram />gen<span>·</span>art</h1>
+        <h1 class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
         <p class="blurb">{{ generator.blurb }}</p>
       </header>
 

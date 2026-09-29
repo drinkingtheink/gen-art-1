@@ -35,10 +35,12 @@
 .mark {
   display: block;
   flex: none;
-  /* Cap height is about 0.7em, and a mark set to exactly that reads small
-     against letterforms this widely tracked. A touch over twice cap height
-     gives it the weight of a logo without out-shouting the name. */
-  height: 1.45em;
+  /* Cap height here is about 0.7em. Sized to match it the mark reads timid
+     beside letterforms set at 600 and tracked this wide; much past this it
+     starts out-shouting the name. Compared at 1.45, 1.7 and 1.95em against the
+     live wordmark — at 1.7 the frame carries the same weight as the caps and
+     the stand's feet drop just below the baseline. */
+  height: 1.7em;
   width: auto;
   /* Nudged down by a hair: the flexbox centres the mark on the line box, which
      includes descender space the uppercase wordmark never uses, so centred

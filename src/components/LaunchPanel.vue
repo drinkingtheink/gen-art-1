@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
-import JhMonogram from './JhMonogram.vue'
+import GenArtMark from './GenArtMark.vue'
 import LaunchBackdrop from './LaunchBackdrop.vue'
 import { launchPieces, renderThumbnail } from '../core/launch.js'
 
@@ -77,7 +77,7 @@ onUnmounted(() => {
 
     <div class="sheet">
       <header class="head">
-        <h1 id="launch-title" class="wordmark"><JhMonogram />gen<span>·</span>art</h1>
+        <h1 id="launch-title" class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
         <p class="blurb">
           Artwork for a wall or a homepage. Move every parameter until a piece is yours, then keep
           the moment you stopped on — vector, or big enough to print.
