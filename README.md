@@ -63,6 +63,26 @@ can't promise something the studio then fails to deliver. Each card's seed is de
 generator's id, which keeps it the same on every visit without a list of hand-picked seeds to
 maintain.
 
+Behind the panel, a piece plays. It is a real generator on a real showcase preset, picked at
+random with a random palette on every visit, not a video and not a canned loop — so the studio has
+demonstrated itself before a word of the panel has been read, and it costs nothing to ship.
+
+The candidates are curated on two counts. Generation has to be cheap, because this regenerates
+every frame while the thumbnail grid is still building, but so does the *markup*, because each
+frame is also a DOM patch. Measured at 1600x900, attractor and dendrite generate in under 10ms yet
+emit over 300KB of path data per frame, which is the more expensive half — so the list is the six
+pieces under 2ms and under 60KB that also have a preset worth watching: rosette, phyllotaxis,
+cells, truchet, lens and strata. Authored defaults rather than randomised params, because a full
+roll can land on a dud and the one thing this screen must never do is open on an empty canvas. It
+runs at half the preset's speed: scenery behind glass shouldn't pull the eye off the panel in front
+of it, and `prefers-reduced-motion` holds it on a single frame.
+
+The panel itself is glass over the top — translucent and blurred, so the movement reads through it
+without ever competing with the text. That has to hold across all forty palettes, whose backgrounds
+run from a near-black magma to an all but white moss, so the glass is opaque enough for the dim
+sub-heading to survive the brightest roll and a light veil behind it holds the whole screen to
+roughly one brightness whichever came up.
+
 Thumbnails are built one per animation frame. Together they cost around 280ms, and a single piece
 can be most of that, so built in one pass the panel would be frozen before it appeared; a frame at
 a time, the browser paints between pieces and the grid visibly fills in. Each goes into an `<img>`
@@ -70,7 +90,7 @@ as a blob URL rather than inline SVG — the browser rasterises it once, and eig
 documents would mean eighteen sets of clip-path ids sharing one namespace and about two megabytes
 of live DOM for a screen of thumbnails.
 
-**Randomize piece** rolls everything: generator, canvas shape, every parameter. The whole choice
+**Start From Randomized Piece** rolls everything: generator, canvas shape, every parameter. The whole choice
 derives from one word-seed, so a roll is reproducible from that seed alone, and the rng it draws on
 is namespaced apart from the one the art itself draws on.
 

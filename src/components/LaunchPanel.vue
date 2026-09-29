@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import JhMonogram from './JhMonogram.vue'
+import LaunchBackdrop from './LaunchBackdrop.vue'
 import { launchPieces, renderThumbnail } from '../core/launch.js'
 
 /**
@@ -12,7 +13,9 @@ import { launchPieces, renderThumbnail } from '../core/launch.js'
  *
  * Every card is a real piece — the thumbnail is generated from the same state
  * clicking it applies — so nothing on this screen is a promise the studio then
- * fails to keep.
+ * fails to keep. The same goes for the backdrop: a real piece on a real
+ * showcase preset, playing behind the glass, so the studio has demonstrated
+ * itself before a word of this has been read.
  */
 
 const emit = defineEmits(['pick', 'randomize', 'dismiss'])
@@ -70,6 +73,8 @@ onUnmounted(() => {
 
 <template>
   <div class="launch" role="dialog" aria-modal="true" aria-labelledby="launch-title">
+    <LaunchBackdrop />
+
     <div class="sheet">
       <header class="head">
         <h1 id="launch-title" class="wordmark"><JhMonogram />gen<span>·</span>art</h1>
@@ -80,7 +85,7 @@ onUnmounted(() => {
       </header>
 
       <button ref="dice" type="button" class="dice" @click="emit('randomize')">
-        <span class="dice-label">Randomize piece</span>
+        <span class="dice-label">Start From Randomized Piece</span>
         <span class="dice-note">A piece at random, on a random canvas, with every parameter rolled</span>
       </button>
 
@@ -114,15 +119,48 @@ onUnmounted(() => {
   z-index: 10;
   overflow-y: auto;
   padding: 2.5rem 1rem 3rem;
-  background: var(--bg);
+  /* No colour of its own — the piece playing behind it is the background. */
+  background: transparent;
+}
+
+/* A veil between the moving piece and the panel, holding the whole screen to
+   roughly one brightness whichever of the forty palettes came up.
+   Deliberately light and flat: every word on this screen sits on the glass,
+   which has its own blur, so the veil is only there to stop a pale palette
+   glaring — not to hide the piece. Graded a little darker at the edges, where
+   there is nothing but artwork. */
+.launch::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    color-mix(in srgb, var(--bg) 42%, transparent),
+    color-mix(in srgb, var(--bg) 68%, transparent) 75%
+  );
+  content: '';
+  pointer-events: none;
 }
 
 .sheet {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
   max-width: 1040px;
   margin: 0 auto;
+  padding: 1.6rem 1.5rem 1.8rem;
+  border: 1px solid color-mix(in srgb, var(--panel-edge) 80%, transparent);
+  border-radius: 16px;
+  /* The glass. Translucent enough that the piece reads as movement through it,
+     opaque enough that the dim sub-heading stays legible over the brightest
+     backdrop a roll can produce — the palettes run from a near-black magma to
+     an all but white moss, and the text has to hold on both. */
+  background: color-mix(in srgb, var(--panel) 74%, transparent);
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
 }
 
 .head {
@@ -172,7 +210,7 @@ onUnmounted(() => {
 }
 
 .dice-label {
-  font-size: 1.5rem;
+  font-size: clamp(1.15rem, 2.6vw, 1.5rem);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;

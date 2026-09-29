@@ -12,11 +12,12 @@
  */
 
 import { defaultsFor } from './params.js'
-import { getPalette } from './palettes.js'
+import { getPalette, palettes } from './palettes.js'
 import { createRng, randomSeed } from './rng.js'
 import { getRatio } from './ratios.js'
+import { presetFor } from './showcase.js'
 import { renderSvg } from './svg.js'
-import { generators } from '../generators/index.js'
+import { generators, getGenerator } from '../generators/index.js'
 
 export const launchPieces = generators.map((generator) => ({
   generator,
@@ -49,4 +50,34 @@ export function renderThumbnail({ generator, state }) {
   })
 
   return renderSvg(scene)
+}
+
+/**
+ * Pieces allowed to run as the live backdrop behind the opening panel.
+ *
+ * Curated on two counts, not one. Generation has to be cheap, because this
+ * regenerates every frame while the thumbnail grid is still building — but so
+ * does the *markup*, because each frame is also a DOM patch. Measured at
+ * 1600x900: attractor and dendrite generate in under 10ms yet emit over 300KB
+ * of path data a frame, which is the more expensive half. Everything here is
+ * under 2ms and under 60KB, and has a showcase preset worth watching.
+ */
+const BACKDROP_PIECES = ['rosette', 'phyllotaxis', 'cells', 'truchet', 'lens', 'strata']
+
+/**
+ * A random piece for the backdrop, as state plus the motion to run it with.
+ *
+ * Authored defaults rather than randomised params: a fully random roll can
+ * land on a dud, and the one thing this screen cannot do is open on an empty
+ * canvas. Only the piece, the seed and the palette vary.
+ */
+export function backdropPiece(rng = createRng(randomSeed())) {
+  const generator = getGenerator(rng.pick(BACKDROP_PIECES))
+  const params = { ...defaultsFor(generator), palette: rng.pick(palettes).id }
+  return {
+    generator,
+    params,
+    seed: randomSeed(rng),
+    modulators: presetFor(generator),
+  }
 }
