@@ -127,46 +127,52 @@ regenerated, not reflowed.
 A link with no `r` resolves to square, so permalinks saved before shapes existed still render
 byte-identically.
 
-## Heavy pieces and the worker
+## Dendrite, and the piece it replaced
 
-Most generators are placements: they decide where things go and return in a few milliseconds.
-Differential growth is a simulation — about 158,000 node-steps against a spatial grid, roughly
-130ms of solid arithmetic — and run inline that blocks paint and input for the whole of it.
-Dragging one of its sliders froze the interface for about half of every second.
+Differential growth used to sit in this slot: a closed loop of thousands of nodes pulling on their
+ring neighbours and pushing away from anything near them in space, buckling because the perimeter
+had nowhere else to go. It made beautiful forms and it was a simulation, ~158,000 node-steps
+against a spatial grid, about 130ms a frame. Roughly 8fps in showcase, and inline it blocked paint
+and input for half of every second.
 
-A generator marked `heavy: true` is generated in a worker instead
-(`src/workers/scene.worker.js`). Nothing had to be ported: generators were already pure functions
-of `(params, seeded rng)` that never touch the DOM, so the same module runs in both places. The
-previous scene stays on screen until the new one arrives. Measured with a MessageChannel probe
-during a slider drag, the main thread's median task latency is 0ms and its 99th percentile 0.2ms
-across 57,885 samples — under the old inline path it was blocked essentially continuously.
+It could not be optimised out of that. The repulsion scan was 72% of the cost and ~19 million
+distance tests per run, and it looked wasteful — 63% of the nodes it tested were outside the
+repulsion radius, because the grid scans a 3x3 box of cells to cover a circle. Tightening the grid
+to half-radius cells does cut candidates by 29% and lifts the in-range hit rate from 37% to 51%,
+and it makes no difference at all to the runtime: `MAX_NEIGHBOURS` caps how many neighbours a
+crowded node samples and fires on 76% of node-steps, so it was already acting as a cost governor.
+Shrink the crowd and the sampler just scans a larger fraction of it. Measured end to end, 29% fewer
+candidates gave 9% fewer distance tests and a 0.98x change in wall clock. The piece was
+cost-bounded by design.
 
-Requests are coalesced, not queued: while one scene is generating the slider keeps moving, and
-every position it passed through is stale by the time the worker frees up, so only the most recent
-survives. This replaced a 140ms throttle that was guessing at the duration.
+**Dendrite** reaches similar territory — the same branching, space-filling, biological look — by
+recursion instead. A branch splits, each piece splits again, the rule never changes and only the
+scale it applies at does. There are no neighbours to search and no time to step, so it generates in
+about 6ms rather than 130, and it can actually animate: a preset sweep measures 2.51px of movement
+per frame at 30fps, squarely in the filmic band, with the shape count constant across all 300
+frames checked.
 
-Two things stay inline on purpose. The first scene, so the stage is never briefly empty; and any
-change of generator, because leaving the outgoing piece on screen while the new one computes reads
-as a bug rather than as latency.
+Two things make it behave under animation. Per-node randomness is drawn once up front for the whole
+segment budget rather than as the recursion descends, so the number of rng draws never depends on
+the dials — the figure never reshuffles mid-sweep — and a node's wobble is tied to its position in
+the tree, so raising Depth grows new twigs onto the existing figure instead of drawing a different
+one. And the silhouette is measured and fitted after growing rather than predicted before: a limb's
+reach is a geometric series, but branches also spread sideways, wobble stretches segments and bow
+bends the whole thing, so no closed form exists and every guess either clipped the canopy or left
+the piece small. Fitting the real bounding box is exact for every form, and it keeps the
+composition still while Shortening and Depth sweep.
 
-What this does **not** do is make the piece faster — the work is identical, it just happens
-somewhere it can't stop the page. Differential growth still produces roughly 7 frames a second, so
-in showcase mode the interface stays at 60fps while the artwork updates at about 7. Lowering
-Generations or Node budget is the only way to raise that, and both are sliders.
+### The worker
 
-### Why it isn't simply optimised instead
+`heavy: true` on a generator routes it through a worker (`src/workers/scene.worker.js`) instead of
+generating inline, with requests coalesced rather than queued and the previous scene held on screen
+until the new one lands. Generators were always pure functions of `(params, seeded rng)` that never
+touch the DOM, so the same module runs in both places unmodified.
 
-The repulsion scan is ~72% of the cost and ~19 million distance tests per run. It looks wasteful —
-63% of the nodes it tests are outside the repulsion radius, because the grid scans a 3x3 box of
-cells to cover a circle. Tightening the grid to half-radius cells does cut candidates by 29% and
-raises the in-range hit rate from 37% to 51%.
-
-It makes no difference to the runtime. `MAX_NEIGHBOURS` caps how many neighbours a crowded node
-samples, and it fires on 76% of node-steps — so it is already acting as a cost governor. Shrink the
-crowd and the sampler simply scans a larger fraction of it; measured end to end, 29% fewer
-candidates gave a 9% reduction in distance tests and a 0.98x change in wall clock. The savings buy
-accuracy, not speed, and the piece is cost-bounded by design.
-
+It was built for differential growth and **nothing currently sets the flag** — the slowest piece is
+now moire at 23ms, which is fine inline. It is kept as the extension point for any future piece
+that simulates, and costs nothing while unused: the worker chunk is only constructed on the first
+heavy request.
 
 ## Palettes
 
@@ -307,7 +313,7 @@ single frame during the ease drops from 0.194 to 0.133 between 0.8s and 1.5s. Pa
 stops helping and only feels slow — what's left by then is each piece's own motion, not the ease.
 
 Measured live frame rates, once the app was in a foreground tab: truchet, attractor and cells at
-60fps; moire 40; flow field 25; differential growth 6.
+60fps; moire 40; flow field 25.
 
 There's no restart, deliberately. The modulators are endless periodic waves, so `t=0` is an
 arbitrary phase rather than a beginning — and reloading the page already gives a reproducible
@@ -337,9 +343,14 @@ The trick is to spend the rng entirely up front, on a noise field or a set of pe
 have every param after that transform fixed geometry. Both end up with 10 of their range params
 animatable, the strongest motion of any piece, and 2-5ms generation.
 
-**Differential growth is the expensive one.** It's the only piece that simulates rather than
-places, so its cost is generations x nodes rather than output size, and profiling put about 80% of
-that in the repulsion scan — roughly 96 million distance checks at the old defaults.
+**Dendrite is the one with a budget.** A full tree is `branches^depth` wide, so its two structural
+dials multiply catastrophically — 4 splits at depth 11 is four million segments. The total is
+capped at 14,000 and depth gives way, the same bargain truchet makes with its cell count. Fourteen
+thousand segments drawn as individual elements is more than the DOM wants, so they are batched into
+one path per depth-and-ink, which is a few dozen elements instead.
+
+It replaced differential growth, which simulated rather than placed and cost ~130ms a frame against
+its ~6ms. That story is under "Dendrite, and the piece it replaced" above.
 
 Three things brought ~300ms down to ~125ms. Typed arrays and a counting-sort grid in place of a
 Map of arrays gave 1.13x with the output byte-identical. Cheaper defaults (150 generations, 2400
@@ -367,14 +378,14 @@ src/
     showcase.js    time-based param modulation
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
-    permalink.js   hash encode/decode
+    permalink.js   query-string encode/decode
     export.js      SVG serialisation and PNG rasterising
   generators/
     index.js       the registry — add a line here
     subdivision.js
     flowField.js
     truchet.js
-    growth.js
+    dendrite.js
     moire.js
     harmonograph.js
     attractor.js
@@ -423,10 +434,10 @@ Truchet shows the third lever: thousands of tiles share the same handful of pain
 they're grouped into a `<g>` per colour-and-width and the children carry only `d`. That's a 56%
 cut in markup for free, and it's what the scene contract's `children` is for.
 
-Differential growth is the exception to all of this: it's a simulation, so its cost is
-generations x nodes rather than output size. It's the slowest piece by an order of magnitude
-(~300ms at the defaults against 14ms for flow field), and dragging its sliders lags accordingly.
-Generations and node budget are capped as a product for that reason.
+Dendrite leans on that grouping hardest: up to fourteen thousand segments collapse into one path
+per depth-and-ink, a few dozen elements rather than fourteen thousand. Its ~307KB of path data is
+the most of any piece, and writing that much into the live DOM measures about 8ms — worth knowing,
+because it means markup size, not element count, is what this surface eventually runs into.
 
 A generator wanting tens of thousands of *elements* would still want a different surface.
 

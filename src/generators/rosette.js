@@ -16,17 +16,20 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
 
 const params = [
   { key: 'segments', type: 'range', label: 'Symmetry', min: 3, max: 24, step: 1, default: 9, structural: true },
-  { key: 'rings', type: 'range', label: 'Rings', min: 1, max: 9, step: 1, default: 5, structural: true },
+  { key: 'rings', type: 'range', label: 'Rings', min: 1, max: 9, step: 1, default: 5, structural: true, wander: 0.5 },
   { key: 'mirror', type: 'toggle', label: 'Mirror', default: true },
   { key: 'spin', type: 'range', label: 'Spin', min: 0, max: 360, step: 0.2, default: 0 },
   { key: 'twist', type: 'range', label: 'Twist', min: -60, max: 60, step: 0.2, default: 14 },
-  { key: 'inner', type: 'range', label: 'Inner radius', min: 0, max: 0.5, step: 0.005, default: 0.08 },
-  { key: 'reach', type: 'range', label: 'Reach', min: 0.3, max: 1.05, step: 0.005, default: 0.86 },
-  { key: 'petal', type: 'range', label: 'Petal width', min: 0.05, max: 1.4, step: 0.005, default: 0.62 },
+  { key: 'inner', type: 'range', label: 'Inner radius', min: 0, max: 0.5, step: 0.005, default: 0.08, wander: 0.5 },
+  // Reach and petal width between them decide how much of the canvas the
+  // figure covers, and a line width of zero draws nothing at all — so a random
+  // roll keeps all three near where the piece was authored.
+  { key: 'reach', type: 'range', label: 'Reach', min: 0.3, max: 1.05, step: 0.005, default: 0.86, wander: 0.5 },
+  { key: 'petal', type: 'range', label: 'Petal width', min: 0.05, max: 1.4, step: 0.005, default: 0.62, wander: 0.4 },
   { key: 'bow', type: 'range', label: 'Bow', min: -1.2, max: 1.2, step: 0.005, default: 0.45 },
-  { key: 'taper', type: 'range', label: 'Taper', min: 0.2, max: 1.6, step: 0.005, default: 0.85 },
-  { key: 'lineWidth', type: 'range', label: 'Line width', min: 0, max: 6, step: 0.05, default: 1.2 },
-  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.9 },
+  { key: 'taper', type: 'range', label: 'Taper', min: 0.2, max: 1.6, step: 0.005, default: 0.85, wander: 0.5 },
+  { key: 'lineWidth', type: 'range', label: 'Line width', min: 0, max: 6, step: 0.05, default: 1.2, wander: 0.25 },
+  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.9, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 50 },
   { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'plasma' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },

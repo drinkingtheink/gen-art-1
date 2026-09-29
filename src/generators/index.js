@@ -3,9 +3,9 @@ import blocks from './blocks.js'
 import cells from './cells.js'
 import chladni from './chladni.js'
 import contour from './contour.js'
+import dendrite from './dendrite.js'
 import flowField from './flowField.js'
 import glyphs from './glyphs.js'
-import growth from './growth.js'
 import halftone from './halftone.js'
 import harmonograph from './harmonograph.js'
 import lens from './lens.js'
@@ -25,7 +25,7 @@ export const generators = [
   subdivision,
   flowField,
   truchet,
-  growth,
+  dendrite,
   moire,
   harmonograph,
   attractor,

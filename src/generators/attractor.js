@@ -20,15 +20,20 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
 
 const params = [
   { key: 'points', type: 'range', label: 'Points', min: 2000, max: 40000, step: 500, default: 26000, structural: true },
-  { key: 'a', type: 'range', label: 'A', min: -3, max: 3, step: 0.001, default: 1.4 },
-  { key: 'b', type: 'range', label: 'B', min: -3, max: 3, step: 0.001, default: -2.3 },
-  { key: 'c', type: 'range', label: 'C', min: -3, max: 3, step: 0.001, default: 2.4 },
-  { key: 'd', type: 'range', label: 'D', min: -3, max: 3, step: 0.001, default: -2.1 },
+  // The four constants of the map. Only some of the square they describe is
+  // strange: elsewhere the orbit collapses to a point or flies off the canvas,
+  // and a randomised piece lands on an empty page. Hence the narrow `wander` —
+  // a roll explores the neighbourhood of a known set rather than the whole
+  // parameter space. Dragging the sliders still reaches all of it.
+  { key: 'a', type: 'range', label: 'A', min: -3, max: 3, step: 0.001, default: 1.4, wander: 0.1 },
+  { key: 'b', type: 'range', label: 'B', min: -3, max: 3, step: 0.001, default: -2.3, wander: 0.1 },
+  { key: 'c', type: 'range', label: 'C', min: -3, max: 3, step: 0.001, default: 2.4, wander: 0.1 },
+  { key: 'd', type: 'range', label: 'D', min: -3, max: 3, step: 0.001, default: -2.1, wander: 0.1 },
   { key: 'spread', type: 'range', label: 'Seed spread', min: 0, max: 0.25, step: 0.005, default: 0.07 },
   { key: 'zoom', type: 'range', label: 'Zoom', min: 0.3, max: 1.6, step: 0.005, default: 1.02 },
   { key: 'spin', type: 'range', label: 'Spin', min: 0, max: 360, step: 0.5, default: 0 },
   { key: 'dotSize', type: 'range', label: 'Dot size', min: 0.3, max: 4, step: 0.05, default: 1.35 },
-  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.05, max: 1, step: 0.01, default: 0.62 },
+  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.05, max: 1, step: 0.01, default: 0.62, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 50 },
   { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'aurora' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },

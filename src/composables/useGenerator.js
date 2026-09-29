@@ -109,16 +109,15 @@ export function useGenerator(initial = {}) {
    * Most pieces are placements and generate in a few milliseconds, so they are
    * built inline and the scene is up to date before the next paint.
    *
-   * Differential growth is a simulation — roughly 158,000 node-steps against a
-   * spatial grid, about 130ms of arithmetic — and inline that blocks paint and
-   * input for the whole of it. Dragging one of its sliders froze the interface
-   * for about half of every second. Pieces marked `heavy` are generated in a
-   * worker instead, and the previous scene stays on screen until the new one
-   * lands. The work costs the same; it just no longer happens where it can
-   * stop the page.
+   * A piece marked `heavy` is generated in a worker instead, and the previous
+   * scene stays on screen until the new one lands. The work costs the same; it
+   * just no longer happens where it can block paint and input.
    *
-   * This replaced a 140ms throttle, which was guessing at the duration and
-   * capped the piece at ~7 updates a second whether it needed to be or not.
+   * Nothing sets the flag at present. It was built for differential growth,
+   * a simulation costing ~130ms a frame, which has since been replaced by
+   * dendrite — same family of form, reached by recursion in ~6ms. The path is
+   * kept for the next piece that simulates; it costs nothing while unused,
+   * since the worker is only constructed on the first heavy request.
    */
   const worker = useSceneWorker()
 

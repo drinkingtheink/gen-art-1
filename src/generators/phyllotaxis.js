@@ -16,20 +16,25 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
  */
 
 const params = [
-  { key: 'seeds', type: 'range', label: 'Seeds', min: 50, max: 2600, step: 10, default: 900, structural: true },
-  { key: 'divergence', type: 'range', label: 'Divergence', min: 130, max: 145, step: 0.001, default: 137.507 },
+  // Too few seeds, or seeds too small, and the spiral stops being one — a
+  // random roll stays where the pattern still reads.
+  { key: 'seeds', type: 'range', label: 'Seeds', min: 50, max: 2600, step: 10, default: 900, structural: true, wander: 0.5 },
+  // The golden angle, and the reason the spiral packs at all. A couple of
+  // degrees either side still reads as phyllotaxis; five degrees is a handful
+  // of spokes with gaps between them, so a random roll stays close.
+  { key: 'divergence', type: 'range', label: 'Divergence', min: 130, max: 145, step: 0.001, default: 137.507, wander: 0.25 },
   { key: 'spread', type: 'range', label: 'Spread', min: 0.4, max: 1.4, step: 0.005, default: 1 },
   { key: 'packing', type: 'range', label: 'Packing', min: 0.3, max: 0.9, step: 0.005, default: 0.5 },
-  { key: 'dotSize', type: 'range', label: 'Seed size', min: 0.1, max: 3, step: 0.01, default: 1.05 },
-  { key: 'grow', type: 'range', label: 'Growth', min: -1, max: 1.5, step: 0.005, default: 0.4 },
+  { key: 'dotSize', type: 'range', label: 'Seed size', min: 0.1, max: 3, step: 0.01, default: 1.05, wander: 0.45 },
+  { key: 'grow', type: 'range', label: 'Growth', min: -1, max: 1.5, step: 0.005, default: 0.4, wander: 0.5 },
   { key: 'shape', type: 'select', label: 'Seed shape', options: [
     { value: 'circle', label: 'Round' },
     { value: 'petal', label: 'Petal' },
     { value: 'bar', label: 'Bar' },
   ], default: 'circle' },
   { key: 'turn', type: 'range', label: 'Turn', min: 0, max: 360, step: 0.2, default: 0 },
-  { key: 'hollow', type: 'range', label: 'Hollow', min: 0, max: 0.6, step: 0.005, default: 0 },
-  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.95 },
+  { key: 'hollow', type: 'range', label: 'Hollow', min: 0, max: 0.6, step: 0.005, default: 0, wander: 0.5 },
+  { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.95, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 40 },
   { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'marigold' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },

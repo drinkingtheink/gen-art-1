@@ -5,9 +5,11 @@
  * touch the DOM, so there is nothing to port — the same module that runs in
  * the component runs here untouched.
  *
- * Only pieces marked `heavy` are sent this way. Differential growth simulates
- * ~158,000 node-steps against a spatial grid, which is about 130ms of solid
- * arithmetic; run inline it blocks paint and input for that whole time.
+ * Only pieces marked `heavy` are sent this way, which at present is none of
+ * them — this was built for differential growth, a simulation costing ~130ms a
+ * frame, and that piece has been replaced by one that recurses instead. It is
+ * the route for the next generator whose cost is time-stepped rather than
+ * proportional to what it draws.
  */
 
 import { createRng } from '../core/rng.js'

@@ -14,11 +14,20 @@ import { encodeState, readUrl } from '../core/permalink.js'
  */
 const DEBOUNCE_MS = 200
 
-export function usePermalink({ generatorId, ratioId, grain, effects, treatment, seed, params, applyState }) {
+export function usePermalink(
+  { generatorId, ratioId, grain, effects, treatment, seed, params, applyState },
+  { paused = null } = {},
+) {
   let timer = null
   let pendingMode = 'replace'
 
   function write() {
+    // While the opening panel is up, the URL stays bare. It has to: the panel
+    // is shown precisely because the URL names no piece, so stamping the
+    // piece sitting behind it would mean a reload skipped the panel and opened
+    // something nobody chose.
+    if (paused?.value) return
+
     const search = `?${encodeState({
       generatorId: generatorId.value,
       ratioId: ratioId.value,
@@ -67,6 +76,18 @@ export function usePermalink({ generatorId, ratioId, grain, effects, treatment, 
     window.removeEventListener('hashchange', readFromUrl)
     window.removeEventListener('popstate', readFromUrl)
   })
+
+  // Choosing from the opening panel pushes rather than replaces, so the panel
+  // stays in the history and Back returns to it — the bare URL is a place, and
+  // it's the one that describes the picker.
+  if (paused) {
+    watch(paused, (still) => {
+      if (still) return
+      pendingMode = 'push'
+      write()
+      pendingMode = 'replace'
+    })
+  }
 
   // Stamp the URL immediately so the first piece is shareable without waiting
   // for an interaction.

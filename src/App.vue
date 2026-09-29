@@ -3,12 +3,14 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffe
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import JhMonogram from '@/components/JhMonogram.vue'
+import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
 import PaletteBar from '@/components/PaletteBar.vue'
 import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
+import { randomState } from '@/core/random.js'
 import { presetFor } from '@/core/showcase.js'
 import { useShowcase } from '@/composables/useShowcase.js'
 import { useGenerator } from '@/composables/useGenerator.js'
@@ -16,8 +18,21 @@ import { usePermalink } from '@/composables/usePermalink.js'
 import { readUrl } from '@/core/permalink.js'
 
 // A shared link is the starting state; otherwise a fresh random seed.
-const piece = useGenerator(readUrl() ?? {})
-usePermalink(piece)
+const opened = readUrl()
+const piece = useGenerator(opened ?? {})
+
+/**
+ * A visit that names no piece opens on the picker instead of dropping straight
+ * into one of eighteen pieces as though it were the only one. The URL says
+ * which piece, so the URL is also what says whether there's a choice to make —
+ * including on Back, which is how the picker is reachable again.
+ *
+ * The test is `g`, not "any query at all": a link arriving with a tracking
+ * parameter stuck on the end still names no piece.
+ */
+const launching = ref(!opened?.generatorId)
+
+usePermalink(piece, { paused: launching })
 
 const {
   generator,
@@ -45,7 +60,14 @@ const {
   setSeed,
   reroll,
   resetParams,
+  applyState,
 } = piece
+
+/** Open a specific piece — a card on the panel, or the randomiser's roll. */
+function startWith(state) {
+  applyState(state)
+  launching.value = false
+}
 
 // --- showcase -------------------------------------------------------------
 const show = useShowcase()
@@ -122,6 +144,8 @@ function onFullscreenChange() {
 }
 
 function onKey(event) {
+  // The panel owns the keyboard while it's up, Escape included.
+  if (launching.value) return
   if (event.key === 'Escape' && presenting.value) leavePresent()
   if (event.key === ' ' && event.target === document.body) {
     event.preventDefault()
@@ -129,13 +153,24 @@ function onKey(event) {
   }
 }
 
+/**
+ * Back out of a piece to the bare URL and the picker returns, because that is
+ * the state the URL describes. usePermalink's own popstate listener restores
+ * the piece when there is one; this decides whether the panel is over it.
+ */
+function onPopState() {
+  launching.value = !readUrl()?.generatorId
+}
+
 onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
   window.addEventListener('keydown', onKey)
+  window.addEventListener('popstate', onPopState)
 })
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', onFullscreenChange)
   window.removeEventListener('keydown', onKey)
+  window.removeEventListener('popstate', onPopState)
 })
 
 const stage = useTemplateRef('stage')
@@ -203,6 +238,13 @@ async function copyLink() {
 </script>
 
 <template>
+  <LaunchPanel
+    v-if="launching"
+    @pick="startWith"
+    @randomize="startWith(randomState())"
+    @dismiss="launching = false"
+  />
+
   <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">

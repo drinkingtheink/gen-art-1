@@ -222,11 +222,16 @@ export const PRESETS = {
     { key: 'grow', wave: 'sine', amplitude: 0.45, period: 17, centre: 0.35 },
     { key: 'packing', wave: 'drift', amplitude: 0.06, period: 31, centre: 0.52 },
   ],
-  growth: [
-    { key: 'attraction', wave: 'sine', amplitude: 0.12, period: 15 },
-    { key: 'jitter', wave: 'drift', amplitude: 0.22, period: 9 },
-    { key: 'margin', wave: 'sine', amplitude: 22, period: 21, phase: 0.6 },
-    { key: 'lineWidth', wave: 'sine', amplitude: 0.5, period: 17 },
+  dendrite: [
+    // Spread is the one that matters: the angle between siblings compounds
+    // down every level, so a few degrees at the trunk swings the whole
+    // silhouette. Curl turns the figure against it, and shortening breathes
+    // the density in and out.
+    { key: 'spread', wave: 'sine', amplitude: 17, period: 13, centre: 36 },
+    { key: 'curl', wave: 'sine', amplitude: 13, period: 19, phase: 0.3, centre: 0 },
+    { key: 'lengthRatio', wave: 'sine', amplitude: 0.055, period: 23, centre: 0.76 },
+    { key: 'bow', wave: 'drift', amplitude: 0.32, period: 17, centre: 0.15 },
+    { key: 'lineWidth', wave: 'sine', amplitude: 0.7, period: 29, centre: 2.6 },
   ],
 }
 

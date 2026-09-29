@@ -22,8 +22,11 @@ const params = [
   { key: 'spanTurns', type: 'range', label: 'Length', min: 2, max: 40, step: 0.1, default: 9 },
   { key: 'detune', type: 'range', label: 'Detune', min: 0, max: 0.12, step: 0.0005, default: 0.006 },
   { key: 'drift', type: 'range', label: 'Phase drift', min: 0, max: 6.3, step: 0.01, default: 0 },
-  { key: 'damping', type: 'range', label: 'Damping', min: 0, max: 1.6, step: 0.005, default: 0.2 },
-  { key: 'amplitude', type: 'range', label: 'Size', min: 0.1, max: 1, step: 0.005, default: 0.86 },
+  // Heavy damping winds the pendulum down to a dot before the curve is drawn,
+  // and amplitude is the size of the figure — both are ways for a random roll
+  // to produce an empty page.
+  { key: 'damping', type: 'range', label: 'Damping', min: 0, max: 1.6, step: 0.005, default: 0.2, wander: 0.35 },
+  { key: 'amplitude', type: 'range', label: 'Size', min: 0.1, max: 1, step: 0.005, default: 0.86, wander: 0.5 },
   { key: 'separation', type: 'range', label: 'Separation', min: 0, max: 120, step: 0.5, default: 0 },
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0.2, max: 5, step: 0.05, default: 1.1 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.85 },
