@@ -35,24 +35,26 @@
 .mark {
   display: block;
   flex: none;
-  /* Sized so the whole mark matches the wordmark's cap height.
+  /* Sized so the frame matches the wordmark's cap height.
      
-     Cap height measures 0.722em in this face, so that is the mark's height and
-     the two stand exactly level — the frame's top on the cap line, the stand's
-     feet on the baseline, nothing overshooting either.
+     The mark is a frame on a stand, and only the top 57% of the artwork is the
+     frame — the rest is the gap and the legs. So matching the *whole* mark to
+     the cap height, which is the obvious reading of standing level with the
+     words, puts the frame at 0.57x the caps and its bars at about 1.2px
+     against bold stems of 3. It measures level and it looks slight.
      
-     It means the frame itself is only the top 57% of that, with the gap and
-     the stand taking the rest, so the mark reads smaller than its height
-     suggests. The wordmark is set larger in both places it appears to keep the
-     lockup from shrinking with it.
+     Matching the frame instead is what makes the two read as equals: 1.3em
+     puts it at 1.03x cap height, measured against this font rather than
+     assumed. The stand then hangs below the baseline, like a descender.
      
      In em, so one number holds at any size the wordmark is set at. */
-  height: 0.722em;
+  height: 1.3em;
   width: auto;
   /* Off the line box's centre and onto the cap band. The box is centred on a
      line that includes descender space an uppercase wordmark never uses, which
-     lands it low. */
-  transform: translateY(-0.356em);
+     lands it low. At this offset the frame's top sits on the cap line and its
+     bottom on the baseline. */
+  transform: translateY(-0.08em);
   fill: var(--accent);
 }
 </style>
