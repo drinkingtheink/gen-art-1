@@ -83,6 +83,27 @@ function leaveLaunch() {
   if (!stillness?.matches) show.play()
 }
 
+/**
+ * A shared link starts moving too, but only after a beat.
+ *
+ * The frame in a permalink was chosen — pausing writes the live values into
+ * the params precisely so a moment can be sent — so the piece holds on it long
+ * enough to read as a composition before the ease begins. Nothing of what was
+ * sent is skipped: the ramp starts from those exact params, so the first thing
+ * on screen is the sender's frame and the motion grows out of it.
+ *
+ * Reloading the link always brings that frame back, because playback never
+ * writes to the address bar. Only pausing does.
+ */
+const SHARED_HOLD_MS = 2200
+let openingPlay = null
+
+/** Touching playback yourself beats the pending start, in either direction. */
+function cancelOpeningPlay() {
+  clearTimeout(openingPlay)
+  openingPlay = null
+}
+
 /** Open a specific piece — a card on the panel, or the randomiser's roll. */
 function startWith(state) {
   applyState(state)
@@ -121,6 +142,7 @@ watchEffect(() => {
  * export and link to.
  */
 function toggleShowcase() {
+  cancelOpeningPlay()
   if (show.playing.value) {
     commitLive()
     show.pause()
@@ -141,6 +163,7 @@ function updateShowcase(patch) {
 const presenting = ref(false)
 
 async function present() {
+  cancelOpeningPlay()
   try {
     await document.documentElement.requestFullscreen()
   } catch {
@@ -185,8 +208,17 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
   window.addEventListener('keydown', onKey)
   window.addEventListener('popstate', onPopState)
+
+  // Arrived straight on a piece, which means a link named it.
+  if (!launching.value && !stillness?.matches) {
+    openingPlay = setTimeout(() => {
+      openingPlay = null
+      show.play()
+    }, SHARED_HOLD_MS)
+  }
 })
 onUnmounted(() => {
+  cancelOpeningPlay()
   document.removeEventListener('fullscreenchange', onFullscreenChange)
   window.removeEventListener('keydown', onKey)
   window.removeEventListener('popstate', onPopState)
