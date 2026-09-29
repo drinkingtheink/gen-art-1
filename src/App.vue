@@ -63,14 +63,31 @@ const {
   applyState,
 } = piece
 
+// --- showcase -------------------------------------------------------------
+const show = useShowcase()
+
+/**
+ * Someone who has just chosen a piece off the panel wants to see what it does,
+ * and most of these were built to move — so leaving the panel starts the clock.
+ * The ease-in means it reads as the piece waking up rather than as a cut.
+ *
+ * A link that names a piece is the exception, and it's why this lives here
+ * rather than in useShowcase. Pausing commits the live frame into the params
+ * precisely so a moment can be copied and sent; autoplaying that link would
+ * show the recipient the sender's moment for a second and then drift off it.
+ */
+const stillness = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+
+function leaveLaunch() {
+  launching.value = false
+  if (!stillness?.matches) show.play()
+}
+
 /** Open a specific piece — a card on the panel, or the randomiser's roll. */
 function startWith(state) {
   applyState(state)
-  launching.value = false
+  leaveLaunch()
 }
-
-// --- showcase -------------------------------------------------------------
-const show = useShowcase()
 
 // Motion is per-piece, and resets when the piece changes so a preset built for
 // flow field never lands on subdivision.
@@ -160,6 +177,8 @@ function onKey(event) {
  */
 function onPopState() {
   launching.value = !readUrl()?.generatorId
+  // The panel covers the stage, so there's nothing to animate behind it.
+  if (launching.value) show.pause()
 }
 
 onMounted(() => {
@@ -242,7 +261,7 @@ async function copyLink() {
     v-if="launching"
     @pick="startWith"
     @randomize="startWith(randomState())"
-    @dismiss="launching = false"
+    @dismiss="leaveLaunch"
   />
 
   <div class="app" :class="{ presenting }">

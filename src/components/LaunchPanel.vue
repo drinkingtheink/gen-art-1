@@ -123,28 +123,40 @@ onUnmounted(() => {
   background: transparent;
 }
 
-/* A veil between the moving piece and the panel, holding the whole screen to
-   roughly one brightness whichever of the forty palettes came up.
-   Deliberately light and flat: every word on this screen sits on the glass,
-   which has its own blur, so the veil is only there to stop a pale palette
-   glaring — not to hide the piece. Graded a little darker at the edges, where
-   there is nothing but artwork. */
+/* The frosted glass, over the whole screen rather than just the panel.
+   Everything painted before it in this stacking context — which is the
+   backdrop and nothing else — gets blurred, so the piece reads as movement and
+   colour across the entire background instead of only where the sheet
+   overlaps it.
+
+   The tint on top holds the screen to roughly one brightness whichever of the
+   forty palettes came up: their backgrounds run from a near-black magma to an
+   all but white moss, and the text has to survive both. Graded slightly darker
+   at the edges, where there is nothing but artwork. */
 .launch::before {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Above the backdrop, explicitly. A ::before counts as its element's first
+     child, so at an equal z-index the artwork paints on top of it and there is
+     nothing behind the frost left to blur. */
+  z-index: 1;
   background: radial-gradient(
     ellipse at 50% 42%,
-    color-mix(in srgb, var(--bg) 42%, transparent),
-    color-mix(in srgb, var(--bg) 68%, transparent) 75%
+    color-mix(in srgb, var(--bg) 46%, transparent),
+    color-mix(in srgb, var(--bg) 70%, transparent) 75%
   );
+  /* Enough to frost, not enough to erase. Past about 20px the finer pieces —
+     truchet's tiles, a phyllotaxis' dots — dissolve into a plain gradient and
+     there is no movement left to see, which is the one thing this is for. */
+  backdrop-filter: blur(13px) saturate(1.3);
+  -webkit-backdrop-filter: blur(13px) saturate(1.3);
   content: '';
   pointer-events: none;
 }
 
 .sheet {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
@@ -153,14 +165,19 @@ onUnmounted(() => {
   padding: 1.6rem 1.5rem 1.8rem;
   border: 1px solid color-mix(in srgb, var(--panel-edge) 80%, transparent);
   border-radius: 16px;
-  /* The glass. Translucent enough that the piece reads as movement through it,
-     opaque enough that the dim sub-heading stays legible over the brightest
-     backdrop a roll can produce — the palettes run from a near-black magma to
-     an all but white moss, and the text has to hold on both. */
-  background: color-mix(in srgb, var(--panel) 74%, transparent);
-  backdrop-filter: blur(22px) saturate(1.2);
-  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  /* No blur of its own — the frost above covers the full screen, so the sheet
+     only needs enough tint to separate itself from the background it sits on
+     and to carry the text. */
+  background: color-mix(in srgb, var(--panel) 66%, transparent);
   box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+}
+
+/* The panel's own secondary ink, brighter than the studio's --ink-dim.
+   The sidebar's dim grey is tuned for flat panel colour; here the same grey
+   sits on frosted artwork and goes muddy, so everything secondary on this
+   screen steps up. */
+.launch {
+  --launch-dim: #d2d2db;
 }
 
 .head {
@@ -187,8 +204,8 @@ onUnmounted(() => {
 .blurb {
   max-width: 54ch;
   margin: 0;
-  color: var(--ink-dim);
-  font-size: 0.9rem;
+  color: var(--launch-dim);
+  font-size: 0.92rem;
   line-height: 1.5;
 }
 
@@ -219,7 +236,7 @@ onUnmounted(() => {
 
 .dice-note {
   font-size: 0.82rem;
-  opacity: 0.75;
+  opacity: 0.88;
 }
 
 .or {
@@ -227,7 +244,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.75rem;
   margin: 0.2rem 0 0;
-  color: var(--ink-dim);
+  color: var(--launch-dim);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -321,14 +338,14 @@ onUnmounted(() => {
 }
 
 .note {
-  color: var(--ink-dim);
-  font-size: 0.72rem;
+  color: var(--launch-dim);
+  font-size: 0.74rem;
   line-height: 1.35;
 }
 
 .skip {
   align-self: center;
-  color: var(--ink-dim);
+  color: var(--launch-dim);
   background: none;
   border-color: transparent;
   font-size: 0.8rem;

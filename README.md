@@ -77,11 +77,20 @@ roll can land on a dud and the one thing this screen must never do is open on an
 runs at half the preset's speed: scenery behind glass shouldn't pull the eye off the panel in front
 of it, and `prefers-reduced-motion` holds it on a single frame.
 
-The panel itself is glass over the top — translucent and blurred, so the movement reads through it
-without ever competing with the text. That has to hold across all forty palettes, whose backgrounds
-run from a near-black magma to an all but white moss, so the glass is opaque enough for the dim
-sub-heading to survive the brightest roll and a light veil behind it holds the whole screen to
-roughly one brightness whichever came up.
+Frosted glass covers the whole screen rather than just the panel, so the piece reads as movement
+and colour right across the background instead of only where the sheet overlaps it. Getting the
+blur there at all needed an explicit stacking order — a `::before` counts as its element's first
+child, so at an equal `z-index` the artwork painted on top of the frost and there was nothing left
+behind it to blur. Backdrop 0, frost 1, sheet 2.
+
+13px of blur, not more. Past about 20px the finer pieces — truchet's tiles, a phyllotaxis' dots —
+dissolve into a plain gradient and there is no movement left to see, which is the one thing it is
+for. The tint sits on top of the frost rather than under the artwork, which is what holds the
+screen to roughly one brightness across all forty palettes, whose backgrounds run from a near-black
+magma to an all but white moss.
+
+Everything secondary on this screen uses a brighter grey than the studio's `--ink-dim`. That grey
+is tuned for flat panel colour; over frosted artwork it goes muddy.
 
 Thumbnails are built one per animation frame. Together they cost around 280ms, and a single piece
 can be most of that, so built in one pass the panel would be frozen before it appeared; a frame at
