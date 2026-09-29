@@ -216,6 +216,15 @@ export const PRESETS = {
     { key: 'zoom', wave: 'sine', amplitude: 0.55, period: 31, centre: 1.5 },
     { key: 'inset', wave: 'sine', amplitude: 0.045, period: 19, phase: 0.3, centre: 0.07 },
   ],
+  inversion: [
+    // Kiss is the one to watch: it slides the generating circles through exact
+    // tangency, and the whole orbit reorganises around that instant — open
+    // dust on one side, overlapping spirals on the other.
+    { key: 'kiss', wave: 'sine', amplitude: 0.11, period: 23, centre: 0.9 },
+    { key: 'swell', wave: 'drift', amplitude: 0.1, period: 37, centre: 1.12 },
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 79, centre: 180 },
+    { key: 'fade', wave: 'sine', amplitude: 0.22, period: 17, phase: 0.4, centre: 0.4 },
+  ],
   glyphs: [
     // The alphabet is fixed; the hand writing it changes.
     //

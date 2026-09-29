@@ -7,6 +7,7 @@ import dendrite from './dendrite.js'
 import flowField from './flowField.js'
 import glyphs from './glyphs.js'
 import halftone from './halftone.js'
+import inversion from './inversion.js'
 import harmonograph from './harmonograph.js'
 import lens from './lens.js'
 import moire from './moire.js'
@@ -38,6 +39,7 @@ export const generators = [
   blocks,
   packing,
   penrose,
+  inversion,
   rosette,
   glyphs,
   cells,
