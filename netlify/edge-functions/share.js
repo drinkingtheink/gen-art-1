@@ -12,7 +12,7 @@
  * its generic fallback tags intact.
  */
 
-import { previewMeta } from '../../src/core/preview.js'
+import { SITE_CARD, previewMeta } from '../../src/core/preview.js'
 
 const START = '<!-- SHARE-META:START -->'
 const END = '<!-- SHARE-META:END -->'
@@ -27,9 +27,11 @@ export default async function share(request, context) {
   if (!response.headers.get('content-type')?.includes('text/html')) return response
 
   const url = new URL(request.url)
-  // A bare visit has nothing to describe, so it keeps the site-level tags.
-  // Checked before the body is touched, so this path stays a pass-through.
-  if (!url.searchParams.get('g')) return response
+  // Whether the link names a piece. A bare one is rewritten too, for one
+  // reason: index.html can only carry `/og` as a path, and a crawler that does
+  // not resolve a relative og:image against the page it came from shows no
+  // image at all. Here the origin is known, so both can be written absolute.
+  const named = url.searchParams.get('g')
 
   // Past this point the body has been consumed and the original response can
   // no longer be returned — every exit has to rebuild one from `html`.
@@ -40,8 +42,9 @@ export default async function share(request, context) {
   try {
     if (!html.includes(START)) return passThrough()
 
-    const { title, description } = previewMeta(url.search)
-    const image = new URL(`/og${url.search}`, url.origin).href
+    const { title, description } = named ? previewMeta(url.search) : SITE_CARD
+    const alt = named ? title : SITE_CARD.alt
+    const image = new URL(named ? `/og${url.search}` : '/og', url.origin).href
     const canonical = url.href
 
     const tags = `${START}
@@ -53,7 +56,7 @@ export default async function share(request, context) {
     <meta property="og:image" content="${attr(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${attr(title)}" />
+    <meta property="og:image:alt" content="${attr(alt)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${attr(title)}" />
     <meta name="twitter:description" content="${attr(description)}" />
@@ -64,9 +67,11 @@ export default async function share(request, context) {
     const rewritten = html.slice(0, html.indexOf(START)) + tags + html.slice(html.indexOf(END) + END.length)
 
     const headers = new Headers(response.headers)
-    // Every link is a different document now, so the shared HTML cache entry
-    // would otherwise hand one piece's tags to another piece's link.
-    headers.set('cache-control', 'public, max-age=0, must-revalidate')
+    // Every piece link is a different document, so a shared HTML cache entry
+    // would otherwise hand one piece's tags to another piece's link. The bare
+    // URL has no such problem — its card is the same for everyone — so it
+    // keeps whatever caching it arrived with.
+    if (named) headers.set('cache-control', 'public, max-age=0, must-revalidate')
     headers.delete('content-length')
     return new Response(rewritten, { status: response.status, headers })
   } catch {

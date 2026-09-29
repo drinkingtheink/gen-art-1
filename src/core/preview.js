@@ -26,6 +26,23 @@ export const CARD = { width: 1200, height: 630 }
  * flow field, which reads well at card size.
  */
 const SITE_DEFAULT = { g: 'flow-field', r: 'wide', s: 'quiet-heron-41' }
+
+/**
+ * The words on that card.
+ *
+ * A bare URL is a page in its own right now that it opens the picker rather
+ * than dropping into a piece, so it is worth describing as one. Kept here
+ * because the edge function needs the same copy index.html carries — that copy
+ * is the last-resort fallback for when this layer fails, and the two drifting
+ * apart would mean a card that changed depending on whether it worked.
+ */
+export const SITE_CARD = {
+  title: 'gen\u00b7art \u2014 generative SVG studio',
+  description:
+    'Eighteen generative art pieces rendered as real SVG. Seeded and reproducible, ' +
+    'animated for screen capture, exportable as vector or high-resolution PNG.',
+  alt: 'A generative artwork rendered as vector line work',
+}
 const SITE_DEFAULT_STATE = {
   generatorId: SITE_DEFAULT.g,
   ratioId: SITE_DEFAULT.r,
