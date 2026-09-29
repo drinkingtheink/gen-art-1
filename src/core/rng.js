@@ -111,8 +111,13 @@ const NOUNS = [
 /**
  * A speakable seed like "quiet-heron-41" — easier to read aloud, remember and
  * spot in a URL than a raw hex string.
+ *
+ * Pass an rng to draw the words deterministically instead: the opening panel
+ * needs a seed per piece that is the same on every visit, so the thumbnail a
+ * card shows is the piece clicking it opens.
  */
-export function randomSeed() {
-  const pick = (list) => list[Math.floor(Math.random() * list.length)]
-  return `${pick(ADJECTIVES)}-${pick(NOUNS)}-${Math.floor(Math.random() * 100)}`
+export function randomSeed(rng = null) {
+  const float = rng ? rng.float : Math.random
+  const pick = (list) => list[Math.floor(float() * list.length)]
+  return `${pick(ADJECTIVES)}-${pick(NOUNS)}-${Math.floor(float() * 100)}`
 }

@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '../core/params.js'
 import {
   applyTreatment,
@@ -10,6 +10,7 @@ import {
 import { createRng, randomSeed } from '../core/rng.js'
 import { paramsAt } from '../core/showcase.js'
 import { useFlicker } from '../composables/useFlicker.js'
+import { useSceneWorker } from '../composables/useSceneWorker.js'
 import { buildEffects, coerceEffects } from '../core/effects.js'
 import { buildGrain, coerceGrain } from '../core/grain.js'
 import { getRatio } from '../core/ratios.js'
@@ -103,64 +104,72 @@ export function useGenerator(initial = {}) {
 
 
   /**
-   * What the stage actually renders from.
+   * What the stage renders, and how it gets there.
    *
-   * For most pieces this is just livedParams. Differential growth takes over
-   * a tenth of a second to build, and regenerating on every input event while
-   * a slider is dragged blocks the main thread solid — so a heavy generator
-   * updates at most every THROTTLE_MS, which leaves gaps for the interface to
-   * stay responsive in. The slider itself still moves immediately; only the
-   * canvas waits.
+   * Most pieces are placements and generate in a few milliseconds, so they are
+   * built inline and the scene is up to date before the next paint.
    *
-   * Showcase playback is unaffected: it drives livedParams through its own
-   * clock, and `params` doesn't change while it runs.
+   * Differential growth is a simulation — roughly 158,000 node-steps against a
+   * spatial grid, about 130ms of arithmetic — and inline that blocks paint and
+   * input for the whole of it. Dragging one of its sliders froze the interface
+   * for about half of every second. Pieces marked `heavy` are generated in a
+   * worker instead, and the previous scene stays on screen until the new one
+   * lands. The work costs the same; it just no longer happens where it can
+   * stop the page.
+   *
+   * This replaced a 140ms throttle, which was guessing at the duration and
+   * capped the piece at ~7 updates a second whether it needed to be or not.
    */
-  const THROTTLE_MS = 140
-  const renderParams = ref(livedParams.value)
-  let throttleTimer = null
-  let lastRender = 0
+  const worker = useSceneWorker()
 
-  watch(
-    livedParams,
-    (next) => {
-      if (!generator.value.heavy) {
-        renderParams.value = next
-        return
-      }
-      const now = performance.now()
-      const wait = Math.max(0, THROTTLE_MS - (now - lastRender))
-      if (throttleTimer) clearTimeout(throttleTimer)
-      throttleTimer = setTimeout(() => {
-        lastRender = performance.now()
-        throttleTimer = null
-        renderParams.value = livedParams.value
-      }, wait)
-    },
-    { flush: 'post' },
-  )
-
-  // Switching pieces must land immediately — a pending throttle from the old
-  // one would otherwise paint stale params onto the new generator.
-  watch(generatorId, () => {
-    if (throttleTimer) clearTimeout(throttleTimer)
-    throttleTimer = null
-    lastRender = 0
-    renderParams.value = livedParams.value
-  })
-
-  onScopeDispose(() => {
-    if (throttleTimer) clearTimeout(throttleTimer)
-  })
-
-  const scene = computed(() =>
-    generator.value.generate({
-      params: renderParams.value,
+  function composeScene(params, palette) {
+    return generator.value.generate({
+      params,
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,
-      palette: livedPalette.value,
-    }),
-  )
+      palette,
+    })
+  }
+
+  const scene = ref(composeScene(params.value, livedPalette.value))
+
+  // Switching pieces is a discrete choice, and leaving the outgoing piece on
+  // screen while the new one computes reads as a bug rather than as latency.
+  // Those land inline even when the target is heavy.
+  let immediate = false
+  watch(generatorId, () => {
+    immediate = true
+  })
+
+  watchEffect(() => {
+    // Read every dependency before any branch, so the effect tracks all of
+    // them no matter which path it takes this time.
+    const params = { ...livedParams.value }
+    const source = livedPalette.value
+    const palette = { ...source, colors: [...source.colors] }
+    const id = generatorId.value
+    const heavy = generator.value.heavy
+    const canDefer = worker.available.value
+
+    const inline = () => {
+      scene.value = composeScene(params, palette)
+    }
+
+    if (!heavy || !canDefer || immediate) {
+      immediate = false
+      inline()
+      return
+    }
+
+    worker.request(
+      { generatorId: id, params, seed: seed.value, width: canvas.value.width, height: canvas.value.height, palette },
+      (next) => {
+        scene.value = next
+      },
+      inline,
+    )
+  })
 
   /** Showcase feeds its live state in here each frame. */
   function setShowcase(state) {

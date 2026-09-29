@@ -127,6 +127,47 @@ regenerated, not reflowed.
 A link with no `r` resolves to square, so permalinks saved before shapes existed still render
 byte-identically.
 
+## Heavy pieces and the worker
+
+Most generators are placements: they decide where things go and return in a few milliseconds.
+Differential growth is a simulation — about 158,000 node-steps against a spatial grid, roughly
+130ms of solid arithmetic — and run inline that blocks paint and input for the whole of it.
+Dragging one of its sliders froze the interface for about half of every second.
+
+A generator marked `heavy: true` is generated in a worker instead
+(`src/workers/scene.worker.js`). Nothing had to be ported: generators were already pure functions
+of `(params, seeded rng)` that never touch the DOM, so the same module runs in both places. The
+previous scene stays on screen until the new one arrives. Measured with a MessageChannel probe
+during a slider drag, the main thread's median task latency is 0ms and its 99th percentile 0.2ms
+across 57,885 samples — under the old inline path it was blocked essentially continuously.
+
+Requests are coalesced, not queued: while one scene is generating the slider keeps moving, and
+every position it passed through is stale by the time the worker frees up, so only the most recent
+survives. This replaced a 140ms throttle that was guessing at the duration.
+
+Two things stay inline on purpose. The first scene, so the stage is never briefly empty; and any
+change of generator, because leaving the outgoing piece on screen while the new one computes reads
+as a bug rather than as latency.
+
+What this does **not** do is make the piece faster — the work is identical, it just happens
+somewhere it can't stop the page. Differential growth still produces roughly 7 frames a second, so
+in showcase mode the interface stays at 60fps while the artwork updates at about 7. Lowering
+Generations or Node budget is the only way to raise that, and both are sliders.
+
+### Why it isn't simply optimised instead
+
+The repulsion scan is ~72% of the cost and ~19 million distance tests per run. It looks wasteful —
+63% of the nodes it tests are outside the repulsion radius, because the grid scans a 3x3 box of
+cells to cover a circle. Tightening the grid to half-radius cells does cut candidates by 29% and
+raises the in-range hit rate from 37% to 51%.
+
+It makes no difference to the runtime. `MAX_NEIGHBOURS` caps how many neighbours a crowded node
+samples, and it fires on 76% of node-steps — so it is already acting as a cost governor. Shrink the
+crowd and the sampler simply scans a larger fraction of it; measured end to end, 29% fewer
+candidates gave a 9% reduction in distance tests and a 0.98x change in wall clock. The savings buy
+accuracy, not speed, and the piece is cost-bounded by design.
+
+
 ## Palettes
 
 Forty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
