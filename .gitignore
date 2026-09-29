@@ -7,3 +7,8 @@ dist-ssr
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Throwaway rendering harnesses used while tuning a piece. They import from
+# src/ so they have to sit here rather than in a temp dir, and they are not
+# part of the app or the build.
+_*.mjs

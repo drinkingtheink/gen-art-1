@@ -39,7 +39,7 @@ const SITE_DEFAULT = { g: 'flow-field', r: 'wide', s: 'quiet-heron-41' }
 export const SITE_CARD = {
   title: 'gen\u00b7art \u2014 generative SVG studio',
   description:
-    'Eighteen generative art pieces rendered as real SVG. Seeded and reproducible, ' +
+    'Twenty generative art pieces rendered as real SVG. Seeded and reproducible, ' +
     'animated for screen capture, exportable as vector or high-resolution PNG.',
   alt: 'A generative artwork rendered as vector line work',
 }

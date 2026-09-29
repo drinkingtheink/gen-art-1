@@ -13,8 +13,9 @@
  * as thirteen independent extremes.
  *
  * The defaults here are deliberately loose, because most generators don't need
- * protecting: rolled fully uniform, fifteen of the eighteen produce something
- * worth looking at essentially every time. The exceptions are the pieces whose
+ * protecting: rolled fully uniform, fifteen of the eighteen pieces that existed
+ * when this was measured produce something worth looking at essentially every
+ * time. The exceptions are the pieces whose
  * params decide whether there is a figure at all — a chaotic map's constants, a
  * line width that reaches zero, an amplitude that collapses to a dot — and
  * those declare a `wander` of their own, next to the param it protects.

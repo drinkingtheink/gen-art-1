@@ -7,8 +7,8 @@ import { launchPieces, renderThumbnail } from '../core/launch.js'
 /**
  * The front door, shown when a visit names no piece.
  *
- * A generative gallery that opens straight onto one of eighteen pieces gives
- * no sense that the other seventeen exist, so a bare visit gets the whole set
+ * A generative gallery that opens straight onto one piece gives no sense that
+ * the rest exist, so a bare visit gets the whole set
  * as thumbnails plus a way to hand the choice to chance entirely.
  *
  * Every card is a real piece — the thumbnail is generated from the same state
@@ -25,7 +25,7 @@ const pieces = launchPieces
 /**
  * Thumbnails arrive one per frame rather than all at once.
  *
- * Generating all eighteen still costs enough in one pass that the panel would
+ * Generating them all still costs enough in one pass that the panel would
  * appear frozen before it appeared at all. Built a frame at a time, the browser
  * paints between pieces and the grid fills in visibly instead.
  */

@@ -8,7 +8,7 @@
  * seeds to maintain.
  *
  * The palette is the exception: it is rolled once per visit, so the grid is a
- * different eighteen colourways each time the panel opens rather than the same
+ * different set of colourways each time the panel opens rather than the same
  * wall of pieces in the sets they were written in. It is rolled here, into the
  * state the card carries, precisely so the thumbnail and the click still agree.
  *
@@ -39,8 +39,8 @@ export const launchPieces = generators.map((generator) => ({
  *
  * Deliberately a string from the DOM-free serialiser rather than a live node
  * tree: the panel hands each one to an `<img>`, which rasterises it once and
- * keeps its ids and gradients in a document of its own. Eighteen inline SVGs
- * in one page would be eighteen sets of clip-path ids sharing a namespace, and
+ * keeps its ids and gradients in a document of its own. Twenty inline SVGs in
+ * one page would be twenty sets of clip-path ids sharing a namespace, and
  * about two megabytes of live DOM for a screen of thumbnails.
  */
 export function renderThumbnail({ generator, state }) {
