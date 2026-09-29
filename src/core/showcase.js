@@ -206,6 +206,16 @@ export const PRESETS = {
     { key: 'bow', wave: 'sine', amplitude: 0.6, period: 19, phase: 0.3 },
     { key: 'twist', wave: 'drift', amplitude: 22, period: 29, centre: 12 },
   ],
+  penrose: [
+    // The tiling itself cannot deform — deflation has no continuous knob, the
+    // golden ratio is not a slider. So the motion is the camera: a slow turn
+    // and a breath of zoom across a pattern that never repeats, which is the
+    // one subject where drifting the view never brings you back to where you
+    // started.
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 67, centre: 180 },
+    { key: 'zoom', wave: 'sine', amplitude: 0.55, period: 31, centre: 1.5 },
+    { key: 'inset', wave: 'sine', amplitude: 0.045, period: 19, phase: 0.3, centre: 0.07 },
+  ],
   glyphs: [
     // The alphabet is fixed; the hand writing it changes.
     //

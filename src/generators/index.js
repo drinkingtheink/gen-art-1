@@ -11,6 +11,7 @@ import harmonograph from './harmonograph.js'
 import lens from './lens.js'
 import moire from './moire.js'
 import packing from './packing.js'
+import penrose from './penrose.js'
 import phyllotaxis from './phyllotaxis.js'
 import rosette from './rosette.js'
 import strata from './strata.js'
@@ -36,6 +37,7 @@ export const generators = [
   lens,
   blocks,
   packing,
+  penrose,
   rosette,
   glyphs,
   cells,
