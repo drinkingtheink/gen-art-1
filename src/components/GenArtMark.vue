@@ -35,17 +35,25 @@
 .mark {
   display: block;
   flex: none;
-  /* Cap height here is about 0.7em. Sized to match it the mark reads timid
-     beside letterforms set at 600 and tracked this wide; much past this it
-     starts out-shouting the name. Compared at 1.45, 1.7 and 1.95em against the
-     live wordmark — at 1.7 the frame carries the same weight as the caps and
-     the stand's feet drop just below the baseline. */
-  height: 1.7em;
+  /* Sized so the frame matches the wordmark's cap height.
+     
+     The frame is the top 57% of the artwork — the rest is the gap and the
+     stand — so a mark of 1.3em puts the frame at 1.03x the caps, measured
+     against this font rather than assumed. The previous 1.7em was set from a
+     guessed cap height of 0.7em; measured, the caps are 10.62px at this size
+     and that made the frame 1.34x them and the whole mark 2.35x, which is why
+     it out-shouted the name.
+     
+     Everything is in em, so the same numbers hold beside the 1.05rem sidebar
+     wordmark and the 1.5rem one on the launch panel. */
+  height: 1.3em;
   width: auto;
-  /* Nudged down by a hair: the flexbox centres the mark on the line box, which
-     includes descender space the uppercase wordmark never uses, so centred
-     lands optically high. */
-  transform: translateY(0.04em);
+  /* Lifts the frame off the line box's centre and onto the cap band: the box
+     is centred on a line that includes descender space the uppercase wordmark
+     never uses, which lands it low. At this offset the frame's top sits on the
+     cap line and its bottom on the baseline, to within a third of a pixel,
+     leaving the stand to hang below like a descender. */
+  transform: translateY(-0.08em);
   fill: var(--accent);
 }
 </style>
