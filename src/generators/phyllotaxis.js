@@ -45,7 +45,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'phyllotaxis',
   name: 'Phyllotaxis',
-  blurb: 'The spiral, emergent and unintended.',
+  blurb: 'Seeds in spirals, after the sunflower.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

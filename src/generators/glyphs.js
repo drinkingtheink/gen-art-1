@@ -45,7 +45,7 @@ const MAX_STROKES = 6
 export default {
   id: 'glyphs',
   name: 'Glyphs',
-  blurb: 'Language, absent the burden of meaning.',
+  blurb: 'Rows of characters from no known alphabet.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

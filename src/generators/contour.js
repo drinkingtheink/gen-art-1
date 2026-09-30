@@ -36,7 +36,7 @@ const cross = (a, b, level) => (Math.abs(b - a) < 1e-9 ? 0.5 : (level - a) / (b 
 export default {
   id: 'contour',
   name: 'Contour',
-  blurb: 'Elevation, transcribed as pure line.',
+  blurb: 'Nested contours, as of a surveyed land.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

@@ -40,7 +40,7 @@ const MAX_DISCS = 1400
 export default {
   id: 'packing',
   name: 'Packing',
-  blurb: 'Negative space, as the true subject.',
+  blurb: 'Discs of every size, admitting no gap.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

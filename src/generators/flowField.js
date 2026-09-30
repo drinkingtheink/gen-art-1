@@ -42,7 +42,7 @@ const SIMPLIFY_TOLERANCE = DEFAULT_TOLERANCE
 export default {
   id: 'flow-field',
   name: 'Flow Field',
-  blurb: 'The eye is invited to follow the field.',
+  blurb: 'Filaments, combed by an unseen current.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

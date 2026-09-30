@@ -39,7 +39,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'halftone',
   name: 'Halftone',
-  blurb: 'The dot, interrogated at fixed interval.',
+  blurb: 'A field of dots, swelling and receding.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

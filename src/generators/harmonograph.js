@@ -50,7 +50,7 @@ const MAX_PENDULUMS = 4
 export default {
   id: 'harmonograph',
   name: 'Harmonograph',
-  blurb: 'Studies after the pendulum, undamped.',
+  blurb: 'Looping traces of a pendulum losing heart.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

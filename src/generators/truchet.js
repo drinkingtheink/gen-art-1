@@ -93,7 +93,7 @@ function tile(kind, x, y, size, flip) {
 export default {
   id: 'truchet',
   name: 'Truchet Tiles',
-  blurb: 'Order, arrived at without instruction.',
+  blurb: 'Arcs meeting at every edge, forming paths.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

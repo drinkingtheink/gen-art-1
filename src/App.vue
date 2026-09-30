@@ -478,6 +478,7 @@ async function copyLink() {
         :busy="exporting"
         :status="exportStatus"
         :grain-on="grain.amount > 0"
+        :canvas="canvas"
         :css="cssText"
         :css-note="cssNote"
         @export-svg="exportSvg"

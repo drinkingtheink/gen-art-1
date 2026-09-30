@@ -68,7 +68,7 @@ function clipToBisector(poly, ax, ay, bx, by) {
 export default {
   id: 'cells',
   name: 'Cells',
-  blurb: 'Territory, resolved without dispute.',
+  blurb: 'Polygons, each claiming its own ground.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

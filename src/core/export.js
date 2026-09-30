@@ -8,7 +8,7 @@
  */
 
 /** Browsers vary, but canvases much past this get unreliable and memory-hungry. */
-const MAX_RASTER_EDGE = 8192
+export const MAX_RASTER_EDGE = 8192
 
 /**
  * A copy of the live stage, cleaned of anything app-specific and given an

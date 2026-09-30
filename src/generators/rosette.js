@@ -71,7 +71,7 @@ const MAX_RINGS = 9
 export default {
   id: 'rosette',
   name: 'Rosette',
-  blurb: 'Symmetry, in devotional arrangement.',
+  blurb: 'Petals in radial order about a centre.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

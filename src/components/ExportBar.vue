@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, useTemplateRef, watch } from 'vue'
+import { MAX_RASTER_EDGE } from '../core/export.js'
 
 /**
  * Export controls. The work is done by the parent, which holds the stage
@@ -9,6 +10,8 @@ const props = defineProps({
   busy: { type: Boolean, default: false },
   status: { type: String, default: '' },
   grainOn: { type: Boolean, default: false },
+  /** The piece's authored size, which is what a print size is measured from. */
+  canvas: { type: Object, default: () => ({ width: 1000, height: 1000 }) },
   /** The rule itself, once asked for. Empty means the panel is closed. */
   css: { type: String, default: '' },
   cssNote: { type: String, default: '' },
@@ -69,7 +72,29 @@ async function copy() {
   copyTimer = setTimeout(() => { copyState.value = '' }, ok ? 1600 : 4000)
 }
 
-// 1000px authored, so 4x is 4000px — about 13in at 300dpi, enough to frame.
+/**
+ * What the chosen scale actually gets you, on paper.
+ *
+ * Printing is half the point of the PNG path and the control said nothing
+ * about it — a multiplier and a pixel count leave you to do the arithmetic
+ * for a thing the app already knows. Sizes come from the piece's own canvas
+ * rather than a fixed 1000px, because ratios hold area constant: the same 4x
+ * is 13in square or 18in wide depending on the shape on screen.
+ *
+ * 300dpi is the number a print shop means by photographic quality.
+ */
+const printSize = computed(() => {
+  const { width, height } = props.canvas
+  const longest = Math.max(width, height)
+  // The exporter clamps past this, so the readout has to as well or it
+  // promises a size the file won't be.
+  const clamped = longest * scale.value > MAX_RASTER_EDGE
+  const used = clamped ? MAX_RASTER_EDGE / longest : scale.value
+  const px = (n) => Math.round(n * used)
+  const inches = (n) => (px(n) / 300).toFixed(1)
+  return { w: px(width), h: px(height), inW: inches(width), inH: inches(height), clamped }
+})
+
 const SCALES = [
   { value: 1, label: '1x · 1000px' },
   { value: 2, label: '2x · 2000px' },
@@ -89,6 +114,10 @@ const SCALES = [
         <option v-for="s in SCALES" :key="s.value" :value="s.value">{{ s.label }}</option>
       </select>
     </div>
+
+    <p class="status">
+      {{ printSize.w }}×{{ printSize.h }}px — {{ printSize.inW }}×{{ printSize.inH }}in at 300dpi{{ printSize.clamped ? ', clamped to what a browser will raster' : '' }}
+    </p>
 
     <div class="row css">
       <button type="button" :disabled="busy" @click="emit('export-css')">

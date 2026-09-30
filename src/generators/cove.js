@@ -66,7 +66,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'cove',
   name: 'Cove',
-  blurb: 'Perspective, sole author of the curve.',
+  blurb: 'Stripes sweeping from wall onto floor.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

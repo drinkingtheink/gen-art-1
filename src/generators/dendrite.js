@@ -76,7 +76,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'dendrite',
   name: 'Dendrite',
-  blurb: 'Recursion, and the forms it must find.',
+  blurb: 'A branching form, finer at every remove.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {
