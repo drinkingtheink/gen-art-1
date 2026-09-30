@@ -136,7 +136,7 @@ function toggleMute(index) {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0.25rem;
-  /* Forty chips is a wall in a 288px column, so the grid scrolls rather than
+  /* Fifty chips is a wall in a 288px column, so the grid scrolls rather than
      pushing every other control off the panel. */
   max-height: 148px;
   overflow-y: auto;

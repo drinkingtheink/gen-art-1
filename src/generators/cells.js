@@ -27,7 +27,7 @@ const params = [
   { key: 'edge', type: 'range', label: 'Edge', min: 0, max: 5, step: 0.05, default: 0 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 1 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 0 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'reef' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'geyser' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.6 },
 ]
 

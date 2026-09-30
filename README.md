@@ -110,8 +110,8 @@ behind it to blur. Backdrop 0, frost 1, sheet 2.
 13px of blur, not more. Past about 20px the finer pieces — truchet's tiles, a phyllotaxis' dots —
 dissolve into a plain gradient and there is no movement left to see, which is the one thing it is
 for. The tint sits on top of the frost rather than under the artwork, which is what holds the
-screen to roughly one brightness across all forty palettes, whose backgrounds run from a near-black
-magma to an all but white moss.
+screen to roughly one brightness across all fifty palettes, whose backgrounds run from a near-black
+laser to an all but white moss.
 
 Everything secondary on this screen uses a brighter grey than the studio's `--ink-dim`. That grey
 is tuned for flat panel colour; over frosted artwork it goes muddy.
@@ -286,7 +286,7 @@ composition still while Shortening and Depth sweep.
 
 ## Palettes
 
-Forty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
+Fifty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
 should be visible. Each is scored on luminance range x mean saturation; anything below ~0.35 reads
 as bland or midtone-heavy on screen and isn't kept. That measurement retired four sets from the
 first twenty (a greyscale at 0.00, and three whose colours all sat at the same value), and killed

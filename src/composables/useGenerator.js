@@ -224,7 +224,7 @@ export function useGenerator(initial = {}) {
    *
    * Each piece was authored in one set, so every piece appeared to come in one
    * colour: truchet was the flame piece, dendrite the green one. The sets are
-   * all general-purpose and there are forty of them, and which one a piece
+   * all general-purpose and there are fifty of them, and which one a piece
    * happens to have been written in says nothing about which one suits it.
    *
    * Never the set already on screen, so the change always reads as a change.

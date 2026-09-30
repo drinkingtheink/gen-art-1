@@ -6,272 +6,368 @@
  * accent; line-based generators reverse this, because a thin stroke in the
  * quietest colour disappears. `bg` is the paper the piece sits on.
  *
- * Every set is scored on luminance range x mean saturation. Sets below ~0.35
- * read as bland or midtone-heavy on screen — greys, and anything whose colours
- * all sit at the same value — and are not kept.
+ * Every set is scored on luminance range x mean saturation, and the number is
+ * in the comment above its colours. The bar is 0.42: below that a set reads as
+ * bland or midtone-heavy on screen — greys, and anything whose colours all sit
+ * at the same value.
+ *
+ * Sets are also kept apart from one another, not just from mud. No two are
+ * closer than 22 units of CIE Lab distance, measured as the mean nearest-colour
+ * distance between their two colour sets — the previous collection had pairs at
+ * 16.8 that read as the same palette twice.
  */
 const PALETTES = [
-  {
-    id: 'flame',
-    name: 'Flame',
-    bg: '#f4eed2',
-    // https://coolors.co/app/003049-d62828-f77f00-fcbf49-eae2b7
-    colors: ['#eae2b7', '#fcbf49', '#003049', '#f77f00', '#d62828'],
-  },
-  {
-    id: 'reef',
-    name: 'Reef',
-    bg: '#f7fff7',
-    // https://coolors.co/1a535c-4ecdc4-f7fff7-ff6b6b-ffe66d
-    colors: ['#f7fff7', '#4ecdc4', '#1a535c', '#ffe66d', '#ff6b6b'],
-  },
-  {
-    id: 'blush',
-    name: 'Blush',
-    bg: '#f5f4f2',
-    // https://coolors.co/app/f5f4f2-feedf3-feb4c1-cd3c67-3f3f3f
-    colors: ['#f5f4f2', '#feedf3', '#feb4c1', '#cd3c67', '#3f3f3f'],
-  },
-  {
-    id: 'moss',
-    name: 'Moss',
-    bg: '#fcfffc',
-    // https://coolors.co/app/040f0f-248232-2ba84a-2d3a3a-fcfffc
-    colors: ['#fcfffc', '#2d3a3a', '#2ba84a', '#248232', '#040f0f'],
-  },
-  {
-    id: 'harbor',
-    name: 'Harbor',
-    bg: '#ebf2fa',
-    // https://coolors.co/05668d-427aa1-ebf2fa-679436-a5be00
-    colors: ['#ebf2fa', '#427aa1', '#05668d', '#a5be00', '#679436'],
-  },
-  {
-    id: 'citrus',
-    name: 'Citrus',
-    bg: '#d3fad6',
-    // https://coolors.co/app/270722-e01a4f-f3b61f-f7d488-d3fad6
-    colors: ['#d3fad6', '#f7d488', '#f3b61f', '#e01a4f', '#270722'],
-  },
-  {
-    id: 'neon',
-    name: 'Neon',
-    bg: '#0d1b2a',
-    // https://coolors.co/app/a8f9ff-ffffff-56cbf9-ffe74c-ff729f
-    colors: ['#a8f9ff', '#56cbf9', '#ffffff', '#ffe74c', '#ff729f'],
-  },
-  {
-    id: 'ember',
-    name: 'Ember',
-    bg: '#faf3df',
-    // https://coolors.co/app/f2dd6e-f2a359-e5b25d-b87d4b-523a34
-    colors: ['#f2dd6e', '#e5b25d', '#f2a359', '#b87d4b', '#523a34'],
-  },
-
-  // --- high-chroma sets ---
   {
     id: 'riso',
     name: 'Riso',
     bg: '#fdf8f0',
-    // Risograph fluorescents: they overprint rather than blend.
+    // 0.44
     colors: ['#fdf8f0', '#ffe800', '#00a95c', '#0078bf', '#ff48b0'],
-  },
-  {
-    id: 'acid',
-    name: 'Acid',
-    bg: '#0b0b10',
-    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
-  },
-  {
-    id: 'sodium',
-    name: 'Sodium',
-    bg: '#10101c',
-    // Sodium-vapour street light against night.
-    colors: ['#2a2440', '#f5e6c8', '#ffb000', '#ff6a00', '#ff2d55'],
-  },
-  {
-    id: 'vapor',
-    name: 'Vapor',
-    bg: '#120024',
-    colors: ['#3a1a5e', '#b967ff', '#01cdfe', '#05ffa1', '#ff71ce'],
-  },
-  {
-    id: 'ultra',
-    name: 'Ultra',
-    bg: '#f8f9fa',
-    // Bauhaus primaries — flat, loud, no blending.
-    colors: ['#f8f9fa', '#ffd60a', '#0033cc', '#e63946', '#0b090a'],
-  },
-  {
-    id: 'poppy',
-    name: 'Poppy',
-    bg: '#fff8e7',
-    colors: ['#fff3b0', '#ffba08', '#ff7b00', '#d00000', '#370617'],
-  },
-  {
-    id: 'jade',
-    name: 'Jade',
-    bg: '#f0fffc',
-    colors: ['#b2f7ef', '#00a878', '#ffd23f', '#00332c', '#011c1a'],
-  },
-  {
-    id: 'plasma',
-    name: 'Plasma',
-    bg: '#0d0221',
-    // Thermal ramp: black through magenta to white-hot yellow.
-    colors: ['#2d0b4e', '#7209b7', '#f72585', '#ff8500', '#ffe66d'],
-  },
-  {
-    id: 'aurora',
-    name: 'Aurora',
-    bg: '#050d16',
-    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
-  },
-  {
-    id: 'tangerine',
-    name: 'Tangerine',
-    bg: '#fffaf0',
-    colors: ['#ffffff', '#ffea00', '#ff9e00', '#ff5400', '#00171f'],
-  },
-  {
-    id: 'oxblood',
-    name: 'Oxblood',
-    bg: '#fdf6ec',
-    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
-  },
-  {
-    id: 'electric',
-    name: 'Electric',
-    bg: '#10002b',
-    colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
-  },
-// --- second set: chosen to even out the spread. The first twenty ran
-  // 13 light backgrounds to 7 dark and leaned yellow/red/cyan/orange, so
-  // these are 13 dark to 7 light and weighted toward green, blue, violet
-  // and magenta.
-  {
-    id: 'forest',
-    name: 'Forest',
-    bg: '#04140c',
-    colors: ['#123a22', '#2f7d4f', '#7fd694', '#d8f58a', '#fff6c2'],
   },
   {
     id: 'cobalt',
     name: 'Cobalt',
     bg: '#050d1f',
+    // 0.45
     colors: ['#14275c', '#2f5fd0', '#5e9cff', '#a9d4ff', '#ffe066'],
   },
   {
-    id: 'orchid',
-    name: 'Orchid',
-    bg: '#17061f',
-    colors: ['#3b1152', '#7b2ea8', '#c25ce0', '#ff8ad8', '#ffd6f2'],
+    id: 'moss',
+    name: 'Moss',
+    bg: '#fcfffc',
+    // 0.46
+    colors: ['#fcfffc', '#2d3a3a', '#2ba84a', '#248232', '#040f0f'],
   },
   {
-    id: 'rust',
-    name: 'Rust',
-    bg: '#150a06',
-    colors: ['#3a1a0e', '#8c3b17', '#d96a2b', '#f0a556', '#ffe2b0'],
+    id: 'bindweed',
+    name: 'Bindweed',
+    bg: '#f7f2e6',
+    // 0.48
+    colors: ['#25113d', '#7b4ab8', '#b98ce8', '#f6e48a', '#c8ff2e'],
   },
   {
-    id: 'abyss',
-    name: 'Abyss',
-    bg: '#021012',
-    colors: ['#0b3038', '#14697a', '#2fb5b5', '#7ff0dc', '#e6fffb'],
+    id: 'ocotillo',
+    name: 'Ocotillo',
+    bg: '#f5ecd8',
+    // 0.48
+    colors: ['#241f0e', '#5c6b2f', '#f2dca0', '#f5a623', '#e0197f'],
+  },
+  {
+    id: 'geyser',
+    name: 'Geyser',
+    bg: '#eef5f2',
+    // 0.48
+    colors: ['#073d4a', '#1f96a8', '#8fe0cf', '#f5e04a', '#e85a14'],
+  },
+  {
+    id: 'ukiyo',
+    name: 'Ukiyo',
+    bg: '#f2ece0',
+    // 0.49
+    colors: ['#101c3d', '#3d7fa6', '#e8dca8', '#c25a2a', '#c8203c'],
+  },
+  {
+    id: 'mesa',
+    name: 'Mesa',
+    bg: '#f2e6d2',
+    // 0.49
+    colors: ['#1f120e', '#2f6b5c', '#f2dca8', '#cf7a2a', '#e34a14'],
+  },
+  {
+    id: 'fauve',
+    name: 'Fauve',
+    bg: '#f5efe2',
+    // 0.50
+    colors: ['#123f2e', '#1f6fa8', '#f2d94a', '#e8431f', '#ff1f8f'],
+  },
+  {
+    id: 'tropic',
+    name: 'Tropic',
+    bg: '#041012',
+    // 0.50
+    colors: ['#0d3a37', '#16a08f', '#ffd12e', '#ff6b3d', '#ff2d8f'],
+  },
+  {
+    id: 'thicket',
+    name: 'Thicket',
+    bg: '#f7f4ec',
+    // 0.51
+    colors: ['#8fd98a', '#1d6b45', '#2a1208', '#b5431c', '#f2b705'],
+  },
+  {
+    id: 'cochineal',
+    name: 'Cochineal',
+    bg: '#fdf4f6',
+    // 0.51
+    colors: ['#f6a8bd', '#c2185b', '#3d0a2b', '#ff3d6e', '#ffcf3d'],
   },
   {
     id: 'fuchsia',
     name: 'Fuchsia',
     bg: '#0a0410',
+    // 0.51
     colors: ['#2e0a2c', '#8a1063', '#e0229c', '#ff6fc8', '#ffd1ec'],
   },
   {
-    id: 'lime',
-    name: 'Lime',
-    bg: '#0b1004',
-    colors: ['#1e3308', '#4c7a10', '#8fd11a', '#d4f53a', '#f4ffb0'],
+    id: 'sodium',
+    name: 'Sodium',
+    bg: '#10101c',
+    // 0.52
+    colors: ['#2a2440', '#f5e6c8', '#ffb000', '#ff6a00', '#ff2d55'],
   },
   {
-    id: 'ultraviolet',
-    name: 'Ultraviolet',
-    bg: '#0b0417',
-    colors: ['#26104a', '#5a1fb0', '#9b4dff', '#d9a0ff', '#5cffd0'],
+    id: 'pennant',
+    name: 'Pennant',
+    bg: '#f7f4ef',
+    // 0.54
+    colors: ['#8fb8f5', '#0d1b2e', '#00843d', '#c8102e', '#ffc400'],
   },
   {
-    id: 'spectrum',
-    name: 'Spectrum',
-    bg: '#060608',
-    colors: ['#2b2b6e', '#1fa9c9', '#3ecf6b', '#ffc93c', '#ff3d6e'],
+    id: 'jadeite',
+    name: 'Jadeite',
+    bg: '#04100d',
+    // 0.54
+    colors: ['#0c2f28', '#0f6b52', '#17c48e', '#5cffd0', '#ffd23d'],
   },
   {
-    id: 'ice',
-    name: 'Ice',
-    bg: '#060f1c',
-    colors: ['#123049', '#2f6f96', '#68b6d9', '#b8e6f5', '#7cffd4'],
+    id: 'flame',
+    name: 'Flame',
+    bg: '#f4eed2',
+    // 0.54
+    colors: ['#eae2b7', '#fcbf49', '#003049', '#f77f00', '#d62828'],
   },
   {
-    id: 'magma',
-    name: 'Magma',
-    bg: '#0c0304',
-    colors: ['#3d0812', '#93132a', '#e03e1f', '#ff9020', '#ffe15c'],
+    id: 'ozone',
+    name: 'Ozone',
+    bg: '#060d14',
+    // 0.54
+    colors: ['#0f2b40', '#1f7fc2', '#4fd6ff', '#c9fbff', '#a3ff12'],
   },
   {
-    id: 'indigo',
-    name: 'Indigo',
-    bg: '#0a0a2e',
-    colors: ['#1e1b5e', '#3f39a8', '#7a6ff0', '#b6a8ff', '#f0e6ff'],
+    id: 'ultra',
+    name: 'Ultra',
+    bg: '#f8f9fa',
+    // 0.54
+    colors: ['#f8f9fa', '#ffd60a', '#0033cc', '#e63946', '#0b090a'],
   },
   {
-    id: 'verdigris',
-    name: 'Verdigris',
-    bg: '#0b1512',
-    colors: ['#17362e', '#2d7a63', '#5fbfa0', '#c2e8b0', '#e8a33d'],
+    id: 'peacock',
+    name: 'Peacock',
+    bg: '#03080e',
+    // 0.55
+    colors: ['#092a45', '#0f6f8f', '#1bbfae', '#8f4dff', '#ffcf2e'],
   },
   {
-    id: 'sage',
-    name: 'Sage',
-    bg: '#f2f5ec',
-    colors: ['#dbe8c4', '#9ac46a', '#3f8f3a', '#14532d', '#e2451f'],
+    id: 'aster',
+    name: 'Aster',
+    bg: '#f5f6fb',
+    // 0.55
+    colors: ['#9fb0ef', '#2a2fc0', '#0d0f3d', '#ffd500', '#ff2e7a'],
   },
   {
-    id: 'cerulean',
-    name: 'Cerulean',
-    bg: '#f2f9ff',
-    colors: ['#dbeeff', '#8fc7ef', '#2f8ccf', '#0b4f8a', '#ff7b3d'],
+    id: 'acid',
+    name: 'Acid',
+    bg: '#0b0b10',
+    // 0.55
+    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
   },
   {
-    id: 'peony',
-    name: 'Peony',
-    bg: '#fff5f7',
-    colors: ['#ffd9e4', '#ff9ab8', '#e8477f', '#8c1742', '#2b1020'],
+    id: 'klaxon',
+    name: 'Klaxon',
+    bg: '#fbfbf9',
+    // 0.55
+    colors: ['#9fe8f2', '#00a3c4', '#1b1b3a', '#ffd400', '#ff1f8f'],
+  },
+  {
+    id: 'citrus',
+    name: 'Citrus',
+    bg: '#d3fad6',
+    // 0.56
+    colors: ['#d3fad6', '#f7d488', '#f3b61f', '#e01a4f', '#270722'],
+  },
+  {
+    id: 'ensign',
+    name: 'Ensign',
+    bg: '#f1f3f6',
+    // 0.56
+    colors: ['#b3d4ff', '#2a5db0', '#071634', '#ff8a00', '#e01b24'],
+  },
+  {
+    id: 'helium',
+    name: 'Helium',
+    bg: '#0f0410',
+    // 0.56
+    colors: ['#35102e', '#a82a5e', '#ff5c7a', '#ffd84d', '#00e5ff'],
+  },
+  {
+    id: 'hedgerow',
+    name: 'Hedgerow',
+    bg: '#f9f5f0',
+    // 0.56
+    colors: ['#c2d98f', '#2f7a12', '#2a0b26', '#a81070', '#ffc107'],
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    bg: '#050d16',
+    // 0.56
+    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
+  },
+  {
+    id: 'lagoon',
+    name: 'Lagoon',
+    bg: '#01090f',
+    // 0.56
+    colors: ['#082a3d', '#0f6f99', '#17c8e0', '#6cf7ff', '#ff4d6d'],
+  },
+  {
+    id: 'oxblood',
+    name: 'Oxblood',
+    bg: '#fdf6ec',
+    // 0.57
+    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
+  },
+  {
+    id: 'cyanotype',
+    name: 'Cyanotype',
+    bg: '#f1f4f8',
+    // 0.57
+    colors: ['#04080f', '#10325e', '#4b86c9', '#cfe4f7', '#ffdd00'],
+  },
+  {
+    id: 'cinnabar',
+    name: 'Cinnabar',
+    bg: '#0a0403',
+    // 0.57
+    colors: ['#4a0d06', '#a81f0c', '#f03a10', '#ff8a2b', '#00ecd1'],
+  },
+  {
+    id: 'bitumen',
+    name: 'Bitumen',
+    bg: '#0c0806',
+    // 0.59
+    colors: ['#140a02', '#4a2a10', '#a16c38', '#f0dcb8', '#00e5ff'],
+  },
+  {
+    id: 'venom',
+    name: 'Venom',
+    bg: '#030a06',
+    // 0.59
+    colors: ['#0a2e18', '#0f7a35', '#1fd65a', '#7dff3d', '#ff00a8'],
+  },
+  {
+    id: 'jewel',
+    name: 'Jewel',
+    bg: '#06040a',
+    // 0.60
+    colors: ['#1a0f3d', '#153fa8', '#0f9e6b', '#c41e5c', '#ffc824'],
+  },
+  {
+    id: 'cryolite',
+    name: 'Cryolite',
+    bg: '#eef4f8',
+    // 0.60
+    colors: ['#120c4d', '#1f3fc4', '#1f8fe0', '#3fdde0', '#a8f7ff'],
   },
   {
     id: 'marigold',
     name: 'Marigold',
     bg: '#fffaeb',
+    // 0.60
     colors: ['#ffeeb8', '#ffd23f', '#f2a007', '#c25e00', '#3d2308'],
   },
   {
-    id: 'denim',
-    name: 'Denim',
-    bg: '#eef2f7',
-    colors: ['#c3d7ee', '#6f9ed6', '#2563a8', '#0d2f5c', '#ffb020'],
+    id: 'bramble',
+    name: 'Bramble',
+    bg: '#f2f5ec',
+    // 0.61
+    colors: ['#03140a', '#10561f', '#2f8f4c', '#d8f0a8', '#ff007f'],
   },
   {
-    id: 'terracotta',
-    name: 'Terracotta',
-    bg: '#fbf3ea',
-    colors: ['#f0d9c0', '#d99a6c', '#b05432', '#6e2a17', '#2f8a7a'],
+    id: 'voltage',
+    name: 'Voltage',
+    bg: '#01050f',
+    // 0.63
+    colors: ['#0b1240', '#2233ff', '#00b3ff', '#7de8ff', '#ff2e00'],
   },
   {
-    id: 'mint',
-    name: 'Mint',
-    bg: '#f0fffa',
-    colors: ['#c8f5e4', '#6fd9b8', '#17a882', '#0a5c4a', '#ff5c7a'],
+    id: 'chlorophyll',
+    name: 'Chlorophyll',
+    bg: '#08110a',
+    // 0.63
+    colors: ['#0a2e14', '#17662a', '#4fa314', '#a8d419', '#eaff4a'],
+  },
+  {
+    id: 'citron',
+    name: 'Citron',
+    bg: '#0a0c02',
+    // 0.64
+    colors: ['#2b3206', '#7a8c0b', '#cfe015', '#fff23d', '#ff3b1f'],
+  },
+  {
+    id: 'solar',
+    name: 'Solar',
+    bg: '#0e0900',
+    // 0.65
+    colors: ['#3a2600', '#a06a00', '#ffc400', '#ffef8a', '#7c3bff'],
+  },
+  {
+    id: 'electric',
+    name: 'Electric',
+    bg: '#10002b',
+    // 0.65
+    colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
+  },
+  {
+    id: 'jade',
+    name: 'Jade',
+    bg: '#f0fffc',
+    // 0.66
+    colors: ['#b2f7ef', '#00a878', '#ffd23f', '#00332c', '#011c1a'],
+  },
+  {
+    id: 'iris',
+    name: 'Iris',
+    bg: '#0a0518',
+    // 0.67
+    colors: ['#1d0a4d', '#4f19c4', '#8b2bff', '#c86bff', '#f7ff4d'],
+  },
+  {
+    id: 'plasma',
+    name: 'Plasma',
+    bg: '#0d0221',
+    // 0.68
+    colors: ['#2d0b4e', '#7209b7', '#f72585', '#ff8500', '#ffe66d'],
+  },
+  {
+    id: 'flare',
+    name: 'Flare',
+    bg: '#0b0203',
+    // 0.74
+    colors: ['#3d0014', '#9b0b28', '#ee1133', '#ff6a1f', '#ffe94d'],
+  },
+  {
+    id: 'tangerine',
+    name: 'Tangerine',
+    bg: '#fffaf0',
+    // 0.74
+    colors: ['#ffffff', '#ffea00', '#ff9e00', '#ff5400', '#00171f'],
+  },
+  {
+    id: 'cerise',
+    name: 'Cerise',
+    bg: '#0d0210',
+    // 0.77
+    colors: ['#40002b', '#a3007a', '#ff1f8f', '#ffd400', '#aaff00'],
+  },
+  {
+    id: 'laser',
+    name: 'Laser',
+    bg: '#000305',
+    // 0.78
+    colors: ['#08202b', '#00a2ff', '#ff0055', '#00ff8c', '#faff00'],
   },
 ]
-
-
 export const palettes = PALETTES
 
 export const paletteById = Object.fromEntries(PALETTES.map((p) => [p.id, p]))
@@ -317,7 +413,7 @@ export function legibleInks(palette, gap = 26) {
  * repeatable.
  *
  * Excluding the current palette matters when this is used to change pieces:
- * one time in forty the roll would land on what is already on screen and the
+ * one time in fifty the roll would land on what is already on screen and the
  * switch would look like it had not taken.
  */
 export function randomPaletteId(not = null, rng = null) {

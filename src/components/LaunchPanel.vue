@@ -131,7 +131,7 @@ onUnmounted(() => {
    overlaps it.
 
    The tint on top holds the screen to roughly one brightness whichever of the
-   forty palettes came up: their backgrounds run from a near-black magma to an
+   fifty palettes came up: their backgrounds run from a near-black laser to an
    all but white moss, and the text has to survive both. Graded slightly darker
    at the edges, where there is nothing but artwork. */
 .launch::before {

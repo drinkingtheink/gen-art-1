@@ -31,7 +31,7 @@ const params = [
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0.2, max: 5, step: 0.05, default: 1.1 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.85 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 60 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'harbor' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'cyanotype' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.15 },
 ]
 
