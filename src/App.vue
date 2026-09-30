@@ -529,9 +529,6 @@ async function copyLink() {
 }
 
 .wordmark {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
   margin: 0 0 0 10px;
   /* The mark is sized to cap height, so the two stand level whatever this is
      set to and the pair scale together from this one number. A modest step up
@@ -545,6 +542,33 @@ async function copyLink() {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/**
+ * The name is the way back to the picker — the oldest convention on the web,
+ * and it costs no room in a 288px column. The explicit button below it is for
+ * anyone who does not think to try.
+ */
+.home {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  /* Everything the global button style would impose, undone: this has to read
+     as the wordmark, not as a control. */
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.home:hover {
+  background: none;
+  opacity: 0.82;
 }
 
 .wordmark span {
@@ -563,6 +587,12 @@ async function copyLink() {
  * and link to.
  */
 .tagline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  /* Wraps rather than crushing the strapline if the column is ever narrower. */
+  flex-wrap: wrap;
+  gap: 0.4rem;
   margin: 0;
   /* The loudest line in the sidebar after the name itself, and loud without
      reaching for the accent — that belongs to the mark, the separator and the
@@ -582,6 +612,25 @@ async function copyLink() {
   width: 100%;
   color: var(--ink-dim);
   font-size: 0.8rem;
+}
+
+/* Low-key on purpose: it has to be findable without competing with the name
+   above it or the piece picker below. */
+.all {
+  flex: none;
+  padding: 0.1rem 0.4rem;
+  color: var(--ink-dim);
+  background: none;
+  border-color: transparent;
+  font-family: inherit;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.all:hover {
+  color: var(--accent);
+  background: none;
+  border-color: var(--panel-edge);
 }
 
 .rule {

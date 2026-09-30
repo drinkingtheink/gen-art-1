@@ -123,6 +123,13 @@ as a blob URL rather than inline SVG — the browser rasterises it once, and eig
 documents would mean eighteen sets of clip-path ids sharing one namespace and about two megabytes
 of live DOM for a screen of thumbnails.
 
+The name in the sidebar is a button back to the picker, and there is an explicit **All pieces**
+beside the strapline for anyone who does not think to try it. Both push the bare URL rather than
+only flipping a flag, because here the URL is what decides whether the picker is up — leaving it
+naming a piece would mean a reload skipped the panel and Back stepped past the picker instead of
+to it. Before this the only way back was the browser's Back button, which worked only if the picker
+happened to be behind you: anyone arriving on a shared link had no way back to it at all.
+
 **Start From Randomized Piece** rolls everything: generator, canvas shape, every parameter. The whole choice
 derives from one word-seed, so a roll is reproducible from that seed alone, and the rng it draws on
 is namespaced apart from the one the art itself draws on.
