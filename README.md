@@ -209,6 +209,34 @@ memory-hungry beyond it.
 Files are named for the piece — `gen-art-truchet-still-hokusai-12.svg` — so a file on disk is still
 traceable back to the seed that made it.
 
+**CSS** copies a ready-to-paste rule that uses the piece as a background, with the artwork inlined
+as a `data:` URI — no file, no hosting. `background-color` is set to the piece's own background, so
+the block degrades to the right colour while the image decodes and stays right if it is blocked.
+`no-repeat`, because nothing here is drawn to tile; repeating a piece shows its seams immediately.
+Grain and effects come along, since a data URI is rendered by the browser's own SVG engine, filters
+and all.
+
+The encoding is percent-based rather than base64 — base64 inflates by a third and stops the markup
+compressing, where this leaves it legible and gzips well (attractor: 344KB down to 127KB). Two
+characters do the damage if you get them wrong. `#` left raw starts a fragment and the image
+silently truncates to nothing, and `%` has to be escaped before everything else or it escapes the
+escapes: an early version turned `%22` into `%2522`, which decodes to a literal `%22` and leaves the
+markup malformed.
+
+Size decides the mode. Nine of the twenty pieces come in under 60KB inline, the median is 73KB, and
+four — inversion, moiré, dendrite, attractor — run past 200KB. Past that the **separate file** mode
+downloads the SVG and copies a two-line rule pointing at it instead.
+
+There is deliberately no inline-PNG mode. It was planned, on the assumption a raster would be
+smaller than a few hundred kilobytes of path data, and measurement said otherwise every time: this
+is high-entropy line art, the worst case for PNG, and base64 adds a third on top. Attractor is the
+closest it comes — 344KB of SVG against 413KB of PNG — and grain makes the gap worse rather than
+better, noise being incompressible.
+
+If the clipboard refuses — an insecure origin, a denied permission, an unfocused window — the rule
+downloads as a `.css` file instead. Copying a link can shrug that failure off because the URL is
+still in the address bar; a generated rule exists nowhere else.
+
 ## Canvas shapes
 
 Seven ratios, from square to 16:9, and both A-series orientations. They hold **area** constant

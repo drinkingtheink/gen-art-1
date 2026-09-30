@@ -10,6 +10,7 @@ import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
+import { adviceFor, buildCssRule, byteLength, formatBytes, toDataUri } from '@/core/css.js'
 import { randomState } from '@/core/random.js'
 import { presetFor } from '@/core/showcase.js'
 import { useShowcase } from '@/composables/useShowcase.js'
@@ -271,6 +272,60 @@ function exportPng(scale) {
   })
 }
 
+/**
+ * The piece as a CSS rule, on the clipboard.
+ *
+ * Source is the live stage, same as the SVG export, so what you paste is what
+ * is on screen — grain and effects included. They survive because a data URI
+ * is rendered by the browser's own SVG engine, filters and all; the server-side
+ * link preview drops them only because resvg's filter support is partial.
+ */
+/**
+ * Clipboard, or a file if the clipboard won't have it.
+ *
+ * Writing can be refused for reasons that have nothing to do with the app — an
+ * insecure origin, a denied permission, a window that isn't focused. Copying a
+ * link can shrug that off because the URL is still in the address bar, but a
+ * generated rule exists nowhere else, so refusing to fall back would throw the
+ * work away.
+ */
+async function copyOrSave(text, filename) {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    downloadBlob(new Blob([text], { type: 'text/css;charset=utf-8' }), filename)
+    return false
+  }
+}
+
+function exportCss({ mode }) {
+  return runExport(async () => {
+    const svg = stageSvg()
+    if (!svg) throw new Error('the stage is not ready')
+    const background = scene.value.background
+    const cssName = buildFilename(generatorId.value, seed.value, 'css')
+
+    if (mode === 'file') {
+      const { markup } = serializeScene(svg)
+      const name = buildFilename(generatorId.value, seed.value, 'svg')
+      downloadBlob(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }), name)
+      const copied = await copyOrSave(buildCssRule({ image: name, background }), cssName)
+      return copied
+        ? `Saved ${name} and copied a rule pointing at it — put the file beside your CSS.`
+        : `Saved ${name} and ${cssName}. Keep them together; the rule points at the SVG by name.`
+    }
+
+    const rule = buildCssRule({ image: toDataUri(serializeScene(svg).markup), background })
+    const copied = await copyOrSave(rule, cssName)
+
+    const size = formatBytes(byteLength(rule))
+    const advice = adviceFor(byteLength(rule))
+    const head = copied ? `Copied ${size} of CSS.` : `Clipboard refused, so ${cssName} downloaded instead — ${size}.`
+    return `${head}${advice ? ` ${advice}` : ''}`
+  })
+}
+
 const copied = ref(false)
 let copyTimer = null
 
@@ -299,7 +354,7 @@ async function copyLink() {
   <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">
-        <h1 class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
+        <h1 class="wordmark"><GenArtMark />gen<span>·</span>Art</h1>
         <p class="blurb">{{ generator.blurb }}</p>
       </header>
 
@@ -357,6 +412,7 @@ async function copyLink() {
         :grain-on="grain.amount > 0"
         @export-svg="exportSvg"
         @export-png="exportPng"
+        @export-css="exportCss"
       />
 
       <hr class="rule" />
@@ -435,13 +491,13 @@ async function copyLink() {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  margin: 0;
+  margin: 0 0 0 10px;
   /* The mark is sized to cap height, so the two stand level whatever this is
      set to and the pair scale together from this one number. A modest step up
      from the 1.05rem it was — enough that the name carries the header, short
      of the 1.9rem needed to hold the mark at its old size, which made a
      sidebar header look like a hero. */
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

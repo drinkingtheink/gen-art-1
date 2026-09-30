@@ -48,7 +48,7 @@
      assumed. The stand then hangs below the baseline, like a descender.
      
      In em, so one number holds at any size the wordmark is set at. */
-  height: 1.3em;
+  height: 0.9em;
   width: auto;
   /* Off the line box's centre and onto the cap band. The box is centred on a
      line that includes descender space an uppercase wordmark never uses, which
