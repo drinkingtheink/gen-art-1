@@ -223,30 +223,14 @@ regenerated, not reflowed.
 A link with no `r` resolves to square, so permalinks saved before shapes existed still render
 byte-identically.
 
-## Dendrite, and the piece it replaced
+## Dendrite
 
-Differential growth used to sit in this slot: a closed loop of thousands of nodes pulling on their
-ring neighbours and pushing away from anything near them in space, buckling because the perimeter
-had nowhere else to go. It made beautiful forms and it was a simulation, ~158,000 node-steps
-against a spatial grid, about 130ms a frame. Roughly 8fps in showcase, and inline it blocked paint
-and input for half of every second.
-
-It could not be optimised out of that. The repulsion scan was 72% of the cost and ~19 million
-distance tests per run, and it looked wasteful — 63% of the nodes it tested were outside the
-repulsion radius, because the grid scans a 3x3 box of cells to cover a circle. Tightening the grid
-to half-radius cells does cut candidates by 29% and lifts the in-range hit rate from 37% to 51%,
-and it makes no difference at all to the runtime: `MAX_NEIGHBOURS` caps how many neighbours a
-crowded node samples and fires on 76% of node-steps, so it was already acting as a cost governor.
-Shrink the crowd and the sampler just scans a larger fraction of it. Measured end to end, 29% fewer
-candidates gave 9% fewer distance tests and a 0.98x change in wall clock. The piece was
-cost-bounded by design.
-
-**Dendrite** reaches similar territory — the same branching, space-filling, biological look — by
-recursion instead. A branch splits, each piece splits again, the rule never changes and only the
-scale it applies at does. There are no neighbours to search and no time to step, so it generates in
-about 6ms rather than 130, and it can actually animate: a preset sweep measures 2.51px of movement
-per frame at 30fps, squarely in the filmic band, with the shape count constant across all 300
-frames checked.
+A branch splits, each piece splits again, the rule never changes and only the scale it applies at
+does. Nerve cells, river deltas, frost and lightning all arrive at this shape from unrelated
+physics, because it is what you get when something has to reach everywhere from one place. There
+are no neighbours to search and no time to step, so it generates in about 6ms, and it can animate:
+a preset sweep measures 2.51px of movement per frame at 30fps, squarely in the filmic band, with
+the shape count constant across all 300 frames checked.
 
 Two things make it behave under animation. Per-node randomness is drawn once up front for the whole
 segment budget rather than as the recursion descends, so the number of rng draws never depends on
@@ -265,10 +249,10 @@ generating inline, with requests coalesced rather than queued and the previous s
 until the new one lands. Generators were always pure functions of `(params, seeded rng)` that never
 touch the DOM, so the same module runs in both places unmodified.
 
-It was built for differential growth and **nothing currently sets the flag** — the slowest piece is
-now moire at 23ms, which is fine inline. It is kept as the extension point for any future piece
-that simulates, and costs nothing while unused: the worker chunk is only constructed on the first
-heavy request.
+**Nothing currently sets the flag** — the slowest piece is moire at 23ms, which is fine inline. It
+is kept as the extension point for any future piece whose cost is time-stepped rather than
+proportional to what it draws, and costs nothing while unused: the worker chunk is only constructed
+on the first heavy request.
 
 ## Palettes
 
@@ -433,11 +417,22 @@ feel right; snapping during playback holds a param still for several frames then
 reads as judder — measured as a median per-frame change of exactly zero with all the movement
 arriving in spikes.
 
-Eight pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
-**attractor**, **strata**, **halftone**, **contour**, **chladni**, **lens**, **blocks**, **packing**, **rosette**, **glyphs**, **cells** and **phyllotaxis**.
-The trick is to spend the rng entirely up front, on a noise field or a set of pendulum ratios, and
-have every param after that transform fixed geometry. Both end up with 10 of their range params
-animatable, the strongest motion of any piece, and 2-5ms generation.
+Most pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
+**attractor**, **strata**, **halftone**, **contour**, **chladni**, **lens**, **blocks**, **packing**,
+**rosette**, **glyphs**, **cells**, **phyllotaxis** and **circle inversion**. The trick is to spend
+the rng entirely up front, on a noise field or a set of pendulum ratios, and have every param after
+that transform fixed geometry. They end up with most of their range params animatable, the
+strongest motion here, and 2-5ms generation.
+
+**The Penrose tiling is the piece that can't be animated, and is anyway.** Deflation has no
+continuous knob — the golden ratio is not a slider — so there is exactly one tiling and no way to
+deform it; panning a camera over a fixed pattern is a slideshow. So the motion is the surface
+instead: a travelling wave turns each rhomb about its own centre and opens the grout around it, by
+an amount read off where the tile sits. The swell is cubed, which is the difference between a
+ripple and confetti — a plain sine disturbs every tile all of the time and the pattern stops
+reading as a tiling, while cubing holds most of them flush and concentrates the movement into a
+narrow crest crossing an intact pattern. No tile is ever added or dropped, only turned, so the
+element count is identical on every frame.
 
 **Dendrite is the one with a budget.** A full tree is `branches^depth` wide, so its two structural
 dials multiply catastrophically — 4 splits at depth 11 is four million segments. The total is
@@ -445,18 +440,6 @@ capped at 14,000 and depth gives way, the same bargain truchet makes with its ce
 thousand segments drawn as individual elements is more than the DOM wants, so they are batched into
 one path per depth-and-ink, which is a few dozen elements instead.
 
-It replaced differential growth, which simulated rather than placed and cost ~130ms a frame against
-its ~6ms. That story is under "Dendrite, and the piece it replaced" above.
-
-Three things brought ~300ms down to ~125ms. Typed arrays and a counting-sort grid in place of a
-Map of arrays gave 1.13x with the output byte-identical. Cheaper defaults (150 generations, 2400
-nodes) gave the rest; the form comes out about 83% of its former size, and because permalinks
-encode every param explicitly, no existing link is affected — the old settings on the new code
-still produce the old piece exactly.
-
-It still can't play live at 8fps. What it can do now is not block the interface: the generator is
-marked `heavy`, and a heavy generator's canvas updates at most every 140ms while a control is
-dragged. The slider still moves immediately; only the render waits.
 Subdivision plays fine but animates mostly through colour and stroke weight, since nearly all of
 its geometric params reshuffle.
 
