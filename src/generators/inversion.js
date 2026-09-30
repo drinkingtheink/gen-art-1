@@ -101,7 +101,7 @@ function reflect(c, g) {
 export default {
   id: 'inversion',
   name: 'Circle Inversion',
-  blurb: 'Circles reflected through circles, forever. Every tangency is a law, not a placement.',
+  blurb: 'Circles reflected through circles, forever.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

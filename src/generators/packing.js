@@ -40,7 +40,7 @@ const MAX_DISCS = 1400
 export default {
   id: 'packing',
   name: 'Packing',
-  blurb: 'Discs grown into whatever space the earlier ones left.',
+  blurb: 'Discs grown into the space left over.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

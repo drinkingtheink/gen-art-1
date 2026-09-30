@@ -254,14 +254,43 @@ const exportStatus = ref('')
 /** The live <svg> inside SvgStage — what both exports serialise. */
 const stageSvg = () => stage.value?.svg
 
+/**
+ * Every export stops the clock first.
+ *
+ * Exporting mid-playback serialises whatever instant the click landed on, and
+ * that frame exists nowhere but the file: playback never writes to the address
+ * bar, so the piece you saved could not be reproduced from its own permalink,
+ * re-exported at another size, or adjusted. It would be the one artefact here
+ * that is not a piece.
+ *
+ * Pausing is exactly the fix, because pausing writes the live values into the
+ * params — so this doesn't take the frame away, it makes it the piece. The
+ * file, the sliders, the address bar and the canvas all agree afterwards.
+ *
+ * It pauses rather than refusing. A disabled export button during playback
+ * states the rule correctly and leaves you to work it out; this keeps the
+ * frame you were looking at, which is what you were asking for by clicking.
+ */
 async function runExport(job) {
   if (exporting.value) return
   exporting.value = true
   exportStatus.value = ''
+
+  const wasPlaying = show.playing.value
+  if (wasPlaying) {
+    commitLive()
+    show.pause()
+  }
+
   try {
     // Yield once so the disabled state paints before a big raster blocks us.
+    // It also lands after Vue's flush, so the stage being serialised is the
+    // one the committed params just rendered.
     await new Promise((r) => setTimeout(r, 0))
-    exportStatus.value = await job()
+    const said = await job()
+    exportStatus.value = wasPlaying
+      ? `Paused on this frame, so it stays reproducible.${said ? ` ${said}` : ''}`
+      : said
   } catch (error) {
     exportStatus.value = `Export failed: ${error.message}`
   } finally {

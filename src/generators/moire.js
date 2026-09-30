@@ -46,7 +46,7 @@ const SAMPLES = 34
 export default {
   id: 'moire',
   name: 'Moiré',
-  blurb: 'Line families at odd angles. The pattern is in the interference, not the lines.',
+  blurb: 'The pattern is in the interference.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

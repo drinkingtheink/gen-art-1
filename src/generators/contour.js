@@ -36,7 +36,7 @@ const cross = (a, b, level) => (Math.abs(b - a) < 1e-9 ? 0.5 : (level - a) / (b 
 export default {
   id: 'contour',
   name: 'Contour',
-  blurb: 'Iso-lines through a field. They nest, and never cross.',
+  blurb: 'Iso-lines that nest and never cross.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

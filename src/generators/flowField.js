@@ -42,7 +42,7 @@ const SIMPLIFY_TOLERANCE = DEFAULT_TOLERANCE
 export default {
   id: 'flow-field',
   name: 'Flow Field',
-  blurb: 'A noise field gives every point an angle. Follow it and see where you end up.',
+  blurb: 'A noise field gives every point an angle.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

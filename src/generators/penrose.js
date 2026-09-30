@@ -206,7 +206,7 @@ function toRhombs(tiles) {
 export default {
   id: 'penrose',
   name: 'Penrose Tiling',
-  blurb: 'Two rhombs that tile the plane and can never repeat. Fivefold, forced, unrepeating.',
+  blurb: 'Two rhombs that tile and never repeat.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

@@ -76,7 +76,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'dendrite',
   name: 'Dendrite',
-  blurb: 'One rule applied at every scale. Nerves, rivers and frost all end up here.',
+  blurb: 'One rule applied at every scale.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

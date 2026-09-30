@@ -68,7 +68,7 @@ function clipToBisector(poly, ax, ay, bx, by) {
 export default {
   id: 'cells',
   name: 'Cells',
-  blurb: 'Every point belongs to its nearest site. No gaps, no two alike.',
+  blurb: 'Every point belongs to its nearest site.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

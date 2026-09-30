@@ -71,7 +71,7 @@ const MAX_RINGS = 9
 export default {
   id: 'rosette',
   name: 'Rosette',
-  blurb: 'One motif, turned about a centre. It has a middle, and you look at it.',
+  blurb: 'One motif, turned about a centre.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

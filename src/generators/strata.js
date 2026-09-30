@@ -34,7 +34,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'strata',
   name: 'Strata',
-  blurb: 'Solid bands, boundaries pushed around by a field. Sediment, or landscape.',
+  blurb: 'Solid bands, their edges pushed by a field.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

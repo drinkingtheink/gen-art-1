@@ -50,7 +50,7 @@ const MAX_PENDULUMS = 4
 export default {
   id: 'harmonograph',
   name: 'Harmonograph',
-  blurb: 'Pens on decaying pendulums. Detune them and the figure never closes.',
+  blurb: 'Pens on decaying pendulums.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

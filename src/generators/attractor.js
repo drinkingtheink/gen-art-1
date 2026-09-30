@@ -90,7 +90,7 @@ function drawsSomething(a, b, c, d, fromX, fromY) {
 export default {
   id: 'attractor',
   name: 'Attractor',
-  blurb: 'Two coupled maps, iterated. The orbit wears a path into the plane.',
+  blurb: 'The orbit wears a path into the plane.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {
