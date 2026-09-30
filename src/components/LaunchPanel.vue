@@ -199,6 +199,7 @@ onUnmounted(() => {
 
 .wordmark span {
   color: var(--accent);
+  margin: -5px;
 }
 
 .blurb {
