@@ -93,7 +93,7 @@ function tile(kind, x, y, size, flip) {
 export default {
   id: 'truchet',
   name: 'Truchet Tiles',
-  blurb: 'The grid knits paths nobody drew.',
+  blurb: 'Order, arrived at without instruction.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

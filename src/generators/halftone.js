@@ -39,7 +39,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'halftone',
   name: 'Halftone',
-  blurb: 'A grid that never moves; only the dots do.',
+  blurb: 'The dot, interrogated at fixed interval.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

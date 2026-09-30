@@ -90,7 +90,7 @@ function drawsSomething(a, b, c, d, fromX, fromY) {
 export default {
   id: 'attractor',
   name: 'Attractor',
-  blurb: 'The orbit wears a path into the plane.',
+  blurb: 'The orbit, rendered as sediment.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

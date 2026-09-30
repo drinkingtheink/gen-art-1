@@ -38,7 +38,7 @@ const r1 = (n) => Math.round(n * 10) / 10
 export default {
   id: 'lens',
   name: 'Lens',
-  blurb: 'A flat grid, bulged by invisible lenses.',
+  blurb: 'A study in perceived, and absent, depth.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

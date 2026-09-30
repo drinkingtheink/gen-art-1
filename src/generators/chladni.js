@@ -40,7 +40,7 @@ const cross = (a, b, level) => (Math.abs(b - a) < 1e-9 ? 0.5 : (level - a) / (b 
 export default {
   id: 'chladni',
   name: 'Chladni',
-  blurb: 'The lines a vibrating plate holds still.',
+  blurb: 'Sound made visible; stillness made form.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

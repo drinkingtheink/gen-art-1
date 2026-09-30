@@ -68,7 +68,7 @@ function clipToBisector(poly, ax, ay, bx, by) {
 export default {
   id: 'cells',
   name: 'Cells',
-  blurb: 'Every point belongs to its nearest site.',
+  blurb: 'Territory, resolved without dispute.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

@@ -101,7 +101,7 @@ function reflect(c, g) {
 export default {
   id: 'inversion',
   name: 'Circle Inversion',
-  blurb: 'Circles reflected through circles, forever.',
+  blurb: 'The circle, reflected into infinite regress.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

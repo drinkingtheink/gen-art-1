@@ -110,7 +110,7 @@ function motif(cell, color, rng) {
 export default {
   id: 'subdivision',
   name: 'Recursive Subdivision',
-  blurb: 'Grids and slivers from five simple rules.',
+  blurb: 'A meditation on the divided plane.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {

@@ -53,7 +53,7 @@ const shadeHex = (hex, t) => {
 export default {
   id: 'blocks',
   name: 'Blocks',
-  blurb: 'A height field, seen from the corner.',
+  blurb: 'The solid, asserted upon a flat surface.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {
