@@ -236,9 +236,8 @@ silently truncates to nothing, and `%` has to be escaped before everything else 
 escapes: an early version turned `%22` into `%2522`, which decodes to a literal `%22` and leaves the
 markup malformed.
 
-Nine of the twenty-one pieces come in under 60KB, the median is 73KB, and four — inversion, moiré,
-dendrite, attractor — run past 200KB, which the panel says out loud before you paste one into a
-stylesheet.
+Nine of the twenty pieces come in under 60KB, the median is 76KB, and three — moiré, dendrite,
+attractor — run past 200KB, which the panel says out loud before you paste one into a stylesheet.
 
 There is deliberately no inline-PNG mode. It was planned, on the assumption a raster would be
 smaller than a few hundred kilobytes of path data, and measurement said otherwise every time: this
@@ -450,7 +449,7 @@ arriving in spikes.
 
 Most pieces were designed for showcase rather than adapted to it — **moiré**, **harmonograph**,
 **attractor**, **strata**, **halftone**, **contour**, **chladni**, **lens**, **blocks**, **packing**,
-**rosette**, **glyphs**, **cells**, **phyllotaxis** and **circle inversion**. The trick is to spend
+**rosette**, **glyphs**, **cells** and **phyllotaxis**. The trick is to spend
 the rng entirely up front, on a noise field or a set of pendulum ratios, and have every param after
 that transform fixed geometry. They end up with most of their range params animatable, the
 strongest motion here, and 2-5ms generation.

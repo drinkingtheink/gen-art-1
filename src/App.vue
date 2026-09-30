@@ -24,7 +24,7 @@ const piece = useGenerator(opened ?? {})
 
 /**
  * A visit that names no piece opens on the picker instead of dropping straight
- * into one of twenty-one pieces as though it were the only one. The URL says
+ * into one of twenty pieces as though it were the only one. The URL says
  * which piece, so the URL is also what says whether there's a choice to make —
  * including on Back, which is how the picker is reachable again.
  *
