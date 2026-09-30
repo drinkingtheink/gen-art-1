@@ -46,7 +46,7 @@ const SAMPLES = 34
 export default {
   id: 'moire',
   name: 'Moiré',
-  blurb: 'Line upon line, and the bands they conjure.',
+  blurb: 'An interrogation of the space between lines.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {
