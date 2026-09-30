@@ -13,7 +13,7 @@
 /**
  * Where a data URI stops being a good idea.
  *
- * Measured across all twenty pieces at their authored size: nine come in under
+ * Measured across all twenty-one pieces at their authored size: nine come in under
  * 60KB, the median is 73KB, and four — inversion, moire, dendrite, attractor —
  * run past 200KB, attractor worst at 344KB. Those are the ones worth a warning
  * before they land in a stylesheet.

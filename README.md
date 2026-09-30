@@ -229,7 +229,7 @@ silently truncates to nothing, and `%` has to be escaped before everything else 
 escapes: an early version turned `%22` into `%2522`, which decodes to a literal `%22` and leaves the
 markup malformed.
 
-Nine of the twenty pieces come in under 60KB, the median is 73KB, and four — inversion, moiré,
+Nine of the twenty-one pieces come in under 60KB, the median is 73KB, and four — inversion, moiré,
 dendrite, attractor — run past 200KB, which the panel says out loud before you paste one into a
 stylesheet.
 
@@ -489,6 +489,7 @@ src/
     flowField.js
     truchet.js
     dendrite.js
+    cove.js
     moire.js
     harmonograph.js
     attractor.js

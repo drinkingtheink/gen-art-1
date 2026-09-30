@@ -3,6 +3,7 @@ import blocks from './blocks.js'
 import cells from './cells.js'
 import chladni from './chladni.js'
 import contour from './contour.js'
+import cove from './cove.js'
 import dendrite from './dendrite.js'
 import flowField from './flowField.js'
 import glyphs from './glyphs.js'
@@ -34,6 +35,7 @@ export const generators = [
   strata,
   halftone,
   contour,
+  cove,
   chladni,
   lens,
   blocks,

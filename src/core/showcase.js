@@ -258,6 +258,15 @@ export const PRESETS = {
     { key: 'grow', wave: 'sine', amplitude: 0.45, period: 17, centre: 0.35 },
     { key: 'packing', wave: 'drift', amplitude: 0.06, period: 31, centre: 0.52 },
   ],
+  cove: [
+    // A slow camera move, not a redraw. Every centre is the param's own
+    // default, so intensity scales the whole move down to nothing rather than
+    // leaving the piece parked somewhere else — the lesson packing taught.
+    { key: 'angle', wave: 'sine', amplitude: 16, period: 29, centre: 0 },
+    { key: 'tilt', wave: 'sine', amplitude: 7, period: 19, phase: 0.3, centre: 6 },
+    { key: 'depth', wave: 'drift', amplitude: 0.5, period: 37, centre: 2.2 },
+    { key: 'duty', wave: 'sine', amplitude: 0.1, period: 23, centre: 0.5 },
+  ],
   dendrite: [
     // Spread is the one that matters: the angle between siblings compounds
     // down every level, so a few degrees at the trunk swings the whole

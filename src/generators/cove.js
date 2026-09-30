@@ -18,19 +18,18 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
  */
 
 const params = [
-  { key: 'stripes', type: 'range', label: 'Stripes', min: 6, max: 90, step: 1, default: 34, structural: true },
+  { key: 'stripes', type: 'range', label: 'Stripes', min: 6, max: 90, step: 1, default: 32, structural: true },
   { key: 'duty', type: 'range', label: 'Ink width', min: 0.12, max: 0.88, step: 0.005, default: 0.5 },
   // The camera. These three are the piece.
-  { key: 'depth', type: 'range', label: 'Depth', min: 0.15, max: 3, step: 0.01, default: 1.15 },
-  { key: 'tilt', type: 'range', label: 'Tilt', min: -32, max: 32, step: 0.1, default: 9 },
+  { key: 'depth', type: 'range', label: 'Depth', min: 0.15, max: 3, step: 0.01, default: 2.2 },
+  { key: 'tilt', type: 'range', label: 'Tilt', min: -32, max: 32, step: 0.1, default: 6 },
   { key: 'angle', type: 'range', label: 'Angle', min: -45, max: 45, step: 0.1, default: 0 },
   { key: 'curve', type: 'range', label: 'Cove radius', min: 0.05, max: 1.6, step: 0.01, default: 0.62 },
   { key: 'eye', type: 'range', label: 'Eye height', min: 0.15, max: 2.4, step: 0.01, default: 0.95 },
   { key: 'lens', type: 'range', label: 'Lens', min: 0.5, max: 2.6, step: 0.01, default: 1.15 },
-  { key: 'spread', type: 'range', label: 'Spread', min: 0.4, max: 3, step: 0.01, default: 1.5 },
   { key: 'variance', type: 'range', label: 'Irregularity', min: 0, max: 1, step: 0.005, default: 0.12 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 2, default: 0 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'ink' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'flame' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 2.2 },
 ]
 
@@ -103,10 +102,10 @@ export default {
      * plain vertical bars. Both are the same mistake — choosing a distance
      * when what matters is where it lands on the canvas.
      *
-     * So both ends are solved for instead. Given the pitch, these return the
-     * depth whose projection falls on a chosen scanline, which lets the floor
-     * always run just past the bottom edge and the wall always leave the top.
-     * The piece then fills the frame at any tilt, eye height or lens.
+     * So the near edge is solved instead: given the pitch, this returns the
+     * depth whose projection lands on a chosen scanline, which lets the floor
+     * always run just past the bottom of the frame whatever the tilt, eye
+     * height or lens.
      */
     const floorDepthAtScanline = (targetY) => {
       const k = (cy - targetY) / focal
@@ -115,22 +114,25 @@ export default {
       return (eye * (k * sinPitch - cosPitch)) / denom
     }
 
-    const wallHeightAtScanline = (targetY, z) => {
-      const k = (cy - targetY) / focal
-      const denom = cosPitch - k * sinPitch
-      if (Math.abs(denom) < 1e-6) return null
-      return (z * (sinPitch + k * cosPitch)) / denom
-    }
-
-    // A margin of overshoot past each edge, so nothing ends mid-frame.
+    // A little past the bottom edge, so the floor never ends mid-frame.
     const nearSolved = floorDepthAtScanline(height * 1.18)
     const near =
       nearSolved !== null && nearSolved > 0.04
         ? Math.min(nearSolved, centreZ * 0.985)
         : Math.min(0.12, centreZ * 0.985)
 
-    const topSolved = wallHeightAtScanline(-height * 0.18, wall)
-    const wallTop = Math.max(centreY + 0.02, topSolved ?? centreY + 2.4)
+    /**
+     * The wall simply runs off the top.
+     *
+     * Solving its height the way the floor's depth is solved does not work,
+     * because yaw puts one side of the wall further away than the other, so a
+     * height that clears the frame head-on leaves a triangle of bare
+     * background at an angle. Rather than chase that coupling, the wall is
+     * built tall and the excess falls outside the frame, where it is clipped
+     * and costs nothing. A plane projects to straight lines, so four samples
+     * describe it exactly however tall it is.
+     */
+    const wallTop = centreY + 60
 
     /**
      * Points along the surface from the top of the wall to the near edge of
@@ -140,7 +142,7 @@ export default {
      * most of the frame.
      */
     const path = []
-    const WALL_STEPS = 14
+    const WALL_STEPS = 4
     const CURVE_STEPS = 54
     const FLOOR_STEPS = 46
 
@@ -168,14 +170,58 @@ export default {
       return [cx + (focal * rx) / fz, cy - (focal * fy) / fz]
     }
 
+    /**
+     * How wide the painted band has to be, also solved.
+     *
+     * A fixed width left wedges of bare floor in the bottom corners, because
+     * the nearer the floor comes the more of it the lens sees sideways. For
+     * every point on the surface this asks what stripe position would land on
+     * the left and right edges of the canvas, and paints across the widest
+     * answer — so the stripes run off all four sides whatever the camera does,
+     * including when `angle` swings the view off-centre and the two sides stop
+     * matching.
+     */
+    let uMin = Infinity
+    let uMax = -Infinity
+    for (const point of path) {
+      // Only what is on screen gets a say. Without this the wall's far upper
+      // reaches — deliberately miles above the frame — would demand a span
+      // wide enough to cover them, and spread the stripes until the visible
+      // part held only a handful.
+      const probe = project(0, point.y, point.z)
+      if (!probe || probe[1] < -height * 0.3 || probe[1] > height * 1.3) continue
+      for (const edge of [0, width]) {
+        // Solved exactly, because `u` appears on both sides: yawing the camera
+        // makes a stripe's distance depend on which stripe it is. Treating the
+        // depth as fixed was near enough head-on and opened blank wedges as
+        // soon as `angle` moved off zero.
+        const shift = edge - cx
+        const numer =
+          shift * (point.y * sinPitch + point.z * cosYaw * cosPitch) - focal * point.z * sinYaw
+        const denom = focal * cosYaw + shift * sinYaw * cosPitch
+        if (Math.abs(denom) < 1e-6) continue
+        const u = numer / denom
+        if (!Number.isFinite(u)) continue
+        if (u < uMin) uMin = u
+        if (u > uMax) uMax = u
+      }
+    }
+    if (!Number.isFinite(uMin) || !Number.isFinite(uMax) || uMax - uMin < 1e-4) {
+      uMin = -2
+      uMax = 2
+    }
+    const pad = (uMax - uMin) * 0.04
+    uMin -= pad
+    uMax += pad
+
     const shapes = []
 
     for (let i = 0; i < count; i += 1) {
       // Stripes are evenly spaced across the surface; the fan is the camera's
       // doing, not the geometry's.
-      const step = (p.spread * 2) / count
+      const step = (uMax - uMin) / count
       const jitter = pool.wobble[i] * p.variance * step * 0.4
-      const u0 = -p.spread + i * step + jitter
+      const u0 = uMin + i * step + jitter
       const u1 = u0 + step * p.duty
 
       const leftEdge = []
