@@ -266,6 +266,11 @@ export const PRESETS = {
     { key: 'tilt', wave: 'sine', amplitude: 7, period: 19, phase: 0.3, centre: 6 },
     { key: 'depth', wave: 'drift', amplitude: 0.5, period: 37, centre: 2.2 },
     { key: 'duty', wave: 'sine', amplitude: 0.1, period: 23, centre: 0.5 },
+    // The shift and the roll, on long awkward periods so the bend wanders the
+    // canvas instead of sitting across the middle for the whole take.
+    { key: 'pan', wave: 'drift', amplitude: 0.26, period: 41, centre: 0 },
+    { key: 'rise', wave: 'sine', amplitude: 0.17, period: 53, phase: 0.2, centre: 0 },
+    { key: 'roll', wave: 'sine', amplitude: 11, period: 67, phase: 0.6, centre: 0 },
   ],
   dendrite: [
     // Spread is the one that matters: the angle between siblings compounds

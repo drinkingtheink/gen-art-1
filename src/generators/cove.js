@@ -14,7 +14,10 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
  * and a projection — the picture is what those three agree on. It is the only
  * piece in the set with a third dimension, which is why the controls are a
  * camera's rather than a pen's: how far the floor reaches, how far you are
- * leaning over it, which way you are facing.
+ * leaning over it, which way you are facing, and then where on the canvas that
+ * view sits — shifted across the frame and rolled, so the bend can run
+ * diagonally or arrive from the side rather than always lying flat across the
+ * middle.
  */
 
 const params = [
