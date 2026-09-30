@@ -1,5 +1,7 @@
 # gen-art-1
 
+**Every Pause a Masterpiece.**
+
 A generative art gallery in Vue 3. Pieces are SVG, seeded, and shareable as a URL.
 
 ```bash

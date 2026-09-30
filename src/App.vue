@@ -363,11 +363,12 @@ async function copyLink() {
     <aside class="sidebar">
       <header class="head">
         <h1 class="wordmark"><GenArtMark />gen<span>·</span>Art</h1>
-        <p class="blurb">{{ generator.blurb }}</p>
+        <p class="tagline">Every Pause a Masterpiece</p>
       </header>
 
       <Toolbar
         :generator-id="generatorId"
+        :blurb="generator.blurb"
         :ratio-id="ratioId"
         :canvas="canvas"
         :seed="seed"
@@ -525,11 +526,19 @@ async function copyLink() {
   margin: -0.2em;
 }
 
-.blurb {
+/**
+ * Sentence case under an uppercase wordmark, which is the contrast that makes
+ * it read as a strapline rather than as a second heading. It is also the
+ * truest thing the app does: pausing writes the live frame into the params, so
+ * whatever is on screen at that instant becomes a piece you can adjust, export
+ * and link to.
+ */
+.tagline {
   margin: 0;
   color: var(--ink-dim);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
 }
 
 .copy {

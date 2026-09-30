@@ -78,6 +78,7 @@ onUnmounted(() => {
     <div class="sheet">
       <header class="head">
         <h1 id="launch-title" class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
+        <p class="tagline">Every Pause a Masterpiece</p>
         <p class="blurb">
           Artwork for a wall or a homepage. Move every parameter until a piece is yours, then keep
           the moment you stopped on — vector, or big enough to print.
@@ -201,6 +202,17 @@ onUnmounted(() => {
 .wordmark span {
   color: var(--accent);
   margin: -5px;
+}
+
+/* Between the name and the explanation: larger than the sidebar's, because
+   the wordmark it sits under is larger, and in the panel's brighter secondary
+   ink so it reads as part of the title rather than as the first line of the
+   paragraph below it. */
+.tagline {
+  margin: 0;
+  color: var(--launch-dim);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
 }
 
 .blurb {

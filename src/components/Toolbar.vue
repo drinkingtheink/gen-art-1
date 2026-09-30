@@ -9,6 +9,8 @@ import { generators } from '../generators/index.js'
  */
 const props = defineProps({
   generatorId: { type: String, required: true },
+  /** What the selected piece does, in a line — it belongs under its own control. */
+  blurb: { type: String, default: '' },
   ratioId: { type: String, required: true },
   canvas: { type: Object, required: true },
   seed: { type: String, required: true },
@@ -42,6 +44,8 @@ function commit() {
         <option v-for="g in options" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
     </label>
+
+    <p v-if="blurb" class="blurb">{{ blurb }}</p>
 
     <label class="field">
       <span class="field-label">
@@ -84,6 +88,15 @@ function commit() {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+/* Tucked up against the select it describes rather than floating between two
+   controls, which is what the toolbar's even gap would do to it. */
+.blurb {
+  margin: -0.3rem 0 0;
+  color: var(--ink-dim);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .field-label {
