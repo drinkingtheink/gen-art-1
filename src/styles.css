@@ -1,18 +1,31 @@
 /**
- * Space Grotesk, for the wordmark and nothing else.
+ * Space Grotesk, for the name and the line under it.
  *
- * Squared, engineered letterforms that rhyme with a mark built entirely from
- * right angles, where the system sans goes anonymous at sidebar size. The
- * interface stays on system fonts: they are already on the machine, they cost
- * nothing, and no part of this app is trying to look like a brand except the
- * name.
+ * Squared, engineered letterforms that rhyme with a mark built from right
+ * angles, where the system sans goes anonymous at sidebar size. The interface
+ * keeps the system fonts: they are already on the machine, they cost nothing,
+ * and no part of this app is trying to look like a brand except the name.
  *
- * Subset to the seven glyphs the name actually uses — G, E, N, A, R, T and the
- * middle dot — which is 1.2KB against 4.2KB for full Latin, and inlined rather
- * than linked. This project inlines its favicon for the same reason: no file,
- * no request, and no window where the name is set in a fallback before the
- * real face lands. The unicode-range means anything outside those seven
- * characters falls through to the stack below it.
+ * Subset to the twenty glyphs those two lines use, and inlined rather than
+ * linked. This project inlines its favicon for the same reasons: no file, no
+ * request, no third party, and no window where the name is set in a fallback
+ * before the real face lands. The unicode-range sends everything else to the
+ * stack below, which is why the rest of the interface is unaffected.
+ *
+ * Two files, one per weight, which is not the obvious way to do it. Asking
+ * Google's subsetter for `wght@500;700` in one request comes back with two
+ * @font-face rules whose `src` is byte-for-byte the same URL — one static
+ * instance, served to both. That looks like a saving and is a bug: every
+ * weight in the declared range renders at whatever instance that file happens
+ * to be, and the wordmark's 700 came out the same colour as the tagline's 500.
+ * Requested one weight at a time they are different files, 2.2KB each, and
+ * 4.5KB total is still a rounding error.
+ *
+ * Don't reach for width to tell two weights apart here. Space Grotesk descends
+ * from a monospace and holds its advances nearly constant across the axis —
+ * the same string at 300 and at 700 sets 1292.13px and 1291.70px — so a
+ * measurement that would settle this for most families says nothing about this
+ * one.
  *
  * Space Grotesk by Florian Karsten, based on Colophon's Space Mono. SIL Open
  * Font License 1.1: https://github.com/floriankarsten/space-grotesk
@@ -20,10 +33,21 @@
 @font-face {
   font-family: 'Space Grotesk';
   font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(data:font/woff2;base64,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) format('woff2');
+  unicode-range: U+20, U+41, U+45, U+47, U+4D-4E, U+50, U+52, U+54, U+61, U+63,
+    U+65, U+69, U+70, U+72-76, U+79, U+B7;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(data:font/woff2;base64,d09GMgABAAAAAASwAA8AAAAACNQAAARWAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgVwcKAZgP1NUQVQqAGwRCAqFJIQkCxYAATYCJAMoBCAFhDoHIBs3B8gEAv7drHlJkHuBtmtOxVh3aq7rcOdwprKm8ndmObhWetccpVEAuDe7PdeJEfFFpw/4QNHWARIl8AL4i2xzjMg6WKdCOxGADTGhIIC3CFBxtSSEaSjRscnZ+DVXdLdCEK0Nc1e0NNV0tmKNSMekoWBN9CIBl5CViknEDAHjb1x/I2LY+JUJGBcNvErAUIEEUTOXkwrUjIrpU5SGAZ9pVwnDwcgmdgwh47LH/QoBFEBLFsalCyNMPhBYZmxk4qTMV9ZimlC8Sj6QFGwiSpkmgscgeqNmpONYkQ3EJjGDr+PgO/Xk/2dhRFstQhyIp6oL4rqylkEHfSmBlRIc7M2MRumrq+8WqwCEUg2yMDYg8qjEQQ16XjuQAFQUHCwlhjhSySSb76hfuXivccnYZKw31hnfGV8bXxmZs7mCCTOVMvCPUFaKB4vtxUPAn7zPuls8mgAWGfxBwwgIsIVYNVuEbZi02iq8x4XJc0K3+46huY/KSrvviFA9h6XNexDFfSjPu154Nui+dbjX5grPZ+HD3vtIeNZL71qQwnPihO47tgncn38fMvjp50Ev00tkrswu0gulbrJjw661VniPHxfC01agU/HL/dJ7lH3WMd13Qggp7IoU8vmPd+omvQSP0WSp1HST3XcM29xH5/DNpi6//KGUiqr7jgjhOSylbpLCH6nleA8LzxHddwj3QYenoL6mMqyyvqYgOTpnZpljftuC/xe0zedrO3yjXaPtt016bWjQun+/PvvPiFGvB4f8HBRQOHjSpKWpwVOmJAWtc6rhh88v+/ott78/A7/76frD+GDoC3//Z6IHrc3OHohr7eb+Re8F9Qd9Et3PdHt895LolYXvP/Dc43d7Hn6wR7vbGnrn8OTYtJzEjxPS8uPjlybNk++2R9QujxpYfu0UrrX/eCsGVt699h9vxcBKXGunuComzsyaa1s8P+WLgR1fOq/de3j4I2O+t7pfnexySue0Ka9yNXpv/+j+vdE8Y4+sdjqrIyOync5sNAtW4yT7WAL4sYG9YtUGNwJQ4MW8Oc4y/wW/WVX1JsCZl4NeADjz8iNVxif/n9WOa60IzCjAGabOxJFNGJ/8N0U7vge/T6qPUsb/oCxnoOLEpTzLNOVVXEo/LiWZ4cLJLE7jd47LxVipvAWWmXAmoEFYfV4C2l1CZit/JjbBSM7DjeU5DjaVGbxJgC+kn83ESKptZoJwWf2Yhc0tTgSFqL3utDxqaKCOerqd4W7a6WIek/njuqiikwba6UZ+kkbAezQziTY6qWMyacSSTBbtVFBFDXF00kY3/5oumpiIizaaqSaXGjp7ntZGKw6mMYkp1hJ1kUNQOpYQ7u58Ykli/scYXOOr+Sg+1c6ysVEjB5pwilN2kE09+Zppw/SsuBGreqaW0jN/MDN8Fy6OmMtUHQ2NzT1UMokqbG9hMrU0kxMgrkg1UdEXPoGt8898nJ+IywAjb1qXtKHxMtP+VwAA) format('woff2');
-  unicode-range: U+41, U+45, U+47, U+4E, U+52, U+54, U+B7;
+  src: url(data:font/woff2;base64,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) format('woff2');
+  unicode-range: U+20, U+41, U+45, U+47, U+4D-4E, U+50, U+52, U+54, U+61, U+63,
+    U+65, U+69, U+70, U+72-76, U+79, U+B7;
 }
 
 :root {

@@ -24,6 +24,10 @@ const params = [
   { key: 'depth', type: 'range', label: 'Depth', min: 0.15, max: 3, step: 0.01, default: 2.2 },
   { key: 'tilt', type: 'range', label: 'Tilt', min: -32, max: 32, step: 0.1, default: 6 },
   { key: 'angle', type: 'range', label: 'Angle', min: -45, max: 45, step: 0.1, default: 0 },
+  // Where the view sits on the canvas, as opposed to where the camera stands.
+  { key: 'pan', type: 'range', label: 'Pan', min: -0.6, max: 0.6, step: 0.005, default: 0 },
+  { key: 'rise', type: 'range', label: 'Rise', min: -0.6, max: 0.6, step: 0.005, default: 0 },
+  { key: 'roll', type: 'range', label: 'Roll', min: -180, max: 180, step: 0.2, default: 0 },
   { key: 'curve', type: 'range', label: 'Cove radius', min: 0.05, max: 1.6, step: 0.01, default: 0.62 },
   { key: 'eye', type: 'range', label: 'Eye height', min: 0.15, max: 2.4, step: 0.01, default: 0.95 },
   { key: 'lens', type: 'range', label: 'Lens', min: 0.5, max: 2.6, step: 0.01, default: 1.15 },
@@ -88,9 +92,47 @@ export default {
     const sinPitch = Math.sin(pitch)
 
     const span = Math.min(width, height) - p.margin * 2
-    const cx = width / 2
-    const cy = height / 2
     const focal = span * p.lens
+
+    /**
+     * Pan and rise shift the picture across the canvas without touching the
+     * camera — a lens shift, not a move, so the convergence of the stripes is
+     * unchanged and only the framing slides. Roll turns the whole image, which
+     * is what lets the bend run diagonally or come in from the side instead of
+     * always lying flat across the middle.
+     */
+    const cx = width / 2 + p.pan * width
+    const cy = height / 2 + p.rise * height
+    const roll = (p.roll * Math.PI) / 180
+    const cosRoll = Math.cos(roll)
+    const sinRoll = Math.sin(roll)
+
+    /**
+     * The box the surface has to cover, in the frame the projection works in.
+     *
+     * Both fits below ask where the canvas edges are. Once the image can roll,
+     * the canvas is no longer axis-aligned in that frame, so its corners are
+     * turned back and bounded. Covering the bounding box rather than the
+     * rotated rectangle paints a little more than is seen, which is clipped
+     * and cheap — and far simpler than fitting to a rotated quad.
+     */
+    const corners = [
+      [-cx, -cy],
+      [width - cx, -cy],
+      [width - cx, height - cy],
+      [-cx, height - cy],
+    ]
+    let fitLeft = Infinity
+    let fitRight = -Infinity
+    let fitBottom = -Infinity
+    for (const [px, py] of corners) {
+      const rx = px * cosRoll + py * sinRoll
+      const ry = -px * sinRoll + py * cosRoll
+      if (rx < fitLeft) fitLeft = rx
+      if (rx > fitRight) fitRight = rx
+      if (ry > fitBottom) fitBottom = ry
+    }
+    const fitSpan = fitRight - fitLeft
 
     /**
      * Where the surface has to stop, solved rather than guessed.
@@ -108,14 +150,16 @@ export default {
      * height or lens.
      */
     const floorDepthAtScanline = (targetY) => {
-      const k = (cy - targetY) / focal
+      const k = -targetY / focal
       const denom = k * cosPitch + sinPitch
       if (Math.abs(denom) < 1e-6) return null
-      return (eye * (k * sinPitch - cosPitch)) / denom
+      // Yaw swings the floor away from the axis, so the depth that lands on a
+      // scanline is further out by the same factor.
+      return (eye * (k * sinPitch - cosPitch)) / denom / Math.max(0.2, cosYaw)
     }
 
-    // A little past the bottom edge, so the floor never ends mid-frame.
-    const nearSolved = floorDepthAtScanline(height * 1.18)
+    // A little past the far edge of the box, so the floor never ends mid-frame.
+    const nearSolved = floorDepthAtScanline(fitBottom + fitSpan * 0.14)
     const near =
       nearSolved !== null && nearSolved > 0.04
         ? Math.min(nearSolved, centreZ * 0.985)
@@ -160,14 +204,25 @@ export default {
       path.push({ y: -eye, z: centreZ + (near - centreZ) * t })
     }
 
-    /** World point to canvas point, or null if it falls behind the lens. */
-    const project = (x, y, z) => {
+    /**
+     * The projection, in the frame the fits are expressed in: centred on the
+     * optical axis, before roll and before the shift onto the canvas.
+     */
+    const projectRaw = (x, y, z) => {
       const rx = x * cosYaw + z * sinYaw
       const rz = -x * sinYaw + z * cosYaw
       const fy = y * cosPitch - rz * sinPitch
       const fz = y * sinPitch + rz * cosPitch
       if (fz < 0.05) return null
-      return [cx + (focal * rx) / fz, cy - (focal * fy) / fz]
+      return [(focal * rx) / fz, -(focal * fy) / fz]
+    }
+
+    /** The same point on the canvas, rolled and shifted into place. */
+    const project = (x, y, z) => {
+      const raw = projectRaw(x, y, z)
+      if (!raw) return null
+      const [rx, ry] = raw
+      return [cx + rx * cosRoll - ry * sinRoll, cy + rx * sinRoll + ry * cosRoll]
     }
 
     /**
@@ -188,14 +243,14 @@ export default {
       // reaches — deliberately miles above the frame — would demand a span
       // wide enough to cover them, and spread the stripes until the visible
       // part held only a handful.
-      const probe = project(0, point.y, point.z)
-      if (!probe || probe[1] < -height * 0.3 || probe[1] > height * 1.3) continue
-      for (const edge of [0, width]) {
+      const probe = projectRaw(0, point.y, point.z)
+      if (!probe || probe[1] < -fitSpan * 1.3 || probe[1] > fitBottom + fitSpan * 0.4) continue
+      for (const edge of [fitLeft, fitRight]) {
         // Solved exactly, because `u` appears on both sides: yawing the camera
         // makes a stripe's distance depend on which stripe it is. Treating the
         // depth as fixed was near enough head-on and opened blank wedges as
         // soon as `angle` moved off zero.
-        const shift = edge - cx
+        const shift = edge
         const numer =
           shift * (point.y * sinPitch + point.z * cosYaw * cosPitch) - focal * point.z * sinYaw
         const denom = focal * cosYaw + shift * sinYaw * cosPitch

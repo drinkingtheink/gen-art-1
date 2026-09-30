@@ -535,10 +535,16 @@ async function copyLink() {
  */
 .tagline {
   margin: 0;
-  color: var(--ink-dim);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
+  /* The loudest line in the sidebar after the name itself: the display face
+     the wordmark uses, the accent the mark is drawn in, and a size above the
+     body copy. Everything else in this column is dim grey at 0.78rem, so this
+     is the one thing that is meant to be read rather than scanned. */
+  color: var(--accent);
+  font-family: var(--wordmark);
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1.35;
 }
 
 .copy {

@@ -210,9 +210,11 @@ onUnmounted(() => {
    paragraph below it. */
 .tagline {
   margin: 0;
-  color: var(--launch-dim);
-  font-size: 1rem;
-  letter-spacing: 0.02em;
+  color: var(--accent);
+  font-family: var(--wordmark);
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
 }
 
 .blurb {
