@@ -8,12 +8,6 @@ import { getPalette, paletteOptions } from '../core/palettes.js'
  * lightning all arrive at this shape from unrelated physics, because it is
  * what you get when something has to reach everywhere from one place.
  *
- * It replaced differential growth, which made a similar kind of form by
- * simulating one: thousands of nodes pushing each other apart, about 130ms a
- * frame. This reaches the same territory by recursion — no neighbours to
- * search, no time to step — and lands in about two. That difference is the
- * whole point: this one can animate.
- *
  * Built for showcase. Every parameter that decides *shape* — the angle between
  * siblings, how fast branches shorten, how much they curl — is continuous, and
  * none of them changes how many random numbers get drawn, so they can be swept

@@ -1,4 +1,4 @@
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { coerce, coerceAll, defaultsFor } from '../core/params.js'
 import {
   applyTreatment,
@@ -11,7 +11,6 @@ import {
 import { createRng, randomSeed } from '../core/rng.js'
 import { paramsAt } from '../core/showcase.js'
 import { useFlicker } from '../composables/useFlicker.js'
-import { useSceneWorker } from '../composables/useSceneWorker.js'
 import { buildEffects, coerceEffects } from '../core/effects.js'
 import { buildGrain, coerceGrain } from '../core/grain.js'
 import { getRatio } from '../core/ratios.js'
@@ -105,71 +104,25 @@ export function useGenerator(initial = {}) {
 
 
   /**
-   * What the stage renders, and how it gets there.
+   * What the stage renders.
    *
-   * Most pieces are placements and generate in a few milliseconds, so they are
-   * built inline and the scene is up to date before the next paint.
+   * A computed, and generate() is pure with a freshly seeded rng each run, so
+   * the same seed and params always give the same picture — and Vue skips the
+   * work entirely when nothing it depends on has changed.
    *
-   * A piece marked `heavy` is generated in a worker instead, and the previous
-   * scene stays on screen until the new one lands. The work costs the same; it
-   * just no longer happens where it can block paint and input.
-   *
-   * Nothing sets the flag at present. It was built for differential growth,
-   * a simulation costing ~130ms a frame, which has since been replaced by
-   * dendrite — same family of form, reached by recursion in ~6ms. The path is
-   * kept for the next piece that simulates; it costs nothing while unused,
-   * since the worker is only constructed on the first heavy request.
+   * Every piece is generated inline, on the main thread. The slowest is the
+   * flow field at 10ms and most are under 3, which is inside a frame at the
+   * rate showcase drives them, so there is nothing worth deferring.
    */
-  const worker = useSceneWorker()
-
-  function composeScene(params, palette) {
-    return generator.value.generate({
-      params,
+  const scene = computed(() =>
+    generator.value.generate({
+      params: livedParams.value,
       rng: createRng(seed.value),
       width: canvas.value.width,
       height: canvas.value.height,
-      palette,
-    })
-  }
-
-  const scene = ref(composeScene(params.value, livedPalette.value))
-
-  // Switching pieces is a discrete choice, and leaving the outgoing piece on
-  // screen while the new one computes reads as a bug rather than as latency.
-  // Those land inline even when the target is heavy.
-  let immediate = false
-  watch(generatorId, () => {
-    immediate = true
-  })
-
-  watchEffect(() => {
-    // Read every dependency before any branch, so the effect tracks all of
-    // them no matter which path it takes this time.
-    const params = { ...livedParams.value }
-    const source = livedPalette.value
-    const palette = { ...source, colors: [...source.colors] }
-    const id = generatorId.value
-    const heavy = generator.value.heavy
-    const canDefer = worker.available.value
-
-    const inline = () => {
-      scene.value = composeScene(params, palette)
-    }
-
-    if (!heavy || !canDefer || immediate) {
-      immediate = false
-      inline()
-      return
-    }
-
-    worker.request(
-      { generatorId: id, params, seed: seed.value, width: canvas.value.width, height: canvas.value.height, palette },
-      (next) => {
-        scene.value = next
-      },
-      inline,
-    )
-  })
+      palette: livedPalette.value,
+    }),
+  )
 
   /** Showcase feeds its live state in here each frame. */
   function setShowcase(state) {
@@ -270,7 +223,7 @@ export function useGenerator(initial = {}) {
    * the palette, which is rolled.
    *
    * Each piece was authored in one set, so every piece appeared to come in one
-   * colour: truchet was the flame piece, growth was the green one. The sets are
+   * colour: truchet was the flame piece, dendrite the green one. The sets are
    * all general-purpose and there are forty of them, and which one a piece
    * happens to have been written in says nothing about which one suits it.
    *

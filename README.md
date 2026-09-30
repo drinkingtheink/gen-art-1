@@ -242,18 +242,6 @@ bends the whole thing, so no closed form exists and every guess either clipped t
 the piece small. Fitting the real bounding box is exact for every form, and it keeps the
 composition still while Shortening and Depth sweep.
 
-### The worker
-
-`heavy: true` on a generator routes it through a worker (`src/workers/scene.worker.js`) instead of
-generating inline, with requests coalesced rather than queued and the previous scene held on screen
-until the new one lands. Generators were always pure functions of `(params, seeded rng)` that never
-touch the DOM, so the same module runs in both places unmodified.
-
-**Nothing currently sets the flag** — the slowest piece is moire at 23ms, which is fine inline. It
-is kept as the extension point for any future piece whose cost is time-stepped rather than
-proportional to what it draws, and costs nothing while unused: the worker chunk is only constructed
-on the first heavy request.
-
 ## Palettes
 
 Forty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
