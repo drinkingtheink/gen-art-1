@@ -1,6 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { CSS_MODES } from '../core/css.js'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 
 /**
  * Export controls. The work is done by the parent, which holds the stage
@@ -10,25 +9,65 @@ const props = defineProps({
   busy: { type: Boolean, default: false },
   status: { type: String, default: '' },
   grainOn: { type: Boolean, default: false },
+  /** The rule itself, once asked for. Empty means the panel is closed. */
+  css: { type: String, default: '' },
+  cssNote: { type: String, default: '' },
 })
 
-const emit = defineEmits(['export-svg', 'export-png', 'export-css'])
+const emit = defineEmits(['export-svg', 'export-png', 'export-css', 'close-css'])
 
 const scale = ref(2)
-const cssMode = ref('svg')
 
 // Noise is incompressible, so grain inflates a PNG by roughly 10-20x —
 // measured 1.1MB to 22MB at 4x. Better to say so than to hand someone a
 // surprise download.
 const heavy = computed(() => props.grainOn && scale.value >= 4)
 
-const modes = CSS_MODES
+/**
+ * The panel is the point: the rule is visible and selectable, so copying works
+ * by hand even where the clipboard API is refused — an insecure origin, a
+ * denied permission, a window that isn't focused. Nothing is ever written to
+ * disk, so there is no second file to keep track of.
+ */
+const box = useTemplateRef('box')
+/** '' before a try, then 'copied' or 'selected' — never claiming the first for the second. */
+const copyState = ref('')
+let copyTimer = null
 
-const cssHint = computed(() =>
-  cssMode.value === 'file'
-    ? 'Downloads the SVG and copies a rule pointing at it.'
-    : 'Copies a rule with the whole piece inline as vector.',
+const copyLabel = computed(() => {
+  if (copyState.value === 'copied') return 'Copied'
+  if (copyState.value === 'selected') return `Selected — press ${modifier}C`
+  return 'Copy'
+})
+
+const modifier = /Mac|iPhone|iPad/.test(navigator.platform ?? '') ? '\u2318' : 'Ctrl-'
+
+// Opening selects the lot, so the next keystroke can be a plain copy.
+watch(
+  () => props.css,
+  async (text) => {
+    copyState.value = ''
+    if (!text) return
+    await Promise.resolve()
+    box.value?.select()
+  },
 )
+
+async function copy() {
+  let ok = true
+  try {
+    await navigator.clipboard.writeText(props.css)
+  } catch {
+    // Refused — insecure origin, denied permission, an unfocused window. The
+    // text is on screen and stays selected, so say what actually happened and
+    // let the keyboard finish the job.
+    ok = false
+  }
+  box.value?.select()
+  copyState.value = ok ? 'copied' : 'selected'
+  clearTimeout(copyTimer)
+  copyTimer = setTimeout(() => { copyState.value = '' }, ok ? 1600 : 4000)
+}
 
 // 1000px authored, so 4x is 4000px — about 13in at 300dpi, enough to frame.
 const SCALES = [
@@ -52,13 +91,19 @@ const SCALES = [
     </div>
 
     <div class="row css">
-      <button type="button" :disabled="busy" @click="emit('export-css', { mode: cssMode })">CSS</button>
-      <select v-model="cssMode" :disabled="busy" aria-label="CSS background format">
-        <option v-for="m in modes" :key="m.value" :value="m.value">{{ m.label }}</option>
-      </select>
+      <button type="button" :disabled="busy" @click="emit('export-css')">
+        {{ css ? 'Rebuild CSS' : 'CSS background' }}
+      </button>
+      <button v-if="css" type="button" class="ghost" @click="emit('close-css')">Close</button>
     </div>
 
-    <p class="status">{{ cssHint }}</p>
+    <div v-if="css" class="panel">
+      <textarea ref="box" class="code" readonly spellcheck="false" :value="css" @focus="box?.select()" />
+      <div class="panel-foot">
+        <button type="button" @click="copy">{{ copyLabel }}</button>
+        <span class="note">{{ cssNote }}</span>
+      </div>
+    </div>
 
     <p v-if="heavy" class="status warn">
       Grain makes PNGs 10–20× larger — expect ~20MB+ at this size. SVG is unaffected.
@@ -88,9 +133,49 @@ const SCALES = [
   gap: 0.4rem;
 }
 
-/* One button and a wide select, where the row above has two buttons. */
+/* One wide button, or two once the panel is open. */
 .row.css {
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
+}
+
+.ghost {
+  background: none;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.code {
+  width: 100%;
+  height: 8.5rem;
+  padding: 0.5rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  /* The rule is one very long line; wrapping it keeps the box readable and the
+     selection intact. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+
+.panel-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.note {
+  color: var(--ink-dim);
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .row select {

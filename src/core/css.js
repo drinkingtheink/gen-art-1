@@ -15,19 +15,19 @@
  *
  * Measured across all twenty pieces at their authored size: nine come in under
  * 60KB, the median is 73KB, and four — inversion, moire, dendrite, attractor —
- * run past 200KB, attractor worst at 344KB. Those are the ones that want their
- * own file instead of being pasted into a stylesheet.
+ * run past 200KB, attractor worst at 344KB. Those are the ones worth a warning
+ * before they land in a stylesheet.
  */
 export const LARGE_BYTES = 60 * 1024
 export const TOO_BIG_BYTES = 200 * 1024
 
 /**
- * There is no raster mode, and that was a surprise.
+ * There is no raster mode and no file mode, and the first was a surprise.
  *
- * The plan was to offer an inline PNG for the heavy pieces, on the assumption
- * that a raster would be smaller than a few hundred kilobytes of path data.
- * Measured at their authored size, it never is — base64 adds a third, and this
- * is high-entropy line art, which is the worst case for PNG:
+ * The raster was planned — an inline PNG for the heavy pieces, on the
+ * assumption a bitmap would beat a few hundred kilobytes of path data.
+ * Measured at their authored size it never does; base64 adds a third, and this
+ * is high-entropy line art, the worst case for PNG:
  *
  *   piece        inline SVG   PNG @1x
  *   subdivision         7KB      49KB
@@ -36,12 +36,12 @@ export const TOO_BIG_BYTES = 200 * 1024
  *   moire             278KB     2.1MB
  *
  * Grain makes it worse still rather than better, noise being incompressible.
- * So the escape from a large piece is a separate file, not a raster.
+ *
+ * The file mode went for a plainer reason: a rule that points at a sibling SVG
+ * means keeping two things together and putting one of them somewhere. The
+ * whole appeal of a data URI is that there is nothing to host, so the rule is
+ * shown in full and copied by hand.
  */
-export const CSS_MODES = [
-  { value: 'svg', label: 'Inline · self-contained' },
-  { value: 'file', label: 'Separate file · small CSS' },
-]
 
 /** Bytes on the wire, not characters — the difference is every non-ASCII glyph. */
 export function byteLength(text) {
@@ -57,10 +57,10 @@ export function formatBytes(bytes) {
 /** What to say about a payload of this size, or null when there's nothing to say. */
 export function adviceFor(bytes) {
   if (bytes > TOO_BIG_BYTES) {
-    return `${formatBytes(bytes)} is a lot to paste into a stylesheet — the separate-file mode keeps it to two lines.`
+    return 'Large enough that it wants a stylesheet of its own.'
   }
   if (bytes > LARGE_BYTES) {
-    return `${formatBytes(bytes)} inline. It works, but it will dominate the file it lands in.`
+    return 'It works, but it will dominate the file it lands in.'
   }
   return null
 }

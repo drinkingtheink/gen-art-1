@@ -50,6 +50,7 @@
      In em, so one number holds at any size the wordmark is set at. */
   height: 0.9em;
   width: auto;
+  margin: 5px 5px 0 0;
   /* Off the line box's centre and onto the cap band. The box is centred on a
      line that includes descender space an uppercase wordmark never uses, which
      lands it low. At this offset the frame's top sits on the cap line and its

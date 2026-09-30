@@ -281,50 +281,58 @@ function exportPng(scale) {
  * link preview drops them only because resvg's filter support is partial.
  */
 /**
- * Clipboard, or a file if the clipboard won't have it.
+ * The piece as a CSS rule, shown rather than sent.
  *
- * Writing can be refused for reasons that have nothing to do with the app — an
- * insecure origin, a denied permission, a window that isn't focused. Copying a
- * link can shrug that off because the URL is still in the address bar, but a
- * generated rule exists nowhere else, so refusing to fall back would throw the
- * work away.
+ * Source is the live stage, same as the SVG export, so what you copy is what is
+ * on screen — grain and effects included. They survive because a data URI is
+ * rendered by the browser's own SVG engine, filters and all; the server-side
+ * link preview drops them only because resvg's filter support is partial.
+ *
+ * Nothing is written to disk and nothing is pushed to the clipboard unasked.
+ * The rule goes into a panel, where it can be read, selected and copied by
+ * hand — which also means it still works where the clipboard API is refused.
  */
-async function copyOrSave(text, filename) {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    downloadBlob(new Blob([text], { type: 'text/css;charset=utf-8' }), filename)
-    return false
-  }
-}
+const cssText = ref('')
+const cssNote = ref('')
 
-function exportCss({ mode }) {
+function buildCss() {
   return runExport(async () => {
     const svg = stageSvg()
     if (!svg) throw new Error('the stage is not ready')
-    const background = scene.value.background
-    const cssName = buildFilename(generatorId.value, seed.value, 'css')
 
-    if (mode === 'file') {
-      const { markup } = serializeScene(svg)
-      const name = buildFilename(generatorId.value, seed.value, 'svg')
-      downloadBlob(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }), name)
-      const copied = await copyOrSave(buildCssRule({ image: name, background }), cssName)
-      return copied
-        ? `Saved ${name} and copied a rule pointing at it — put the file beside your CSS.`
-        : `Saved ${name} and ${cssName}. Keep them together; the rule points at the SVG by name.`
-    }
-
-    const rule = buildCssRule({ image: toDataUri(serializeScene(svg).markup), background })
-    const copied = await copyOrSave(rule, cssName)
-
-    const size = formatBytes(byteLength(rule))
-    const advice = adviceFor(byteLength(rule))
-    const head = copied ? `Copied ${size} of CSS.` : `Clipboard refused, so ${cssName} downloaded instead — ${size}.`
-    return `${head}${advice ? ` ${advice}` : ''}`
+    const rule = buildCssRule({
+      image: toDataUri(serializeScene(svg).markup),
+      background: scene.value.background,
+    })
+    const size = byteLength(rule)
+    cssText.value = rule
+    cssNote.value = [formatBytes(size), adviceFor(size)].filter(Boolean).join(' · ')
+    // The panel says the size; a second line under it would only repeat itself.
+    return ''
   })
 }
+
+function closeCss() {
+  cssText.value = ''
+  cssNote.value = ''
+}
+
+/**
+ * A rule describes one piece, so it retires when the piece changes.
+ *
+ * Watching `scene` looked right and was wrong: it is recomputed every frame of
+ * showcase playback, so the panel shut the instant it opened on anything
+ * moving. These are the things that actually define the piece — the same set
+ * the permalink watches — and none of them move while the clock runs, because
+ * playback drives the lived params and only pausing writes them back.
+ */
+watch(
+  [generatorId, ratioId, seed, params, grain, effects, treatment],
+  () => {
+    if (cssText.value) closeCss()
+  },
+  { deep: true },
+)
 
 const copied = ref(false)
 let copyTimer = null
@@ -410,9 +418,12 @@ async function copyLink() {
         :busy="exporting"
         :status="exportStatus"
         :grain-on="grain.amount > 0"
+        :css="cssText"
+        :css-note="cssNote"
         @export-svg="exportSvg"
         @export-png="exportPng"
-        @export-css="exportCss"
+        @export-css="buildCss"
+        @close-css="closeCss"
       />
 
       <hr class="rule" />
@@ -505,6 +516,7 @@ async function copyLink() {
 
 .wordmark span {
   color: var(--accent);
+  margin: -5px;
 }
 
 .blurb {

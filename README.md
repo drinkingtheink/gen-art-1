@@ -209,12 +209,16 @@ memory-hungry beyond it.
 Files are named for the piece — `gen-art-truchet-still-hokusai-12.svg` — so a file on disk is still
 traceable back to the seed that made it.
 
-**CSS** copies a ready-to-paste rule that uses the piece as a background, with the artwork inlined
-as a `data:` URI — no file, no hosting. `background-color` is set to the piece's own background, so
-the block degrades to the right colour while the image decodes and stays right if it is blocked.
-`no-repeat`, because nothing here is drawn to tile; repeating a piece shows its seams immediately.
-Grain and effects come along, since a data URI is rendered by the browser's own SVG engine, filters
-and all.
+**CSS** opens a panel holding a rule that uses the piece as a background, with the artwork inlined
+as a `data:` URI. Nothing is written to disk and nothing is pushed to the clipboard unasked — the
+rule is shown in full, selected on open, and copied with the button or by hand. That is also why it
+survives a refused clipboard: an insecure origin or an unfocused window costs you the button, not
+the rule, and it says which of the two happened rather than claiming a copy that did not occur.
+
+`background-color` is set to the piece's own background, so the block degrades to the right colour
+while the image decodes and stays right if the image is blocked. `no-repeat`, because nothing here
+is drawn to tile; repeating a piece shows its seams immediately. Grain and effects come along,
+since a data URI is rendered by the browser's own SVG engine, filters and all.
 
 The encoding is percent-based rather than base64 — base64 inflates by a third and stops the markup
 compressing, where this leaves it legible and gzips well (attractor: 344KB down to 127KB). Two
@@ -223,9 +227,9 @@ silently truncates to nothing, and `%` has to be escaped before everything else 
 escapes: an early version turned `%22` into `%2522`, which decodes to a literal `%22` and leaves the
 markup malformed.
 
-Size decides the mode. Nine of the twenty pieces come in under 60KB inline, the median is 73KB, and
-four — inversion, moiré, dendrite, attractor — run past 200KB. Past that the **separate file** mode
-downloads the SVG and copies a two-line rule pointing at it instead.
+Nine of the twenty pieces come in under 60KB, the median is 73KB, and four — inversion, moiré,
+dendrite, attractor — run past 200KB, which the panel says out loud before you paste one into a
+stylesheet.
 
 There is deliberately no inline-PNG mode. It was planned, on the assumption a raster would be
 smaller than a few hundred kilobytes of path data, and measurement said otherwise every time: this
@@ -233,9 +237,11 @@ is high-entropy line art, the worst case for PNG, and base64 adds a third on top
 closest it comes — 344KB of SVG against 413KB of PNG — and grain makes the gap worse rather than
 better, noise being incompressible.
 
-If the clipboard refuses — an insecure origin, a denied permission, an unfocused window — the rule
-downloads as a `.css` file instead. Copying a link can shrug that failure off because the URL is
-still in the address bar; a generated rule exists nowhere else.
+The rule retires when the piece changes. Watching the scene for that looked right and was wrong:
+the scene is recomputed every frame of showcase playback, so the panel shut the instant it opened
+on anything moving. It watches what actually defines the piece instead — generator, shape, seed,
+params, palette use, grain, effects — none of which move while the clock runs, because playback
+drives the lived params and only pausing writes them back.
 
 ## Canvas shapes
 
