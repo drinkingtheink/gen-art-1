@@ -229,6 +229,7 @@ onUnmounted(() => {
 
 /* The one control on the panel that needs no deciding, so it gets the weight. */
 .dice {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -237,11 +238,60 @@ onUnmounted(() => {
   background: var(--accent);
   border-color: var(--accent-edge);
   text-align: left;
+  /* The sheen below is a child that travels past the edges. */
+  overflow: hidden;
+  /* Eased rather than linear: it settles into place instead of arriving and
+     stopping, which is most of what makes a hover read as expensive. */
+  transition:
+    transform 240ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    box-shadow 240ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    background-color 240ms ease;
 }
 
-.dice:hover {
+/**
+ * A light passing across the face.
+ *
+ * Parked off the left edge and sent across on hover, once — not a loop, which
+ * would read as a loading state rather than as a response. Angled slightly off
+ * vertical so it sweeps like a reflection rather than a wipe, and narrow
+ * enough to suggest a gloss rather than wash the label out.
+ */
+.dice::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    102deg,
+    transparent 38%,
+    rgb(255 255 255 / 34%) 50%,
+    transparent 62%
+  );
+  transform: translateX(-115%);
+  transition: transform 780ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  content: '';
+  pointer-events: none;
+}
+
+.dice:hover,
+.dice:focus-visible {
   background: var(--accent-hot);
   border-color: var(--accent-edge);
+  /* A single pixel. More and it stops being a button and starts being a card
+     that moves. The shadow is tinted with the accent rather than black, so it
+     reads as the button's own light rather than as something cast on it. */
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
+.dice:hover::after,
+.dice:focus-visible::after {
+  transform: translateX(115%);
+}
+
+/* Pressed, it settles back onto the surface. */
+.dice:active {
+  transform: translateY(0);
+  box-shadow: none;
+  transition-duration: 80ms;
 }
 
 .dice-label {
@@ -339,6 +389,23 @@ onUnmounted(() => {
 
   .card:hover {
     transform: none;
+  }
+
+  /* The colour change stays — that is the part saying the button is live. The
+     travelling light and the lift are the parts that move. */
+  .dice,
+  .dice::after {
+    transition: background-color 240ms ease;
+  }
+
+  .dice:hover,
+  .dice:focus-visible {
+    transform: none;
+  }
+
+  .dice:hover::after,
+  .dice:focus-visible::after {
+    transform: translateX(-115%);
   }
 }
 

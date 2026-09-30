@@ -30,6 +30,11 @@ const SITE_DEFAULT = { g: 'flow-field', r: 'wide', s: 'quiet-heron-41' }
 /**
  * The words on that card.
  *
+ * Deliberately without a count of the pieces. It was there, it went stale
+ * twice in one week — eighteen, then twenty, while other copy said twenty-one
+ * — and a number nobody can see from the outside is not worth a maintenance
+ * burden that only ever shows up as a lie.
+ *
  * A bare URL is a page in its own right now that it opens the picker rather
  * than dropping into a piece, so it is worth describing as one. Kept here
  * because the edge function needs the same copy index.html carries — that copy
@@ -39,7 +44,7 @@ const SITE_DEFAULT = { g: 'flow-field', r: 'wide', s: 'quiet-heron-41' }
 export const SITE_CARD = {
   title: 'gen\u00b7art \u2014 generative SVG studio',
   description:
-    'Twenty generative art pieces rendered as real SVG. Seeded and reproducible, ' +
+    'Generative art rendered as real SVG. Seeded and reproducible, ' +
     'animated for screen capture, exportable as vector or high-resolution PNG.',
   alt: 'A generative artwork rendered as vector line work',
 }

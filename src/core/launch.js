@@ -39,8 +39,8 @@ export const launchPieces = generators.map((generator) => ({
  *
  * Deliberately a string from the DOM-free serialiser rather than a live node
  * tree: the panel hands each one to an `<img>`, which rasterises it once and
- * keeps its ids and gradients in a document of its own. Twenty inline SVGs in
- * one page would be twenty sets of clip-path ids sharing a namespace, and
+ * keeps its ids and gradients in a document of its own. Inlining them all in
+ * one page would put every piece's clip-path ids in one namespace, and cost
  * about two megabytes of live DOM for a screen of thumbnails.
  */
 export function renderThumbnail({ generator, state }) {
