@@ -509,14 +509,20 @@ async function copyLink() {
      of the 1.9rem needed to hold the mark at its old size, which made a
      sidebar header look like a hero. */
   font-size: 1.8rem;
-  font-weight: 600;
+  /* 700 rather than 600: tracking this wide thins a wordmark out, and Space
+     Grotesk's flat sides carry the extra weight without closing up. */
+  font-family: var(--wordmark);
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .wordmark span {
   color: var(--accent);
-  margin: -5px;
+  /* The separator is its own flex item, so the row's gap lands on both sides
+     of it and reads as a gap around a word rather than a mark between two.
+     Pulled back in em, for the same reason the mark's margins are. */
+  margin: -0.2em;
 }
 
 .blurb {

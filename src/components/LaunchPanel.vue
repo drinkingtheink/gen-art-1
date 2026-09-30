@@ -192,7 +192,8 @@ onUnmounted(() => {
   gap: 0.6rem;
   margin: 0;
   font-size: 1.7rem;
-  font-weight: 600;
+  font-family: var(--wordmark);
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }

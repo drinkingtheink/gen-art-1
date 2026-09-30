@@ -43,14 +43,19 @@
      words, puts the frame at 0.57x the caps and its bars at about 1.2px
      against bold stems of 3. It measures level and it looks slight.
      
-     Matching the frame instead is what makes the two read as equals: 1.3em
-     puts it at 1.03x cap height, measured against this font rather than
-     assumed. The stand then hangs below the baseline, like a descender.
+     Matching the frame instead is what makes the two read as equals. At 0.9em
+     the frame lands just under the caps and the stand hangs below the
+     baseline, like a descender. Space Grotesk's cap height is 0.700em against
+     the system stack's 0.705, measured rather than assumed, so this number did
+     not have to move when the wordmark changed face.
      
      In em, so one number holds at any size the wordmark is set at. */
   height: 0.9em;
   width: auto;
-  margin: 5px 5px 0 0;
+  /* In em like the height, not px. The lockup is set at 1.8rem in the sidebar
+     and 1.7rem on the panel, so a pixel gap tuned against one is wrong against
+     the other — and wrong again the next time either size moves. */
+  margin: 0.2em 0.2em 0 0;
   /* Off the line box's centre and onto the cap band. The box is centred on a
      line that includes descender space an uppercase wordmark never uses, which
      lands it low. At this offset the frame's top sits on the cap line and its

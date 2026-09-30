@@ -1,3 +1,31 @@
+/**
+ * Space Grotesk, for the wordmark and nothing else.
+ *
+ * Squared, engineered letterforms that rhyme with a mark built entirely from
+ * right angles, where the system sans goes anonymous at sidebar size. The
+ * interface stays on system fonts: they are already on the machine, they cost
+ * nothing, and no part of this app is trying to look like a brand except the
+ * name.
+ *
+ * Subset to the seven glyphs the name actually uses — G, E, N, A, R, T and the
+ * middle dot — which is 1.2KB against 4.2KB for full Latin, and inlined rather
+ * than linked. This project inlines its favicon for the same reason: no file,
+ * no request, and no window where the name is set in a fallback before the
+ * real face lands. The unicode-range means anything outside those seven
+ * characters falls through to the stack below it.
+ *
+ * Space Grotesk by Florian Karsten, based on Colophon's Space Mono. SIL Open
+ * Font License 1.1: https://github.com/floriankarsten/space-grotesk
+ */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(data:font/woff2;base64,d09GMgABAAAAAASwAA8AAAAACNQAAARWAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgVwcKAZgP1NUQVQqAGwRCAqFJIQkCxYAATYCJAMoBCAFhDoHIBs3B8gEAv7drHlJkHuBtmtOxVh3aq7rcOdwprKm8ndmObhWetccpVEAuDe7PdeJEfFFpw/4QNHWARIl8AL4i2xzjMg6WKdCOxGADTGhIIC3CFBxtSSEaSjRscnZ+DVXdLdCEK0Nc1e0NNV0tmKNSMekoWBN9CIBl5CViknEDAHjb1x/I2LY+JUJGBcNvErAUIEEUTOXkwrUjIrpU5SGAZ9pVwnDwcgmdgwh47LH/QoBFEBLFsalCyNMPhBYZmxk4qTMV9ZimlC8Sj6QFGwiSpkmgscgeqNmpONYkQ3EJjGDr+PgO/Xk/2dhRFstQhyIp6oL4rqylkEHfSmBlRIc7M2MRumrq+8WqwCEUg2yMDYg8qjEQQ16XjuQAFQUHCwlhjhSySSb76hfuXivccnYZKw31hnfGV8bXxmZs7mCCTOVMvCPUFaKB4vtxUPAn7zPuls8mgAWGfxBwwgIsIVYNVuEbZi02iq8x4XJc0K3+46huY/KSrvviFA9h6XNexDFfSjPu154Nui+dbjX5grPZ+HD3vtIeNZL71qQwnPihO47tgncn38fMvjp50Ev00tkrswu0gulbrJjw661VniPHxfC01agU/HL/dJ7lH3WMd13Qggp7IoU8vmPd+omvQSP0WSp1HST3XcM29xH5/DNpi6//KGUiqr7jgjhOSylbpLCH6nleA8LzxHddwj3QYenoL6mMqyyvqYgOTpnZpljftuC/xe0zedrO3yjXaPtt016bWjQun+/PvvPiFGvB4f8HBRQOHjSpKWpwVOmJAWtc6rhh88v+/ott78/A7/76frD+GDoC3//Z6IHrc3OHohr7eb+Re8F9Qd9Et3PdHt895LolYXvP/Dc43d7Hn6wR7vbGnrn8OTYtJzEjxPS8uPjlybNk++2R9QujxpYfu0UrrX/eCsGVt699h9vxcBKXGunuComzsyaa1s8P+WLgR1fOq/de3j4I2O+t7pfnexySue0Ka9yNXpv/+j+vdE8Y4+sdjqrIyOync5sNAtW4yT7WAL4sYG9YtUGNwJQ4MW8Oc4y/wW/WVX1JsCZl4NeADjz8iNVxif/n9WOa60IzCjAGabOxJFNGJ/8N0U7vge/T6qPUsb/oCxnoOLEpTzLNOVVXEo/LiWZ4cLJLE7jd47LxVipvAWWmXAmoEFYfV4C2l1CZit/JjbBSM7DjeU5DjaVGbxJgC+kn83ESKptZoJwWf2Yhc0tTgSFqL3utDxqaKCOerqd4W7a6WIek/njuqiikwba6UZ+kkbAezQziTY6qWMyacSSTBbtVFBFDXF00kY3/5oumpiIizaaqSaXGjp7ntZGKw6mMYkp1hJ1kUNQOpYQ7u58Ykli/scYXOOr+Sg+1c6ysVEjB5pwilN2kE09+Zppw/SsuBGreqaW0jN/MDN8Fy6OmMtUHQ2NzT1UMokqbG9hMrU0kxMgrkg1UdEXPoGt8898nJ+IywAjb1qXtKHxMtP+VwAA) format('woff2');
+  unicode-range: U+41, U+45, U+47, U+4E, U+52, U+54, U+B7;
+}
+
 :root {
   --bg: #16161a;
   --panel: #1e1e24;
@@ -15,6 +43,7 @@
   --accent-edge: #23ab9a;
   --accent-hot: #5ce0d0;
   --accent-ink: #05211e;
+  --wordmark: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --radius: 6px;
   --sidebar: 288px;
 
