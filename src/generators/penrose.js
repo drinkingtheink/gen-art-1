@@ -16,9 +16,10 @@ import { getPalette, legibleInks, paletteOptions } from '../core/palettes.js'
  * whole point, and why there is no randomness in the geometry at all. The
  * seed only decides where colour lands.
  *
- * Built for showcase: depth is structural, but spin, zoom and the grout
- * between tiles are continuous, and none of them changes how many random
- * numbers are drawn.
+ * Built for showcase, though not the way the rest are — see the wave
+ * parameters below. Depth is structural; spin, zoom, grout and the whole wave
+ * are continuous, and none of them changes how many random numbers are drawn
+ * or how many tiles come out.
  *
  * Deliberately without the classic arc decoration — the two arcs per rhomb
  * that join across tiles into continuous loops. They only join if each tile
@@ -37,6 +38,27 @@ const params = [
   { key: 'zoom', type: 'range', label: 'Zoom', min: 0.5, max: 6, step: 0.005, default: 1.15, wander: 0.35 },
   { key: 'spin', type: 'range', label: 'Spin', min: 0, max: 360, step: 0.2, default: 0 },
   { key: 'inset', type: 'range', label: 'Grout', min: 0, max: 0.4, step: 0.002, default: 0.06 },
+  /**
+   * The wave, and the reason this piece has anything to animate.
+   *
+   * A Penrose tiling cannot deform. Deflation has no continuous knob — the
+   * golden ratio is not a slider — so the tiling that comes out is the only
+   * one there is, and moving a camera over a fixed pattern is a slideshow
+   * rather than motion. What *can* move is each tile on its own: a travelling
+   * wave that turns every rhomb about its own centre and opens the grout
+   * around it, by an amount read off where the tile sits. The tiling stays
+   * exactly where it is and the surface comes alive over it, like light
+   * crossing a mosaic. At amplitude 0 every tile sits flush and the pattern
+   * is perfect again.
+   */
+  { key: 'wave', type: 'range', label: 'Wave', min: 0, max: 1, step: 0.005, default: 0 },
+  { key: 'waveForm', type: 'select', label: 'Wave form', options: [
+    { value: 'rings', label: 'Rings from the centre' },
+    { value: 'bands', label: 'Bands across' },
+  ], default: 'rings' },
+  { key: 'waveScale', type: 'range', label: 'Wave scale', min: 0.4, max: 14, step: 0.05, default: 3.2 },
+  { key: 'wavePhase', type: 'range', label: 'Wave phase', min: 0, max: 360, step: 0.2, default: 0 },
+  { key: 'waveTurn', type: 'range', label: 'Wave turn', min: 0, max: 90, step: 0.2, default: 42 },
   { key: 'tint', type: 'select', label: 'Colour by', options: [
     { value: 'fivefold', label: 'Orientation · fivefold' },
     { value: 'shape', label: 'Tile shape' },
@@ -273,17 +295,50 @@ export default {
     const fills = new Map()
     const edges = []
 
+    const wavePhase = (p.wavePhase * Math.PI) / 180
+    const waveTurn = (p.waveTurn * Math.PI) / 180
+
     rhombs.forEach((rhomb, index) => {
       const pts = rhomb.points
       const [px0, py0] = place(rhomb.x, rhomb.y)
       if (Math.hypot(px0 - cx, py0 - cy) > keep) return
-      const inset = p.inset
+
+      /**
+       * Where this tile sits in the wave, measured in tiling space — before
+       * the spin, so turning the piece turns the wave with it rather than
+       * dragging the pattern through a ripple that stays put.
+       */
+      let turn = 0
+      let inset = p.inset
+      if (p.wave > 0) {
+        const dx = rhomb.x - seed.cx
+        const dy = rhomb.y - seed.cy
+        const along = p.waveForm === 'bands' ? dx : Math.hypot(dx, dy)
+        // Cubed, which is the difference between a ripple and confetti. A
+        // plain sine disturbs every tile all of the time and the tiling stops
+        // reading as a tiling; cubing holds most of them flush and
+        // concentrates the movement into a narrow crest that travels through
+        // an intact pattern.
+        const swell = Math.sin(along * p.waveScale - wavePhase) ** 3
+        turn = swell * waveTurn * p.wave
+        // The grout opens as a tile turns, so a crest reads as the surface
+        // lifting rather than as tiles merely spinning in their sockets.
+        inset = Math.min(0.85, inset + Math.abs(swell) * 0.16 * p.wave)
+      }
+      const cosT = Math.cos(turn)
+      const sinT = Math.sin(turn)
+
       const path = []
       for (let i = 0; i < 8; i += 2) {
         // Pull each corner toward the tile's centre; at 0 the tiles touch.
-        const x = rhomb.x + (pts[i] - rhomb.x) * (1 - inset)
-        const y = rhomb.y + (pts[i + 1] - rhomb.y) * (1 - inset)
-        const [sx, sy] = place(x, y)
+        let x = (pts[i] - rhomb.x) * (1 - inset)
+        let y = (pts[i + 1] - rhomb.y) * (1 - inset)
+        if (turn !== 0) {
+          const rx = x * cosT - y * sinT
+          y = x * sinT + y * cosT
+          x = rx
+        }
+        const [sx, sy] = place(rhomb.x + x, rhomb.y + y)
         path.push(`${i === 0 ? 'M' : 'L'}${r1(sx)},${r1(sy)}`)
       }
       const d = path.join('') + 'Z'

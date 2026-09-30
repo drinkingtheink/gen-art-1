@@ -207,14 +207,15 @@ export const PRESETS = {
     { key: 'twist', wave: 'drift', amplitude: 22, period: 29, centre: 12 },
   ],
   penrose: [
-    // The tiling itself cannot deform — deflation has no continuous knob, the
-    // golden ratio is not a slider. So the motion is the camera: a slow turn
-    // and a breath of zoom across a pattern that never repeats, which is the
-    // one subject where drifting the view never brings you back to where you
-    // started.
-    { key: 'spin', wave: 'ramp', amplitude: 180, period: 67, centre: 180 },
-    { key: 'zoom', wave: 'sine', amplitude: 0.55, period: 31, centre: 1.5 },
-    { key: 'inset', wave: 'sine', amplitude: 0.045, period: 19, phase: 0.3, centre: 0.07 },
+    // The tiling is fixed — deflation has no continuous knob — so the motion
+    // is the surface rather than the pattern: a ripple crossing the mosaic,
+    // turning each tile about its own centre and opening the grout at the
+    // crest. The camera moves too, but slowly, underneath it.
+    { key: 'wavePhase', wave: 'ramp', amplitude: 180, period: 11, centre: 180 },
+    { key: 'wave', wave: 'sine', amplitude: 0.35, period: 29, centre: 0.6 },
+    { key: 'waveScale', wave: 'drift', amplitude: 1.8, period: 37, centre: 3.6 },
+    { key: 'spin', wave: 'ramp', amplitude: 180, period: 97, centre: 180 },
+    { key: 'zoom', wave: 'sine', amplitude: 0.3, period: 43, centre: 1.35 },
   ],
   inversion: [
     // Kiss is the one to watch: it slides the generating circles through exact
