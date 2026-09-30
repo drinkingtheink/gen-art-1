@@ -85,6 +85,28 @@ function leaveLaunch() {
 }
 
 /**
+ * Back to the picker, deliberately rather than by luck.
+ *
+ * Until now the only way was the browser's Back button, which worked only if
+ * the picker happened to be behind you in the history — so anyone arriving on
+ * a shared link had no way back to it at all, the URL naming a piece from the
+ * first moment.
+ *
+ * The bare URL is pushed rather than just flipping the flag, because in this
+ * app the URL is what decides whether the picker is up: leaving it naming a
+ * piece would mean a reload skipped the panel, and Back would step past the
+ * picker instead of to it.
+ */
+function showLaunch() {
+  if (launching.value) return
+  cancelOpeningPlay()
+  // The panel covers the stage, so there is nothing to animate behind it.
+  show.pause()
+  launching.value = true
+  window.history.pushState(null, '', window.location.pathname)
+}
+
+/**
  * A shared link starts moving too, but only after a beat.
  *
  * The frame in a permalink was chosen — pausing writes the live values into
@@ -362,8 +384,15 @@ async function copyLink() {
   <div class="app" :class="{ presenting }">
     <aside class="sidebar">
       <header class="head">
-        <h1 class="wordmark"><GenArtMark />gen<span>·</span>Art</h1>
-        <p class="tagline">Every Pause a Masterpiece</p>
+        <h1 class="wordmark">
+          <button type="button" class="home" title="Back to all pieces" @click="showLaunch">
+            <GenArtMark />gen<span>·</span>Art
+          </button>
+        </h1>
+        <p class="tagline">
+          <span>Every Pause a Masterpiece</span>
+          <button type="button" class="all" @click="showLaunch">All pieces</button>
+        </p>
       </header>
 
       <Toolbar
@@ -535,13 +564,15 @@ async function copyLink() {
  */
 .tagline {
   margin: 0;
-  /* The loudest line in the sidebar after the name itself: the display face
-     the wordmark uses, the accent the mark is drawn in, and a size above the
-     body copy. Everything else in this column is dim grey at 0.78rem, so this
-     is the one thing that is meant to be read rather than scanned. */
-  color: var(--accent);
+  /* The loudest line in the sidebar after the name itself, and loud without
+     reaching for the accent — that belongs to the mark, the separator and the
+     controls, and a fourth teal thing makes all four quieter. The presence
+     comes from brightness instead: full-strength ink against the dim grey
+     everything else in this column is set in, in the wordmark's own face, a
+     size above the copy. */
+  color: var(--ink);
   font-family: var(--wordmark);
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   font-weight: 500;
   letter-spacing: 0.005em;
   line-height: 1.35;

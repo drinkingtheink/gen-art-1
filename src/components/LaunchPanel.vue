@@ -210,7 +210,7 @@ onUnmounted(() => {
    paragraph below it. */
 .tagline {
   margin: 0;
-  color: var(--accent);
+  color: var(--ink);
   font-family: var(--wordmark);
   font-size: 1.3rem;
   font-weight: 500;
