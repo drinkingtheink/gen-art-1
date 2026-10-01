@@ -256,6 +256,18 @@ drives the lived params and only pausing writes them back.
 A piece hung in a real room, opened from **See it on a wall** under the stage — it is a question
 about the work in front of you, so it is asked where the work is.
 
+Any room **enlarges when clicked**, and the arrow keys then walk the rooms with the piece staying
+put, which is the comparison the panel exists for: one work, four walls, a key apart. Escape closes
+the enlarged plate before it closes the panel, so leaving from in there takes two presses. Closing
+returns focus to the plate for the room you were *looking at*, found by index, not to the one that
+opened the view — after stepping, those are different plates.
+
+A room is `RoomPlate.vue`, a component rather than markup, because enlarging puts the same room on
+screen twice at once and an angled wall's placement is in pixels. Each plate measures itself; one
+width shared by room id would give both whichever was written last. It measures once synchronously
+on mount as well as observing, because a `ResizeObserver` is throttled with everything else in a
+background tab, and until it delivers an angled room draws no piece at all.
+
 `src/core/mounts.js` holds two lists, because they are two independent choices. A **frame** is what
 surrounds the artwork — Unframed, Thin, Mounted, Gallery — and a **room** is a photograph of
 somewhere it can stand. Every frame can appear in every room, so adding either multiplies rather
