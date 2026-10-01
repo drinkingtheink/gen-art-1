@@ -44,8 +44,8 @@ const SITE_DEFAULT = { g: 'flow-field', r: 'wide', s: 'quiet-heron-41' }
 export const SITE_CARD = {
   title: 'gen\u00b7art \u2014 generative SVG studio',
   description:
-    'Generative art rendered as real SVG. Seeded and reproducible, animated for ' +
-    'screen capture, and exportable as vector or a PNG big enough to print and frame.',
+    'Generative artwork for a wall or a homepage. Move every parameter until a piece is ' +
+    'yours, then take away an SVG, a CSS rule, or a print-sized PNG.',
   alt: 'A generative artwork rendered as vector line work',
 }
 const SITE_DEFAULT_STATE = {
