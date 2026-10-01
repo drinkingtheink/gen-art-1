@@ -257,7 +257,15 @@ A piece hung in a real room, opened from **See it on a wall** under the stage �
 about the work in front of you, so it is asked where the work is.
 
 Any room **enlarges when clicked**, and the arrow keys then walk the rooms with the piece staying
-put, which is the comparison the panel exists for: one work, four walls, a key apart. Escape closes
+put, which is the comparison the panel exists for: one work, four walls, a key apart.
+
+The enlarged plate takes the larger of the row it is in and a plate near twice the grid cell,
+overflowing and scrolling when the window is too short for that. A portrait photograph in a
+landscape window is bound by height long before it is bound by width, so anything fitted to the
+viewport came out barely larger than the grid cell it was covering — 430px against 491px, which is
+not an enlargement anyone would notice. Seeing the work large is the point of the click, so the
+window gives rather than the plate. The arrows are pinned to the window for the same reason: they
+stay reachable while a tall plate scrolls past them. Escape closes
 the enlarged plate before it closes the panel, so leaving from in there takes two presses. Closing
 returns focus to the plate for the room you were *looking at*, found by index, not to the one that
 opened the view — after stepping, those are different plates.

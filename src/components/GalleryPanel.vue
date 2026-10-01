@@ -244,15 +244,13 @@ onUnmounted(() => {
       </header>
 
       <div class="look-stage">
-        <button type="button" class="step" aria-label="Previous room" @click="step(-1)">‹</button>
+        <button type="button" class="step prev" aria-label="Previous room" @click="step(-1)">‹</button>
         <!-- Sized by height, because these are portrait photographs and the
              viewport runs out vertically first. The width follows from the
              photograph's own proportions so nothing is cropped. -->
         <div
           class="look-plate"
-          :style="{
-            width: `min(92vw, ${((76 * rooms[enlarged].width) / rooms[enlarged].height).toFixed(2)}vh)`,
-          }"
+          :style="{ '--ratio': (rooms[enlarged].width / rooms[enlarged].height).toFixed(4) }"
         >
           <RoomPlate
             v-if="framed"
@@ -262,7 +260,7 @@ onUnmounted(() => {
             :scene="scene"
           />
         </div>
-        <button type="button" class="step" aria-label="Next room" @click="step(1)">›</button>
+        <button type="button" class="step next" aria-label="Next room" @click="step(1)">›</button>
       </div>
 
       <p class="credit look-credit">
@@ -637,21 +635,61 @@ h2 {
 
 .look-stage {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.8rem;
   min-height: 0;
-  /* The plate is sized from the viewport's height, so on an unusually short
-     one it can outgrow this row. Scrolling beats cropping the room. */
+  /* The plate is allowed to be taller than this row, so this is where the
+     scrolling happens — inside the stage, which leaves the heading, the
+     credit and the arrows where they are. */
   overflow: auto;
+  /* `safe` so an overflowing plate starts at its top rather than centred with
+     the top cut off above the scroll origin. */
+  align-items: center;
+  align-items: safe center;
 }
 
+/**
+ * Big enough to be worth clicking, and the window can go hang.
+ *
+ * It was a guessed fraction of the viewport — `76vh` times the aspect — which
+ * on a portrait photograph and a short window came out barely larger than the
+ * grid cell it was covering: 430px against 491px, which is not an enlargement
+ * anyone would notice. Fitting the row exactly was better and still not much,
+ * because a portrait photograph in a landscape window is bound by height long
+ * before it is bound by width.
+ *
+ * So it takes the larger of the two: the full row where the window is tall
+ * enough, and otherwise a plate near twice the grid cell, which overflows and
+ * scrolls. Seeing the work large is the whole point of the click, and a scroll
+ * is a fair price for it.
+ *
+ * `92vw` is the other bound, for a window too narrow to fit that width.
+ * Expressed as a height throughout so the ratio holds: with both dimensions
+ * set, `aspect-ratio` would be the thing that gave.
+ */
 .look-plate {
-  /* The plate measures itself, so it needs a width it can be measured at —
-     the height is the photograph's own business. */
   flex: none;
-  max-height: 100%;
+  height: max(100%, calc(min(92vw, 820px) / var(--ratio)));
+  aspect-ratio: var(--ratio);
   line-height: 0;
+}
+
+/* The plate's box is the photograph's shape, so the room fills it exactly —
+   which matters because the piece is placed as a fraction of that box. */
+.look-plate :deep(.room) {
+  width: 100%;
+  height: 100%;
+}
+
+.look-plate :deep(.plate) {
+  height: 100%;
+}
+
+.step.prev {
+  left: 0.9rem;
+}
+
+.step.next {
+  right: 0.9rem;
 }
 
 /**
@@ -663,7 +701,12 @@ h2 {
  * order: previous, plate, next.
  */
 .step {
-  flex: none;
+  /* Pinned to the window rather than sitting in the row, so they stay put and
+     stay reachable while a tall plate scrolls past them. */
+  position: fixed;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 2;
   width: 2.4rem;
   height: 2.4rem;
   padding: 0;
