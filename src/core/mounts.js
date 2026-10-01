@@ -182,6 +182,32 @@ export const rooms = [
       sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
     },
   },
+
+  {
+    id: 'linen',
+    name: 'Linen wall',
+    src: '/rooms/linen-wall.jpg',
+    width: 1600,
+    height: 2000,
+    // Clean wall x 356-1252, reaching the top of the frame.
+    area: { x: 430, y: 160, width: 760, height: 780 },
+    /**
+     * The bright curtain on the right is a window, and it is not what lights
+     * this wall. Measured, the wall darkens left to right at every height —
+     * 205.8 beside the chair against 194.3 clear of it, 171.6 against 153.9
+     * either side of the plant, 222.3 across the left quarter against 207.6
+     * across the right. Light from the left, as in the ochre room, but with a
+     * shallower fall: top to bottom moves only 217.8 to 212.0.
+     */
+    light: { x: 1, y: 0.35 },
+    wall: '#d8dadc',
+    credit: {
+      who: 'Lassi',
+      profile: 'https://unsplash.com/@lassiveh?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+      source: 'Unsplash',
+      sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+    },
+  },
 ]
 
 /**

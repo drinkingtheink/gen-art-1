@@ -424,15 +424,17 @@ async function copyLink() {
 </script>
 
 <template>
-  <GalleryPanel
-    v-if="previewing"
-    :scene="scene"
-    :defs="defs"
-    :artwork-filter="artworkFilter"
-    :overlay="overlay"
-    :title="`${generator.name} · ${seed}`"
-    @dismiss="previewing = false"
-  />
+  <Transition name="gallery">
+    <GalleryPanel
+      v-if="previewing"
+      :scene="scene"
+      :defs="defs"
+      :artwork-filter="artworkFilter"
+      :overlay="overlay"
+      :title="`${generator.name} · ${seed}`"
+      @dismiss="previewing = false"
+    />
+  </Transition>
 
   <LaunchPanel
     v-if="launching"

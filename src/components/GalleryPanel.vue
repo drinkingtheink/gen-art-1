@@ -154,6 +154,65 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/**
+ * Opening and closing.
+ *
+ * The transition classes land on this component's root, which is the frosted
+ * backdrop, so the two halves can be timed differently: the frost fades, and
+ * the sheet rises into it. Weighting it that way is what makes the panel read
+ * as arriving over the studio rather than as a box being switched on.
+ *
+ * Out is faster than in — 180ms against 260 — because a dismissal has already
+ * been decided and an exit that takes as long as an entrance feels like the
+ * app arguing. The easing is the same curve the opening panel's cards use.
+ *
+ * `backdrop-filter` is deliberately not animated: blur is the single most
+ * expensive thing on this screen, and interpolating it drops frames on the
+ * whole composite. Opacity on the frosted layer does the same work for free.
+ */
+.gallery-enter-active {
+  transition: opacity 260ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.gallery-leave-active {
+  transition: opacity 180ms cubic-bezier(0.4, 0, 0.6, 1);
+  /* On the way out it is still a full-screen layer for 180ms. Without this it
+     would swallow the first click aimed at whatever it is uncovering. */
+  pointer-events: none;
+}
+
+.gallery-enter-from,
+.gallery-leave-to {
+  opacity: 0;
+}
+
+.gallery-enter-active .sheet {
+  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.gallery-leave-active .sheet {
+  transition: transform 180ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.gallery-enter-from .sheet,
+.gallery-leave-to .sheet {
+  transform: translateY(14px) scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-enter-active,
+  .gallery-leave-active,
+  .gallery-enter-active .sheet,
+  .gallery-leave-active .sheet {
+    transition-duration: 1ms;
+  }
+
+  .gallery-enter-from .sheet,
+  .gallery-leave-to .sheet {
+    transform: none;
+  }
+}
+
 .gallery {
   position: fixed;
   inset: 0;
