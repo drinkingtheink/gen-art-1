@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import GenArtMark from './GenArtMark.vue'
 import { DEFAULT_FRAME, frameById, frames, hangStyle, placeInRoom, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
@@ -106,6 +107,10 @@ onUnmounted(() => {
           <h2 id="gallery-title">On the wall</h2>
           <p class="who">{{ title }}</p>
         </div>
+        <!-- Decorative: the heading beside it already names the panel, and
+             this is the one surface in the app showing the work off rather
+             than operating on it. -->
+        <p class="crest" aria-hidden="true"><GenArtMark /></p>
         <button ref="closer" type="button" @click="emit('dismiss')">Close</button>
       </header>
 
@@ -184,11 +189,38 @@ onUnmounted(() => {
   box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
 }
 
+/**
+ * Title, mark, Close — on one line, with the mark centred on the sheet rather
+ * than on the space left between the other two. That is what the outer columns
+ * are for: equal and flexible either side, so an eight-word title or a
+ * forty-word one moves the mark not at all.
+ *
+ * Sized by font-size rather than height: the mark measures itself in em, so
+ * one number sets it wherever it appears and nothing has to reach past the
+ * component's own rule.
+ */
 .head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   gap: 1rem;
+}
+
+.crest {
+  margin: 0;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+/* The mark carries a right margin for standing beside the wordmark. Alone and
+   centred it has nothing to stand beside, and that margin is what put it three
+   pixels off centre. */
+.crest svg {
+  margin: 0;
+}
+
+.head > button {
+  justify-self: end;
 }
 
 h2 {
