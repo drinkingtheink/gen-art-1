@@ -277,12 +277,22 @@ most pieces draw something outside their own bounds.
 
 ### Making it sit in the room
 
-A correctly placed rectangle still reads as a sticker. Three things fix that, none of them large.
-A shadow in two parts — a wide soft one for the room's ambient light and a tight dark one where
-the frame meets the plaster, which is the part the eye actually reads as contact. A sheen across
-the glass, angled against the light. And a breath of the wall's own colour over the work, because
-a print in a room is lit by that room, and a perfectly neutral rectangle sits on top of the
-photograph rather than in it.
+A correctly placed rectangle still reads as a sticker. A shadow puts it in front of the plaster;
+what makes it an object is light falling *on* it. Four layers, none of them large:
+
+- **A shadow in two parts** — a wide soft one for the room's ambient light, and a tight dark one
+  where the frame meets the plaster. That second is what the eye reads as contact rather than as a
+  glow.
+- **A lit edge.** An inset shadow offset toward the light leaves its band on the lit side, which is
+  what a moulding catching the light looks like: a bright hairline on two sides and a dark one on
+  the other two. Thin on purpose — past about a third of a percent it stops being an edge and
+  becomes a border. This was the layer missing when the frames still looked printed on.
+- **A sheen and an ambient falloff**, in one gradient layer. The sheen is narrow and sits on the lit
+  corner rather than washing the face, because glass gives a defined reflection and not a haze. The
+  falloff runs the way the room's light falls, so the far side of the piece sits in the same
+  gradient the wall behind it is in. It is the quieter of the two and does the more work.
+- **A breath of the wall's own colour** over the work, because a print in a room is lit by that
+  room, and a perfectly neutral rectangle sits on top of the photograph rather than in it.
 
 All three are measured from the photograph rather than guessed, and live on the room as `light` and
 `wall`, so every photograph brings its own. The measuring is done by script, not by eye: the clean

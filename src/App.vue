@@ -536,6 +536,18 @@ async function copyLink() {
       <!-- Under the work rather than in the sidebar: it is a question about
            the piece in front of you, so it is asked where the piece is. -->
       <button v-if="!presenting" type="button" class="see-framed" @click="openPreview">
+        <!-- Drawn here rather than pulled from an icon set: it is two circles,
+             a bridge and two temples, and the app already draws its own mark.
+             Decorative, because the label beside it says the same thing. -->
+        <svg class="specs" viewBox="0 0 26 11" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="6.6" cy="6.1" r="4.2" />
+            <circle cx="19.4" cy="6.1" r="4.2" />
+            <path d="M10.8,5.4 Q13,4.1 15.2,5.4" />
+            <path d="M2.4,5.1 L0.9,2.6" />
+            <path d="M23.6,5.1 L25.1,2.6" />
+          </g>
+        </svg>
         See it on a wall
       </button>
 
@@ -735,7 +747,10 @@ async function copyLink() {
   position: absolute;
   bottom: 0.9rem;
   left: 50%;
-  padding: 0.45rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem 0.45rem 0.85rem;
   color: var(--accent-ink);
   background: var(--accent);
   border-color: var(--accent-edge);
@@ -745,6 +760,17 @@ async function copyLink() {
   transform: translateX(-50%);
   box-shadow: 0 6px 20px -8px rgb(0 0 0 / 70%);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+/* In em, so it tracks the label rather than needing a second number if the
+   button's size ever changes. Lifted a hair: the temples give the drawing more
+   weight above its centre than below, so matching the box to the cap line
+   lands it visually low. */
+.see-framed .specs {
+  flex: none;
+  width: 1.65em;
+  height: auto;
+  transform: translateY(0.04em);
 }
 
 .see-framed:hover,

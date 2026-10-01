@@ -233,29 +233,59 @@ export function placeInRoom(room, framedWidth, framedHeight) {
 /**
  * What makes a pasted rectangle look like an object on a wall.
  *
- * Three things, none of them large. A shadow in two parts — a wide soft one
- * for the room's ambient light and a tight dark one where the frame meets the
- * plaster, which is the part the eye actually reads as contact. A sheen across
- * the glass, angled against the light rather than arbitrarily. And a breath of
- * the wall's own colour over the work, because a print in a room is lit by
- * that room and a perfectly neutral rectangle sits on top of the photograph
- * rather than in it.
+ * A shadow puts it in front of the plaster. These put light on it, which is
+ * the part that was missing — a frame with no lit edge reads as a printed
+ * rectangle however well it is placed.
  *
- * Sized in container-query units so the whole thing scales with the
- * photograph: the piece is placed as a percentage, and a shadow measured in
- * pixels would be wrong at every size but one.
+ * `toward` is the CSS gradient angle pointing the way the shadow falls. CSS
+ * measures from "to top" clockwise, and screen y runs downward, which is why
+ * it is atan2(x, -y) rather than anything more obvious.
  */
 export function hangStyle(room) {
-  const { x, y } = room.light ?? { x: 1, y: 0.6 }
-  const o = (n) => `${(n).toFixed(2)}cqw`
+  const { x, y } = room.light ?? { x: 1, y: 0.5 }
+  const len = Math.hypot(x, y) || 1
+  const u = { x: x / len, y: y / len }
+  const o = (n) => `${n.toFixed(2)}cqw`
+  const toward = (Math.atan2(u.x, -u.y) * 180) / Math.PI
+
   return {
+    /**
+     * Two shadows. A wide soft one for the room's ambient light, and a tight
+     * dark one where the frame meets the plaster — that second is the part the
+     * eye reads as contact rather than as a glow.
+     */
     shadow:
-      `${o(x * 1.3)} ${o(y * 1.3)} ${o(2.8)} rgb(0 0 0 / 30%), ` +
-      `${o(x * 0.3)} ${o(y * 0.3)} ${o(0.55)} rgb(0 0 0 / 42%)`,
-    // Across the face, from the lit corner toward the shaded one.
+      `${o(u.x * 1.3)} ${o(u.y * 1.3)} ${o(2.8)} rgb(0 0 0 / 30%), ` +
+      `${o(u.x * 0.3)} ${o(u.y * 0.3)} ${o(0.55)} rgb(0 0 0 / 42%)`,
+
+    /**
+     * The lit edge, and the dark one opposite.
+     *
+     * An inset shadow offset toward the light leaves its band on the lit side,
+     * which is what a moulding catching the light actually looks like: a bright
+     * hairline on two sides and a dark one on the other two. Thin on purpose —
+     * past about a third of a percent it stops being an edge and starts being
+     * a border.
+     */
+    edge:
+      `inset ${o(u.x * 0.22)} ${o(u.y * 0.22)} 0 rgb(255 255 255 / 22%), ` +
+      `inset ${o(-u.x * 0.22)} ${o(-u.y * 0.22)} 0 rgb(0 0 0 / 20%)`,
+
+    /**
+     * Two gradients in one layer.
+     *
+     * A sheen off the glass, narrow and placed on the lit corner rather than
+     * washed across the whole face — glass gives a defined reflection, not a
+     * haze. And an ambient falloff running the way the room's own light falls,
+     * so the far side of the piece sits in the same gradient the wall behind it
+     * is in. The falloff is the quieter of the two and does the more work.
+     */
     sheen:
-      `linear-gradient(${(Math.atan2(x, y) * 180) / Math.PI + 90}deg, ` +
-      `rgb(255 255 255 / 13%) 0%, rgb(255 255 255 / 4%) 34%, rgb(255 255 255 / 0%) 62%)`,
+      `linear-gradient(${(toward + 180).toFixed(1)}deg, ` +
+      `rgb(255 255 255 / 16%) 0%, rgb(255 255 255 / 5%) 12%, rgb(255 255 255 / 0%) 34%), ` +
+      `linear-gradient(${toward.toFixed(1)}deg, ` +
+      `rgb(0 0 0 / 0%) 35%, rgb(0 0 0 / 9%) 100%)`,
+
     wall: room.wall ?? '#808080',
   }
 }

@@ -139,6 +139,10 @@ onUnmounted(() => {
               <img :src="framed.url" alt="" />
               <span class="glass" :style="{ backgroundImage: hangStyle(room).sheen }" />
               <span class="cast" :style="{ backgroundColor: hangStyle(room).wall }" />
+              <!-- Last, and over everything: the lit edge of the moulding. A
+                   frame with no edge catching the light reads as a printed
+                   rectangle however well it is placed. -->
+              <span class="edge" :style="{ boxShadow: hangStyle(room).edge }" />
             </div>
           </div>
           <p class="credit">
@@ -366,6 +370,11 @@ h2 {
 .room .hung .cast {
   opacity: 0.07;
   mix-blend-mode: soft-light;
+}
+
+/* Nothing of its own — it is only the inset shadow it carries. */
+.room .hung .edge {
+  background: none;
 }
 
 .credit {
