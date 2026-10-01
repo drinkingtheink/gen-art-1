@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffe
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GenArtMark from '@/components/GenArtMark.vue'
-import LinkIcon from '@/components/LinkIcon.vue'
+import ButtonIcon from '@/components/ButtonIcon.vue'
 import GalleryPanel from '@/components/GalleryPanel.vue'
 import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
@@ -520,7 +520,7 @@ async function copyLink() {
       />
 
       <button type="button" class="copy" @click="copyLink">
-        <LinkIcon :done="copied" />
+        <ButtonIcon :glyph="copied ? 'tick' : 'link'" />
         {{ copied ? 'Link copied' : 'Copy link to this piece' }}
       </button>
 

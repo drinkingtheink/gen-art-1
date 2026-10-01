@@ -1,8 +1,17 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import GenArtMark from './GenArtMark.vue'
-import LinkIcon from './LinkIcon.vue'
-import { DEFAULT_FRAME, frameById, frames, hangStyle, placeInRoom, rooms } from '../core/mounts.js'
+import ButtonIcon from './ButtonIcon.vue'
+import {
+  DEFAULT_FRAME,
+  frameById,
+  frames,
+  hangStyle,
+  matrix3dFor,
+  placeInRoom,
+  placeOnPlane,
+  rooms,
+} from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
@@ -61,30 +70,62 @@ function compose() {
       frame: box,
     })
     url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }))
-    framed.value = {
-      url,
-      places: Object.fromEntries(
-        rooms.map((room) => {
-          const p = placeInRoom(room, box.width, box.height)
-          return [
-            room.id,
-            {
-              left: `${p.left * 100}%`,
-              top: `${p.top * 100}%`,
-              width: `${p.width * 100}%`,
-              height: `${p.height * 100}%`,
-              boxShadow: hangStyle(room).shadow,
-            },
-          ]
-        }),
-      ),
-    }
+    framed.value = { url, box }
   } catch {
     framed.value = null
   }
 }
 
 watch(() => props.frame, compose)
+
+/**
+ * Rendered width per room, for the angled wall's pixel maths.
+ *
+ * An observer rather than a window listener: this grid reflows at widths the
+ * window size alone does not predict.
+ */
+const widths = ref({})
+const list = useTemplateRef('list')
+let observer = null
+
+/**
+ * Where the piece sits in one room.
+ *
+ * A flat wall is a scale and a translate, so the piece is placed in
+ * percentages and holds at any displayed size without measuring anything. An
+ * angled wall is a homography, which CSS can only express in pixels — so that
+ * case, and only that case, needs the room's rendered width.
+ */
+function hungStyle(room) {
+  const f = framed.value
+  if (!f) return null
+
+  if (!room.plane) {
+    const p = placeInRoom(room, f.box.width, f.box.height)
+    return {
+      left: `${p.left * 100}%`,
+      top: `${p.top * 100}%`,
+      width: `${p.width * 100}%`,
+      height: `${p.height * 100}%`,
+      boxShadow: hangStyle(room).shadow,
+    }
+  }
+
+  const cw = widths.value[room.id]
+  if (!cw) return null
+  const ch = (cw * room.height) / room.width
+  const quad = placeOnPlane(room, f.box.width, f.box.height).map(([x, y]) => [x * cw, y * ch])
+
+  return {
+    left: '0',
+    top: '0',
+    width: `${f.box.width}px`,
+    height: `${f.box.height}px`,
+    transformOrigin: '0 0',
+    transform: matrix3dFor(quad, f.box.width, f.box.height),
+    boxShadow: hangStyle(room, f.box.width / (quad[1][0] - quad[0][0])).shadow,
+  }
+}
 
 const closer = useTemplateRef('closer')
 let returnTo = null
@@ -99,10 +140,18 @@ onMounted(() => {
   compose()
   window.addEventListener('keydown', onKey)
   closer.value?.focus()
+
+  observer = new ResizeObserver((entries) => {
+    const next = { ...widths.value }
+    for (const entry of entries) next[entry.target.dataset.room] = entry.contentRect.width
+    widths.value = next
+  })
+  for (const el of list.value?.querySelectorAll('[data-room]') ?? []) observer.observe(el)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
+  observer?.disconnect()
   if (url) URL.revokeObjectURL(url)
   if (returnTo?.isConnected) returnTo.focus()
 })
@@ -125,7 +174,10 @@ onUnmounted(() => {
              offers to "just open the studio" and this file's transition note
              describes the sheet as arriving over it. Naming the destination
              rather than the gesture keeps the gallery/studio pair intact. -->
-        <button ref="closer" type="button" @click="emit('dismiss')">Back to the studio</button>
+        <button ref="closer" type="button" class="leave" @click="emit('dismiss')">
+          <ButtonIcon glyph="back" />
+          Back to the studio
+        </button>
       </header>
 
       <div class="choices">
@@ -148,20 +200,20 @@ onUnmounted(() => {
              confirmation says so, because that is the whole question a sender
              has about a link like this. -->
         <button type="button" class="share" @click="emit('copy')">
-          <LinkIcon :done="copied" />
+          <ButtonIcon :glyph="copied ? 'tick' : 'link'" />
           {{ copied ? 'Copied — opens on the wall' : 'Copy link to this wall' }}
         </button>
       </div>
 
-      <ul class="rooms">
+      <ul ref="list" class="rooms">
         <li v-for="room in rooms" :key="room.id">
-          <div class="room">
+          <div class="room" :data-room="room.id">
             <img class="plate" :src="room.src" alt="" />
             <!-- A shadow on the wall, a sheen on the glass, and a breath of
                  the room's own colour over the work. The piece is isolated so
                  those last two blend with the artwork and not with the
                  photograph underneath it. -->
-            <div v-if="framed" class="hung" :style="framed.places[room.id]">
+            <div v-if="hungStyle(room)" class="hung" :style="hungStyle(room)">
               <img :src="framed.url" alt="" />
               <span class="glass" :style="{ backgroundImage: hangStyle(room).sheen }" />
               <span class="cast" :style="{ backgroundColor: hangStyle(room).wall }" />
@@ -310,6 +362,14 @@ onUnmounted(() => {
 
 .head > button {
   justify-self: end;
+}
+
+/* The same lockup the share button uses — icon, a gap in em, label — because
+   the point of giving both an icon is that they look like one kind of thing. */
+.leave {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
 }
 
 h2 {

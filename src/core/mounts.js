@@ -268,6 +268,54 @@ export const rooms = [
       sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
     },
   },
+  /**
+   * The first wall not square to the camera, and the first that needs more
+   * than a scale and a translate.
+   *
+   * `plane` is the homography from the wall's own coordinates to fractions of
+   * the photograph, and it was measured rather than eyeballed. The acoustic
+   * slats are evenly spaced on the wall, so their image positions fit the
+   * projective map x(u) = (au + b)/(cu + 1) exactly — 45 of them, to a mean of
+   * 0.86px — and that map is the wall's perspective. The panel's top edge
+   * gives the second row, and the ceiling's junction with the perpendicular
+   * left-hand wall gives a second vanishing point, which gives the focal
+   * length (2153px, 1.62x the frame) and so the foreshortening: this wall is
+   * 40.3 degrees off the image plane, and one unit of height is 55 slats of
+   * width.
+   *
+   * Two things fell out that are worth keeping. Verticals stay vertical here,
+   * so the vertical scale at any point is simply its distance from the
+   * horizon — and the model is a true homography only when the horizon equals
+   * y at the vanishing point, which the slat fit and the top edge agree on
+   * independently. That agreement is the check that the whole thing is sound.
+   *
+   * `wall` is the usable rectangle in those coordinates: u in slats, v
+   * downward from the panel's top edge. v = 44 still clears the sofa.
+   */
+  {
+    id: 'slat',
+    name: 'Slatted wall',
+    src: '/rooms/slat-wall.jpg',
+    width: 1333,
+    height: 1999,
+    plane: [
+      [0.0060646018, 0, 0.40218464],
+      [-0.0044142595, 0.0077535867, 0.20703443],
+      [-0.0069666883, 0, 1],
+    ],
+    wall: { u0: 8, u1: 38, v0: 6, v1: 44 },
+    // The window is off to the left and the wall says so: 89.2 across its left
+    // third against 64.7 across its right. The sofa agrees far more loudly,
+    // 158.8 on its left against 112.8 on its right.
+    light: { x: 1, y: 0.25 },
+    wallColour: '#5d5146',
+    credit: {
+      who: 'Tile Merchant Ireland',
+      profile: 'https://unsplash.com/@tilemerchant?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+      source: 'Unsplash',
+      sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+    },
+  },
 ]
 
 /**
@@ -290,6 +338,71 @@ export function placeInRoom(room, framedWidth, framedHeight) {
   }
 }
 
+/** A point in wall coordinates, as a fraction of the photograph. */
+function project(plane, u, v) {
+  const w = plane[2][0] * u + plane[2][1] * v + plane[2][2]
+  return [
+    (plane[0][0] * u + plane[0][1] * v + plane[0][2]) / w,
+    (plane[1][0] * u + plane[1][1] * v + plane[1][2]) / w,
+  ]
+}
+
+/**
+ * The four corners a framed piece occupies on an angled wall, as fractions of
+ * the photograph.
+ *
+ * The wall's coordinates are isotropic — one unit across is one unit down in
+ * real proportions — so a piece keeps its aspect simply by being a rectangle
+ * in them, and the homography does the foreshortening. Fitted inside the
+ * usable wall and centred there, the same way a flat room fits its area.
+ */
+export function placeOnPlane(room, framedWidth, framedHeight) {
+  const { u0, u1, v0, v1 } = room.wall
+  const spanU = u1 - u0
+  const spanV = v1 - v0
+  let du = spanU
+  let dv = (du * framedHeight) / framedWidth
+  if (dv > spanV) { dv = spanV; du = (dv * framedWidth) / framedHeight }
+  const u = u0 + (spanU - du) / 2
+  const v = v0 + (spanV - dv) / 2
+  return [[u, v], [u + du, v], [u + du, v + dv], [u, v + dv]].map(([a, b]) => project(room.plane, a, b))
+}
+
+/**
+ * A CSS matrix3d mapping an element's own box onto four points.
+ *
+ * Heckbert's unit-square-to-quad, composed with 1/w and 1/h so the element
+ * keeps its natural size and the transform does all the work. `matrix3d` is
+ * column-major, and the element needs `transform-origin: 0 0`.
+ *
+ * This is the one thing CSS can do here that SVG cannot: SVG transforms are
+ * affine, and an angled wall needs a true homography.
+ */
+export function matrix3dFor(quad, w, h) {
+  const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = quad
+  const sx = x0 - x1 + x2 - x3
+  const sy = y0 - y1 + y2 - y3
+  let a, b, c, d, e, f, g, i
+
+  if (Math.abs(sx) < 1e-9 && Math.abs(sy) < 1e-9) {
+    // Square to parallelogram — no perspective term.
+    a = x1 - x0; b = x2 - x1; c = x0
+    d = y1 - y0; e = y2 - y1; f = y0
+    g = 0; i = 0
+  } else {
+    const dx1 = x1 - x2, dx2 = x3 - x2
+    const dy1 = y1 - y2, dy2 = y3 - y2
+    const den = dx1 * dy2 - dx2 * dy1
+    g = (sx * dy2 - dx2 * sy) / den
+    i = (dx1 * sy - sx * dy1) / den
+    a = x1 - x0 + g * x1; b = x3 - x0 + i * x3; c = x0
+    d = y1 - y0 + g * y1; e = y3 - y0 + i * y3; f = y0
+  }
+
+  const m = [a / w, d / w, 0, g / w, b / h, e / h, 0, i / h, 0, 0, 1, 0, c, f, 0, 1]
+  return `matrix3d(${m.map((n) => +n.toFixed(6)).join(',')})`
+}
+
 /**
  * What makes a pasted rectangle look like an object on a wall.
  *
@@ -301,11 +414,14 @@ export function placeInRoom(room, framedWidth, framedHeight) {
  * measures from "to top" clockwise, and screen y runs downward, which is why
  * it is atan2(x, -y) rather than anything more obvious.
  */
-export function hangStyle(room) {
+export function hangStyle(room, boost = 1) {
   const { x, y } = room.light ?? { x: 1, y: 0.5 }
   const len = Math.hypot(x, y) || 1
   const u = { x: x / len, y: y / len }
-  const o = (n) => `${n.toFixed(2)}cqw`
+  // `boost` is for a piece on an angled wall. It is drawn at its own size and
+  // then transformed down onto the quad, so every length inside it shrinks by
+  // that factor — including the shadow, which has to be grown to compensate.
+  const o = (n) => `${(n * boost).toFixed(2)}cqw`
   const toward = (Math.atan2(u.x, -u.y) * 180) / Math.PI
   const a = toward.toFixed(1)
 
@@ -353,6 +469,6 @@ export function hangStyle(room) {
       `linear-gradient(${a}deg, ` +
       `rgb(0 0 0 / 0%) 35%, rgb(0 0 0 / 9%) 100%)`,
 
-    wall: room.wall ?? '#808080',
+    wall: room.wallColour ?? room.wall ?? '#808080',
   }
 }
