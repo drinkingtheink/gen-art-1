@@ -290,11 +290,14 @@ what makes it an object is light falling *on* it. Four layers, none of them larg
 - **A sheen and an ambient falloff**, in one gradient layer. The sheen is narrow and sits on the lit
   corner rather than washing the face, because glass gives a defined reflection and not a haze. The
   falloff runs the way the room's light falls, so the far side of the piece sits in the same
-  gradient the wall behind it is in. It is the quieter of the two and does the more work.
+  gradient the wall behind it is in. It is the quieter of the two and does the more work. Both run
+  at the same angle, because CSS puts a gradient's 0% stop at the *start* of the line and not where
+  the angle points — `linear-gradient(90deg, red, blue)` is red on the left. Opposing them, which
+  looks right, puts the highlight on the dark corner.
 - **A breath of the wall's own colour** over the work, because a print in a room is lit by that
   room, and a perfectly neutral rectangle sits on top of the photograph rather than in it.
 
-All three are measured from the photograph rather than guessed, and live on the room as `light` and
+All of it is measured from the photograph rather than guessed, and lives on the room as `light` and
 `wall`, so every photograph brings its own. The measuring is done by script, not by eye: the clean
 wall is found by scanning each row for the longest unbroken run of wall colour, and the light by
 comparing the brightness of the wall's left quarter against its right, then checking that against
@@ -304,6 +307,15 @@ The linen wall is the case for doing it that way. Its one obvious feature is a b
 right, which says the light is there — and the wall says otherwise at every height: 205.8 beside the
 chair against 194.3 clear of it, 171.6 against 153.9 either side of the plant. The curtain is a
 window plane, not what lights that wall.
+
+The plank wall is the case for not stopping at one measurement. It is the first room lit from the
+right, and three surfaces agree on that — the wall runs 63.7 to 76.4 across the far quarters, the
+floor 161.3 to 172.2, the matte vessel 55.8 against 64.3 — while the chair reads the other way,
+20.2 on its left against 11.0 on its right. The chair is a dark gloss shell, so that is a specular
+highlight and not shading; diffuse surfaces are what the measurement is for. Its planks also defeat
+the row scan, since the longest run of wall colour finds the stain rather than the furniture, so
+the obstructions were found by colour family instead: the wall is red-dominant everywhere, the
+chair and the tiles read blue, the plant reads green.
 
 Sized in container-query units, because the piece is placed as a percentage of the photograph and
 a shadow measured in pixels would be right at exactly one display size.

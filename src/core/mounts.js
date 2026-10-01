@@ -208,6 +208,41 @@ export const rooms = [
       sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
     },
   },
+  {
+    id: 'plank',
+    name: 'Plank wall',
+    src: '/rooms/plank-wall.jpg',
+    width: 1600,
+    height: 2400,
+    // Reclaimed boards, so the usual scan for a run of wall colour finds the
+    // stain rather than the obstructions. The blockers were found by colour
+    // family instead: the wall is red-dominant everywhere, the chair and the
+    // tiles read blue, the plant reads green. That leaves the upper two
+    // thirds clear, the chair arriving at y 1463 and the floor at 2236.
+    area: { x: 480, y: 330, width: 790, height: 850 },
+    /**
+     * Light from the right here, which neither other room does.
+     *
+     * The wall brightens left to right at every height — 73.5 against 79.8
+     * across the halves, 63.7 against 76.4 across the far quarters — and two
+     * objects agree: the floor runs 161.3 to 172.2 and the matte vessel is
+     * 55.8 on its left against 64.3 on its right. The chair dissents, reading
+     * 20.2 left against 11.0 right, but it is a dark gloss shell and that is a
+     * specular highlight, not shading. Three diffuse surfaces outvote it.
+     *
+     * The wall also brightens downward, 71.8 to 77.7, which is bounce off
+     * those pale tiles rather than a light under the floor, so the fall stays
+     * shallow and downward as in the other rooms.
+     */
+    light: { x: -1, y: 0.4 },
+    wall: '#6e4818',
+    credit: {
+      who: 'Ariel',
+      profile: 'https://unsplash.com/@hypvisual?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+      source: 'Unsplash',
+      sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+    },
+  },
 ]
 
 /**
@@ -247,6 +282,7 @@ export function hangStyle(room) {
   const u = { x: x / len, y: y / len }
   const o = (n) => `${n.toFixed(2)}cqw`
   const toward = (Math.atan2(u.x, -u.y) * 180) / Math.PI
+  const a = toward.toFixed(1)
 
   return {
     /**
@@ -279,11 +315,17 @@ export function hangStyle(room) {
      * haze. And an ambient falloff running the way the room's own light falls,
      * so the far side of the piece sits in the same gradient the wall behind it
      * is in. The falloff is the quieter of the two and does the more work.
+     *
+     * Both run at `toward`, not opposed, because CSS puts a gradient's 0% stop
+     * at the *start* of the line rather than where the angle points — the way
+     * `linear-gradient(90deg, red, blue)` is red on the left. One angle puts
+     * the highlight on the lit side and the shade on the far side, which is
+     * one ramp across the piece and not two fighting.
      */
     sheen:
-      `linear-gradient(${(toward + 180).toFixed(1)}deg, ` +
+      `linear-gradient(${a}deg, ` +
       `rgb(255 255 255 / 16%) 0%, rgb(255 255 255 / 5%) 12%, rgb(255 255 255 / 0%) 34%), ` +
-      `linear-gradient(${toward.toFixed(1)}deg, ` +
+      `linear-gradient(${a}deg, ` +
       `rgb(0 0 0 / 0%) 35%, rgb(0 0 0 / 9%) 100%)`,
 
     wall: room.wall ?? '#808080',
