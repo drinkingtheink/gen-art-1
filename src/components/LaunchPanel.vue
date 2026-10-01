@@ -80,8 +80,9 @@ onUnmounted(() => {
         <h1 id="launch-title" class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
         <p class="tagline">Every Pause a Masterpiece</p>
         <p class="blurb">
-          Artwork for a wall or a homepage. Move every parameter until a piece is yours, then keep
-          the moment you stopped on — vector, or big enough to print.
+          Generative artwork for a wall or a homepage. Move parameters until a piece is yours, then
+          keep the moment you stopped on — get an SVG or PNG big enough to print any size and hang,
+          or CSS for your digital project.
         </p>
       </header>
 
