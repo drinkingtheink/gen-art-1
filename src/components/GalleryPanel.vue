@@ -6,6 +6,7 @@ import {
   DEFAULT_FRAME,
   frameById,
   frames,
+  artWindow,
   hangStyle,
   matrix3dFor,
   placeInRoom,
@@ -107,7 +108,7 @@ function hungStyle(room) {
       top: `${p.top * 100}%`,
       width: `${p.width * 100}%`,
       height: `${p.height * 100}%`,
-      boxShadow: hangStyle(room).shadow,
+      boxShadow: lighting(room).shadow,
     }
   }
 
@@ -123,8 +124,31 @@ function hungStyle(room) {
     height: `${f.box.height}px`,
     transformOrigin: '0 0',
     transform: matrix3dFor(quad, f.box.width, f.box.height),
-    boxShadow: hangStyle(room, f.box.width / (quad[1][0] - quad[0][0])).shadow,
+    boxShadow: lighting(room).shadow,
   }
+}
+
+/**
+ * The room's light, as every layer wants it.
+ *
+ * One call rather than one per layer, because an angled wall needs the boost
+ * — its piece is drawn at full size and transformed down, so lengths inside it
+ * shrink — and before this only the shadow was getting it.
+ */
+function lighting(room) {
+  const f = framed.value
+  if (!room.plane || !f) return hangStyle(room)
+
+  const cw = widths.value[room.id]
+  if (!cw) return hangStyle(room)
+  const ch = (cw * room.height) / room.width
+  const quad = placeOnPlane(room, f.box.width, f.box.height).map(([x, y]) => [x * cw, y * ch])
+  return hangStyle(room, f.box.width / (quad[1][0] - quad[0][0]))
+}
+
+/** The print's own rectangle, for the treatments that belong on it. */
+function printStyle(room) {
+  return { ...artWindow(framed.value.box, props.scene), boxShadow: lighting(room).recess }
 }
 
 const closer = useTemplateRef('closer')
@@ -217,18 +241,25 @@ onUnmounted(() => {
         <li v-for="room in rooms" :key="room.id">
           <div class="room" :data-room="room.id">
             <img class="plate" :src="room.src" alt="" />
-            <!-- A shadow on the wall, a sheen on the glass, and a breath of
-                 the room's own colour over the work. The piece is isolated so
-                 those last two blend with the artwork and not with the
+            <!-- A shadow on the wall, the room reflected in the glass, and a
+                 breath of the wall's own colour over the work. The piece is
+                 isolated so those blend with the artwork and not with the
                  photograph underneath it. -->
             <div v-if="hungStyle(room)" class="hung" :style="hungStyle(room)">
               <img :src="framed.url" alt="" />
-              <span class="glass" :style="{ backgroundImage: hangStyle(room).sheen }" />
-              <span class="cast" :style="{ backgroundColor: hangStyle(room).wall }" />
+              <!-- On the print rather than around it: the mat's inner edge
+                   shadowing the paper that sits a few millimetres behind it. -->
+              <span class="print" :style="printStyle(room)" />
+              <!-- The room coming back out of the glazing. Over the artwork,
+                   because that is where a reflection falls and where a piece
+                   otherwise reads as pasted on rather than framed. -->
+              <span class="glaze" :style="{ backgroundImage: lighting(room).glaze }" />
+              <span class="glass" :style="{ backgroundImage: lighting(room).sheen }" />
+              <span class="cast" :style="{ backgroundColor: lighting(room).wall }" />
               <!-- Last, and over everything: the lit edge of the moulding. A
                    frame with no edge catching the light reads as a printed
                    rectangle however well it is placed. -->
-              <span class="edge" :style="{ boxShadow: hangStyle(room).edge }" />
+              <span class="edge" :style="{ boxShadow: lighting(room).edge }" />
             </div>
           </div>
           <p class="credit">
@@ -502,9 +533,16 @@ h2 {
   mix-blend-mode: soft-light;
 }
 
-/* Nothing of its own — it is only the inset shadow it carries. */
-.room .hung .edge {
+/* Nothing of their own — they are only the shadows they carry. */
+.room .hung .edge,
+.room .hung .print {
   background: none;
+}
+
+/* The one layer not covering the whole mounted object: it is placed on the
+   print, so it must drop the `inset: 0` the others rely on. */
+.room .hung .print {
+  inset: auto;
 }
 
 .credit {

@@ -424,6 +424,9 @@ export function hangStyle(room, boost = 1) {
   const o = (n) => `${(n * boost).toFixed(2)}cqw`
   const toward = (Math.atan2(u.x, -u.y) * 180) / Math.PI
   const a = toward.toFixed(1)
+  // A reflection stands upright whatever the light's elevation, so this one
+  // takes only the side from the light — mirrored, not rotated.
+  const pane = u.x >= 0 ? 97 : 263
 
   return {
     /**
@@ -465,10 +468,63 @@ export function hangStyle(room, boost = 1) {
      */
     sheen:
       `linear-gradient(${a}deg, ` +
-      `rgb(255 255 255 / 16%) 0%, rgb(255 255 255 / 5%) 12%, rgb(255 255 255 / 0%) 34%), ` +
+      `rgb(255 255 255 / 13%) 0%, rgb(255 255 255 / 4%) 12%, rgb(255 255 255 / 0%) 34%), ` +
       `linear-gradient(${a}deg, ` +
       `rgb(0 0 0 / 0%) 35%, rgb(0 0 0 / 9%) 100%)`,
 
+    /**
+     * What the glass is reflecting.
+     *
+     * The sheen above is the light itself falling across the piece; this is the
+     * room coming back out of the glazing, and it is the layer that lands on
+     * the artwork rather than around it. Glass reflects *things*, so it wants
+     * an edge: two soft upright bands on the window side, wide one and narrow
+     * one, which is what a window with a mullion leaves on a framed print.
+     *
+     * Upright, so the gradient runs across the piece — `${pane}deg` is a few
+     * degrees off horizontal, and the lean is what stops it reading as a
+     * stripe someone drew on. Low percentages put both bands on the lit side,
+     * by the same rule the sheen uses.
+     */
+    glaze:
+      `linear-gradient(${pane}deg, ` +
+      `rgb(255 255 255 / 0%) 1%, rgb(255 255 255 / 18%) 8%, rgb(255 255 255 / 12%) 16%, ` +
+      `rgb(255 255 255 / 0%) 22%, rgb(255 255 255 / 0%) 29%, rgb(255 255 255 / 9%) 34%, ` +
+      `rgb(255 255 255 / 4%) 39%, rgb(255 255 255 / 0%) 46%)`,
+
+    /**
+     * The print sitting behind the opening rather than flush in it.
+     *
+     * A mounted print is a few millimetres back, so the mat's inner edge
+     * shadows a strip of it — and that strip is on the *lit* side, not the
+     * dark one, because what blocks the light is the near wall of a recess.
+     * Getting this backwards is the kind of thing that reads as wrong without
+     * being identifiable, so: same sign as the shadow direction, which is what
+     * puts an inset band on the side the light comes from.
+     *
+     * The second shadow is the contact line all the way round, which is what
+     * says the edge of the paper is an edge.
+     */
+    recess:
+      `inset ${o(u.x * 0.3)} ${o(u.y * 0.3)} ${o(0.5)} rgb(0 0 0 / 24%), ` +
+      `inset 0 0 ${o(0.3)} rgb(0 0 0 / 12%)`,
+
     wall: room.wallColour ?? room.wall ?? '#808080',
+  }
+}
+
+/**
+ * The artwork's own rectangle inside its frame, in percentages.
+ *
+ * Every frame reports where it laid the art down, so the glazing treatments
+ * can be put on the print itself rather than on the whole mounted object.
+ */
+export function artWindow(box, scene) {
+  const { x, y, scale } = box.art ?? { x: 0, y: 0, scale: 1 }
+  return {
+    left: `${(x / box.width) * 100}%`,
+    top: `${(y / box.height) * 100}%`,
+    width: `${((scene.width * scale) / box.width) * 100}%`,
+    height: `${((scene.height * scale) / box.height) * 100}%`,
   }
 }

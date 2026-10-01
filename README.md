@@ -278,7 +278,8 @@ most pieces draw something outside their own bounds.
 ### Making it sit in the room
 
 A correctly placed rectangle still reads as a sticker. A shadow puts it in front of the plaster;
-what makes it an object is light falling *on* it. Four layers, none of them large:
+what makes it an object is light falling *on* it, and the room coming back out of its glass.
+Six layers, none of them large:
 
 - **A shadow in two parts** — a wide soft one for the room's ambient light, and a tight dark one
   where the frame meets the plaster. That second is what the eye reads as contact rather than as a
@@ -296,6 +297,15 @@ what makes it an object is light falling *on* it. Four layers, none of them larg
   looks right, puts the highlight on the dark corner.
 - **A breath of the wall's own colour** over the work, because a print in a room is lit by that
   room, and a perfectly neutral rectangle sits on top of the photograph rather than in it.
+- **The room reflected in the glazing** — two soft upright bands on the window side, a wide one and
+  a narrow one, which is what a window with a mullion leaves on a framed print. This is the layer
+  that lands *on* the artwork rather than around it, and the one that stops a piece reading as
+  pasted on. Glass reflects things, so it needs an edge: the earlier wash over the whole face was
+  haze, not reflection.
+- **The mat's shadow on the print**, because a mounted print sits a few millimetres behind the
+  opening. The shadowed strip is on the *lit* side, not the dark one — what blocks the light is the
+  near wall of a recess — which is the kind of detail that reads as wrong without being
+  identifiable if you get it backwards.
 
 All of it is measured from the photograph rather than guessed, and lives on the room as `light` and
 `wall`, so every photograph brings its own. The measuring is done by script, not by eye: the clean
