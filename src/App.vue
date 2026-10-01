@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffe
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GenArtMark from '@/components/GenArtMark.vue'
+import GalleryPanel from '@/components/GalleryPanel.vue'
 import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
 import PaletteBar from '@/components/PaletteBar.vue'
@@ -208,8 +209,8 @@ function onFullscreenChange() {
 }
 
 function onKey(event) {
-  // The panel owns the keyboard while it's up, Escape included.
-  if (launching.value) return
+  // Whichever panel is up owns the keyboard, Escape included.
+  if (launching.value || previewing.value) return
   if (event.key === 'Escape' && presenting.value) leavePresent()
   if (event.key === ' ' && event.target === document.body) {
     event.preventDefault()
@@ -386,6 +387,25 @@ watch(
   { deep: true },
 )
 
+/**
+ * The preview gallery.
+ *
+ * Only a flag: the panel composes its own documents from the scene it is
+ * handed and never touches the stage, so there is nothing here to keep in
+ * step. Playback stops on the way in for the same reason exporting does it —
+ * a mount of a frame that existed for one sixtieth of a second is not a
+ * presentation of anything.
+ */
+const previewing = ref(false)
+
+function openPreview() {
+  if (show.playing.value) {
+    commitLive()
+    show.pause()
+  }
+  previewing.value = true
+}
+
 const copied = ref(false)
 let copyTimer = null
 
@@ -404,6 +424,16 @@ async function copyLink() {
 </script>
 
 <template>
+  <GalleryPanel
+    v-if="previewing"
+    :scene="scene"
+    :defs="defs"
+    :artwork-filter="artworkFilter"
+    :overlay="overlay"
+    :title="`${generator.name} · ${seed}`"
+    @dismiss="previewing = false"
+  />
+
   <LaunchPanel
     v-if="launching"
     @pick="startWith"
@@ -485,6 +515,7 @@ async function copyLink() {
         @export-png="exportPng"
         @export-css="buildCss"
         @close-css="closeCss"
+        @preview="openPreview"
       />
 
       <hr class="rule" />

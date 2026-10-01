@@ -251,6 +251,47 @@ on anything moving. It watches what actually defines the piece instead — gener
 params, palette use, grain, effects — none of which move while the clock runs, because playback
 drives the lived params and only pausing writes them back.
 
+## Preview gallery
+
+A piece presented several ways at once — bare, mounted on a board, in a thin frame, in a gallery
+frame, hung on a wall to scale, and standing in a real room. Mounts live in `src/core/mounts.js`
+and are data: a mount says what surrounds the artwork and where the artwork sits inside it, so
+adding a presentation is adding an entry, the same bargain the generator registry makes.
+
+Every cell is a **separate SVG document handed to an `<img>`**, which is the opening panel's
+thumbnail trick and is here for the same reason twice over. A piece mints clip-path and filter ids
+from its own seed, so five presentations of one piece inlined together would be five collisions by
+construction. And the stage is left completely alone — export serialises the live stage node, so a
+gallery that framed the stage would quietly change what "export this piece" means.
+
+The artwork is clipped to its own rectangle inside a mount, which is not cosmetic: bloom,
+aberration and glitch are given filter regions reaching well past the shapes they filter, and on
+the stage the viewBox edge hides that. Measured in a browser, an unclipped mount had 11,523 mat
+pixels contaminated by spill; clipped, none. Clipping is off by default in the serialiser though,
+and mounts opt in — turning it on everywhere recropped sixteen of the twenty link previews, because
+most pieces draw something outside their own bounds.
+
+The wall mount is drawn to scale. `ratios.js` notes the A-series shape lands on A0 in millimetres,
+so a piece has a true size: the wall is a 2.6m by 2.1m view with a 100mm skirting and the frame
+hung at 1500mm, gallery height. The first attempt showed a full 2.4m wall, which is honest and
+useless — at A2 the print came out a stamp in the corner.
+
+### Photographs
+
+A photo mount is composed in HTML rather than SVG — the photograph in one `<img>`, the framed
+artwork in another on top. It has to be: an SVG shown in an `<img>` may not load anything external,
+so a `<image href="/rooms/...">` inside one renders as a hole, and the only way in would be to
+carry the whole photograph as a data URI in every cell.
+
+That also decides what is worth photographing. **Shoot flat-on** — camera square to the wall. A
+flat wall needs only a scale and a translate, which works everywhere. A wall shot at an angle needs
+a true homography, which CSS can do with `matrix3d` and SVG cannot do at all. Leave generous empty
+wall, keep the light even, and record the four corner points of the rectangle the art should
+occupy; that quad is the one piece of metadata the placement needs and is far easier to note when
+shooting than to recover later.
+
+Photographs carry their own attribution, in the mount definition, shown under the cell.
+
 ## Canvas shapes
 
 Seven ratios, from square to 16:9, and both A-series orientations. They hold **area** constant
