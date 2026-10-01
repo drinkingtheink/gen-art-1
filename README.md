@@ -270,6 +270,15 @@ the enlarged plate before it closes the panel, so leaving from in there takes tw
 returns focus to the plate for the room you were *looking at*, found by index, not to the one that
 opened the view — after stepping, those are different plates.
 
+Nothing moves while it loads. Each `<img>` carries the photograph's own `width` and `height`, which
+is what lets the browser reserve the right box before a byte is fetched — without them a container
+has no height until the image decodes, every cell is flat, and the panel jumps when they land. The
+reserved box is already tinted its room's wall colour, so the photograph fades up over its own
+tone, and the piece follows a beat later: it is a blob URL and paints almost immediately, so left
+to itself the work appears first, hanging in an empty rectangle, with the room arriving underneath
+it. A cached photograph can also finish before Vue binds the load handler, so the element is asked
+directly on mount rather than only listened to.
+
 A room is `RoomPlate.vue`, a component rather than markup, because enlarging puts the same room on
 screen twice at once and an angled wall's placement is in pixels. Each plate measures itself; one
 width shared by room id would give both whichever was written last. It measures once synchronously

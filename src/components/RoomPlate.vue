@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
-import { artWindow, hangStyle, matrix3dFor, placeInRoom, placeOnPlane } from '../core/mounts.js'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { artWindow, hangStyle, matrix3dFor, placeInRoom, placeOnPlane, wallTone } from '../core/mounts.js'
 
 /**
  * One photograph with the piece hung in it.
@@ -22,9 +22,26 @@ const props = defineProps({
 
 const width = ref(0)
 const el = useTemplateRef('el')
+const photo = useTemplateRef('photo')
 let observer = null
 
+/**
+ * Whether the photograph has arrived.
+ *
+ * Not for the layout — the room's size is declared on the `<img>` so the box
+ * is the right shape before a byte is fetched — but for what goes inside it.
+ * The piece is a blob URL and paints almost immediately, where the photograph
+ * is a few hundred kilobytes over the wire, so without this the work appears
+ * first, hanging in an empty rectangle, and the room arrives underneath it.
+ */
+const arrived = ref(false)
+
 onMounted(() => {
+  // A cached photograph can finish before Vue has bound the load handler, in
+  // which case the event has already been and gone and nothing would ever
+  // reveal the plate. Asking the element settles it either way.
+  if (photo.value?.complete) arrived.value = true
+
   if (!el.value) return
   // Measured once up front, because a ResizeObserver is not guaranteed to
   // deliver anything: it is throttled with the rest of rendering in a hidden
@@ -42,6 +59,13 @@ onMounted(() => {
 })
 
 onUnmounted(() => observer?.disconnect())
+
+watch(
+  () => props.room.src,
+  () => {
+    arrived.value = photo.value?.complete ?? false
+  },
+)
 
 /**
  * Placement and lighting together, in one pass.
@@ -95,12 +119,27 @@ const hung = computed(() => {
 </script>
 
 <template>
-  <div ref="el" class="room">
-    <img class="plate" :src="room.src" alt="" />
+  <div ref="el" class="room" :style="{ backgroundColor: wallTone(room) }">
+    <!-- `width` and `height` are the photograph's own pixels, which is what
+         lets the browser reserve the right box before the file arrives. Without
+         them the container has no height until the image decodes, every cell in
+         the grid is flat, and the whole panel jumps when they land. -->
+    <img
+      ref="photo"
+      class="plate"
+      :class="{ arrived }"
+      :src="room.src"
+      :width="room.width"
+      :height="room.height"
+      alt=""
+      decoding="async"
+      @load="arrived = true"
+      @error="arrived = true"
+    />
     <!-- A shadow on the wall, the room reflected in the glass, and a breath of
          the wall's own colour over the work. The piece is isolated so those
          blend with the artwork and not with the photograph underneath it. -->
-    <div v-if="hung" class="hung" :style="hung.style">
+    <div v-if="hung" class="hung" :class="{ arrived }" :style="hung.style">
       <img :src="framed.url" alt="" />
       <!-- On the print rather than around it: the mat's inner edge shadowing
            the paper that sits a few millimetres behind it. -->
@@ -135,6 +174,36 @@ const hung = computed(() => {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/**
+ * Both fade up once the photograph is there, the work a beat behind the room
+ * it hangs in — which is the order the eye wants and costs nothing to give it.
+ *
+ * The box underneath is already the right shape and already the colour of the
+ * wall, so this is the only thing left moving.
+ */
+.plate,
+.hung {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.hung {
+  transition-delay: 110ms;
+}
+
+.plate.arrived,
+.hung.arrived {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate,
+  .hung {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
 }
 
 /* Flat rooms are placed as a fraction of the photograph, so they hold at any

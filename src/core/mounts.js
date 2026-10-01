@@ -516,6 +516,16 @@ export function matrix3dFor(quad, w, h) {
 }
 
 /**
+ * The colour of a room's wall.
+ *
+ * Its own function because the fallback is a trap: a flat room keeps its
+ * colour on `wall`, but an angled room needs that name for the usable
+ * rectangle in wall coordinates and carries the colour on `wallColour`. Read
+ * `room.wall` directly and the slatted wall hands back an object.
+ */
+export const wallTone = (room) => room.wallColour ?? (typeof room.wall === 'string' ? room.wall : null) ?? '#808080'
+
+/**
  * What makes a pasted rectangle look like an object on a wall.
  *
  * A shadow puts it in front of the plaster. These put light on it, which is
@@ -621,7 +631,7 @@ export function hangStyle(room, boost = 1) {
       `inset ${o(u.x * 0.3)} ${o(u.y * 0.3)} ${o(0.5)} rgb(0 0 0 / 24%), ` +
       `inset 0 0 ${o(0.3)} rgb(0 0 0 / 12%)`,
 
-    wall: room.wallColour ?? room.wall ?? '#808080',
+    wall: wallTone(room),
   }
 }
 
