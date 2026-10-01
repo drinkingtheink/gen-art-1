@@ -152,6 +152,13 @@ export const DEFAULT_FRAME = 'mat'
  * wall shot at an angle would need a homography, which CSS can do with
  * `matrix3d` and SVG cannot do at all — worth knowing before gathering more.
  *
+ * `light` is where the light comes from, as a direction the shadow falls in,
+ * and `wall` is the colour of the surface. Both are measured from the
+ * photograph rather than guessed: in this one the wall reads 195.6 to the left
+ * of the hanging area against 174.9 to the right, and the framed poster
+ * already in the shot has wall at #b7a88b on its left and #4b3e1a on its
+ * right. Light from the upper left, shadow down and to the right.
+ *
  * `credit` travels with the photograph rather than living on the page, so a
  * room cannot be added without its attribution.
  */
@@ -163,6 +170,8 @@ export const rooms = [
     width: 1333,
     height: 2000,
     area: { x: 430, y: 210, width: 690, height: 660 },
+    light: { x: 1, y: 0.62 },
+    wall: '#e1b96d',
     credit: {
       who: 'Julia',
       profile: 'https://unsplash.com/@beazy?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
@@ -189,5 +198,35 @@ export function placeInRoom(room, framedWidth, framedHeight) {
     top: (y + (height - h) / 2) / room.height,
     width: w / room.width,
     height: h / room.height,
+  }
+}
+
+/**
+ * What makes a pasted rectangle look like an object on a wall.
+ *
+ * Three things, none of them large. A shadow in two parts — a wide soft one
+ * for the room's ambient light and a tight dark one where the frame meets the
+ * plaster, which is the part the eye actually reads as contact. A sheen across
+ * the glass, angled against the light rather than arbitrarily. And a breath of
+ * the wall's own colour over the work, because a print in a room is lit by
+ * that room and a perfectly neutral rectangle sits on top of the photograph
+ * rather than in it.
+ *
+ * Sized in container-query units so the whole thing scales with the
+ * photograph: the piece is placed as a percentage, and a shadow measured in
+ * pixels would be wrong at every size but one.
+ */
+export function hangStyle(room) {
+  const { x, y } = room.light ?? { x: 1, y: 0.6 }
+  const o = (n) => `${(n).toFixed(2)}cqw`
+  return {
+    shadow:
+      `${o(x * 1.3)} ${o(y * 1.3)} ${o(2.8)} rgb(0 0 0 / 30%), ` +
+      `${o(x * 0.3)} ${o(y * 0.3)} ${o(0.55)} rgb(0 0 0 / 42%)`,
+    // Across the face, from the lit corner toward the shaded one.
+    sheen:
+      `linear-gradient(${(Math.atan2(x, y) * 180) / Math.PI + 90}deg, ` +
+      `rgb(255 255 255 / 13%) 0%, rgb(255 255 255 / 4%) 34%, rgb(255 255 255 / 0%) 62%)`,
+    wall: room.wall ?? '#808080',
   }
 }

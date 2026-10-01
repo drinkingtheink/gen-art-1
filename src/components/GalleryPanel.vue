@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
-import { DEFAULT_FRAME, frameById, frames, placeInRoom, rooms } from '../core/mounts.js'
+import { DEFAULT_FRAME, frameById, frames, hangStyle, placeInRoom, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
@@ -63,6 +63,7 @@ function compose() {
               top: `${p.top * 100}%`,
               width: `${p.width * 100}%`,
               height: `${p.height * 100}%`,
+              boxShadow: hangStyle(room).shadow,
             },
           ]
         }),
@@ -125,13 +126,15 @@ onUnmounted(() => {
         <li v-for="room in rooms" :key="room.id">
           <div class="room">
             <img class="plate" :src="room.src" alt="" />
-            <img
-              v-if="framed"
-              class="hung"
-              :src="framed.url"
-              :style="framed.places[room.id]"
-              alt=""
-            />
+            <!-- A shadow on the wall, a sheen on the glass, and a breath of
+                 the room's own colour over the work. The piece is isolated so
+                 those last two blend with the artwork and not with the
+                 photograph underneath it. -->
+            <div v-if="framed" class="hung" :style="framed.places[room.id]">
+              <img :src="framed.url" alt="" />
+              <span class="glass" :style="{ backgroundImage: hangStyle(room).sheen }" />
+              <span class="cast" :style="{ backgroundColor: hangStyle(room).wall }" />
+            </div>
           </div>
           <p class="credit">
             {{ room.name }} — photo by
@@ -234,6 +237,9 @@ h2 {
 
 .room {
   position: relative;
+  /* The piece is placed as a percentage, so its shadow is measured against the
+     photograph's width too — in pixels it would be right at exactly one size. */
+  container-type: inline-size;
   border: 1px solid var(--panel-edge);
   border-radius: var(--radius);
   overflow: hidden;
@@ -249,7 +255,26 @@ h2 {
 /* Placed as a fraction of the photograph, so it holds at any displayed size. */
 .room .hung {
   position: absolute;
-  object-fit: contain;
+  /* Its own stacking context, so the sheen and the colour cast fall on the
+     artwork rather than on the room behind it. */
+  isolation: isolate;
+}
+
+.room .hung img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.room .hung span {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.room .hung .cast {
+  opacity: 0.07;
+  mix-blend-mode: soft-light;
 }
 
 .credit {

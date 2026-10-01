@@ -275,6 +275,24 @@ contaminated by spill; clipped, none. Clipping stays off by default in the seria
 frames opt in — turning it on everywhere recropped sixteen of the twenty link previews, because
 most pieces draw something outside their own bounds.
 
+### Making it sit in the room
+
+A correctly placed rectangle still reads as a sticker. Three things fix that, none of them large.
+A shadow in two parts — a wide soft one for the room's ambient light and a tight dark one where
+the frame meets the plaster, which is the part the eye actually reads as contact. A sheen across
+the glass, angled against the light. And a breath of the wall's own colour over the work, because
+a print in a room is lit by that room, and a perfectly neutral rectangle sits on top of the
+photograph rather than in it.
+
+All three are measured from the photograph rather than guessed. In the ochre room the wall reads
+195.6 to the left of the hanging area against 174.9 to the right, and the framed poster already in
+the shot has wall at `#b7a88b` on its left and `#4b3e1a` on its right — light from the upper left,
+shadow down and to the right. That lives on the room as `light` and `wall`, so every photograph
+brings its own.
+
+Sized in container-query units, because the piece is placed as a percentage of the photograph and
+a shadow measured in pixels would be right at exactly one display size.
+
 ### Photographs
 
 The room cannot join that SVG document. An SVG shown in an `<img>` may not load anything external,
