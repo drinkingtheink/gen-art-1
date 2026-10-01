@@ -284,11 +284,16 @@ the glass, angled against the light. And a breath of the wall's own colour over 
 a print in a room is lit by that room, and a perfectly neutral rectangle sits on top of the
 photograph rather than in it.
 
-All three are measured from the photograph rather than guessed. In the ochre room the wall reads
-195.6 to the left of the hanging area against 174.9 to the right, and the framed poster already in
-the shot has wall at `#b7a88b` on its left and `#4b3e1a` on its right — light from the upper left,
-shadow down and to the right. That lives on the room as `light` and `wall`, so every photograph
-brings its own.
+All three are measured from the photograph rather than guessed, and live on the room as `light` and
+`wall`, so every photograph brings its own. The measuring is done by script, not by eye: the clean
+wall is found by scanning each row for the longest unbroken run of wall colour, and the light by
+comparing the brightness of the wall's left quarter against its right, then checking that against
+the fall either side of something already standing in the room.
+
+The linen wall is the case for doing it that way. Its one obvious feature is a bright window on the
+right, which says the light is there — and the wall says otherwise at every height: 205.8 beside the
+chair against 194.3 clear of it, 171.6 against 153.9 either side of the plant. The curtain is a
+window plane, not what lights that wall.
 
 Sized in container-query units, because the piece is placed as a percentage of the photograph and
 a shadow measured in pixels would be right at exactly one display size.
