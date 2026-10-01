@@ -17,7 +17,7 @@ const props = defineProps({
   cssNote: { type: String, default: '' },
 })
 
-const emit = defineEmits(['export-svg', 'export-png', 'export-css', 'close-css', 'preview'])
+const emit = defineEmits(['export-svg', 'export-png', 'export-css', 'close-css'])
 
 const scale = ref(2)
 
@@ -120,10 +120,6 @@ const SCALES = [
     </p>
 
     <div class="row css">
-      <button type="button" class="preview" :disabled="busy" @click="emit('preview')">Preview gallery</button>
-    </div>
-
-    <div class="row css">
       <button type="button" :disabled="busy" @click="emit('export-css')">
         {{ css ? 'Rebuild CSS' : 'CSS background' }}
       </button>
@@ -171,9 +167,6 @@ const SCALES = [
   grid-template-columns: 1fr auto;
 }
 
-.preview {
-  grid-column: 1 / -1;
-}
 
 .ghost {
   background: none;

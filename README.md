@@ -254,7 +254,9 @@ drives the lived params and only pausing writes them back.
 ## Preview gallery
 
 A piece presented several ways at once — bare, mounted on a board, in a thin frame, in a gallery
-frame, hung on a wall to scale, and standing in a real room. Mounts live in `src/core/mounts.js`
+frame, hung on a wall to scale, and standing in a real room. It opens from **See it framed**, which
+sits under the work rather than in the sidebar: it is a question about the piece in front of you,
+so it is asked where the piece is. Quiet until the stage is hovered or it takes focus. Mounts live in `src/core/mounts.js`
 and are data: a mount says what surrounds the artwork and where the artwork sits inside it, so
 adding a presentation is adding an entry, the same bargain the generator registry makes.
 

@@ -515,7 +515,6 @@ async function copyLink() {
         @export-png="exportPng"
         @export-css="buildCss"
         @close-css="closeCss"
-        @preview="openPreview"
       />
 
       <hr class="rule" />
@@ -531,6 +530,12 @@ async function copyLink() {
         :defs="defs"
         :artwork-filter="artworkFilter"
       />
+
+      <!-- Under the work rather than in the sidebar: it is a question about
+           the piece in front of you, so it is asked where the piece is. -->
+      <button v-if="!presenting" type="button" class="see-framed" @click="openPreview">
+        See it framed
+      </button>
 
       <button v-if="presenting" type="button" class="leave" @click="leavePresent">
         Esc to exit
@@ -704,10 +709,57 @@ async function copyLink() {
 }
 
 .stage-area {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 0;
   min-width: 0;
   padding: 1.5rem;
+}
+
+/**
+ * Sits under the piece, centred on it.
+ *
+ * Absolute rather than a second grid item, so the artwork stays centred in the
+ * cell exactly as it was — the stage's sizing is a careful balance of
+ * `aspect-ratio` against `max-width/height: 100%`, and giving the grid a second
+ * child to place would have disturbed it.
+ *
+ * Quiet until wanted. It lives over the work, so it holds back to a whisper
+ * and comes up on hover of the stage, or as soon as it is focused — a keyboard
+ * user never gets the hover that would reveal it.
+ */
+.see-framed {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.3rem 0.8rem;
+  color: var(--ink-dim);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  border-color: transparent;
+  font-size: 0.78rem;
+  opacity: 0.35;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.stage-area:hover .see-framed {
+  opacity: 1;
+}
+
+.see-framed:hover,
+.see-framed:focus-visible {
+  opacity: 1;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  border-color: var(--panel-edge);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .see-framed {
+    transition: none;
+  }
 }
 </style>
