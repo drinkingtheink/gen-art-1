@@ -327,12 +327,38 @@ so a `<image href="/rooms/...">` inside one renders as a hole, and the only way 
 carry the whole photograph as a data URI. So the room is a plain `<img>` and the framed piece is
 laid over it in HTML, placed as fractions of the photograph so it holds at any displayed size.
 
-That also decides what is worth photographing. **Shoot flat-on** — camera square to the wall. A
-flat wall needs only a scale and a translate, which works everywhere. A wall shot at an angle needs
-a true homography, which CSS can do with `matrix3d` and SVG cannot do at all. Leave generous empty
-wall, keep the light even, and record the four corner points of the rectangle the art should
-occupy; that quad is the one piece of metadata the placement needs and is far easier to note when
-shooting than to recover later.
+That also decides what is worth photographing. A **flat-on** wall needs only a scale and a
+translate, and is the cheap case: give it an `area` and it works. A wall shot **at an angle** needs
+a true homography, which is the one thing CSS can do here that SVG cannot — SVG transforms are
+affine, `matrix3d` is not. Either is supported; flat-on is simply less work to add. Leave generous
+empty wall and keep the light even.
+
+### An angled wall
+
+An angled room carries a `plane` instead of an `area`: the homography from the wall's own
+coordinates to fractions of the photograph. The wall's coordinates are isotropic, one unit across
+being one unit down in real proportions, so a piece keeps its aspect just by being a rectangle in
+them and the matrix does the foreshortening.
+
+The slatted wall shows how to measure one, and the method generalises to anything with a repeating
+feature. The slats are evenly spaced on the wall, so their image positions fit the projective map
+`x(u) = (au + b)/(cu + 1)` exactly — 45 of them to a mean of 0.86px — and that map *is* the wall's
+perspective. The panel's top edge gives the second row of the matrix. The ceiling's junction with
+the perpendicular wall gives a second vanishing point, and two perpendicular vanishing points give
+the focal length (2153px, 1.62× the frame), which gives the foreshortening: 40.3° off the image
+plane, one unit of height to 55 slats of width.
+
+Two things fell out of the derivation worth keeping. Verticals stay vertical on a wall shot with a
+level camera, so the vertical scale at any point is simply its distance from the horizon — and the
+first model written here was wrong, having verticals fall off as 1/Z² like the horizontals, when
+only the receding direction is squared. And the whole thing is a true homography *only* when the
+horizon equals y at the vanishing point, which the slat fit and the top edge agree on
+independently. That agreement is the check that the measurement is sound, and it is worth
+reproducing for any wall added this way.
+
+One wrinkle in the compositing: an angled piece is drawn at its own size and then transformed down
+onto the quad, so every length inside it shrinks by that factor — the shadow included. It is given
+the inverse as a boost so it lands at the size the flat rooms use.
 
 Attribution lives in the room definition rather than on the page, so a room cannot be added without
 its credit.
