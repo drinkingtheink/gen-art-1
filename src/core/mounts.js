@@ -164,7 +164,10 @@ export function coerceFrame(id) {
  * pixels, and `scale` nudges how much of it the piece takes. These rooms are
  * not shot from the same distance, so a piece sized to its own photograph
  * comes out looking like a different print in each. The ochre study is the
- * baseline at 1; the other two are closer shots and take 1.2.
+ * baseline at 1; the linen wall is a closer shot and takes 1.2. The plank wall
+ * is closer again but reads larger than either at the same number, because its
+ * boards run the full width behind the work and give the eye a repeating
+ * measure the plaster rooms don't — so it comes down a tenth, to 1.08.
  *
  * These walls are square to the camera, so placement is a scale and a
  * translate. A wall shot at an angle would need a homography, which CSS can do
@@ -240,7 +243,7 @@ export const rooms = [
     // family instead: the wall is red-dominant everywhere, the chair and the
     // tiles read blue, the plant reads green. That leaves the upper two
     // thirds clear, the chair arriving at y 1463 and the floor at 2236.
-    scale: 1.2,
+    scale: 1.08,
     area: { x: 480, y: 330, width: 790, height: 850 },
     /**
      * Light from the right here, which neither other room does.
