@@ -269,10 +269,21 @@ on mount as well as observing, because a `ResizeObserver` is throttled with ever
 background tab, and until it delivers an angled room draws no piece at all.
 
 `src/core/mounts.js` holds two lists, because they are two independent choices. A **frame** is what
-surrounds the artwork — Unframed, Thin, Mounted, Gallery — and a **room** is a photograph of
+surrounds the artwork — Unframed, Thin, Mounted, Gallery, Wood — and a **room** is a photograph of
 somewhere it can stand. Every frame can appear in every room, so adding either multiplies rather
 than adds. Board and moulding colours are chosen against the piece: a white mat around a near-black
 work reads as a mistake, and the reverse glows.
+
+A moulding is drawn as **four mitred rails**, each catching the light on a different face, and that
+is deliberate rather than decorative. Mounted and Gallery used to differ only in colour, so on a
+dark piece — where the mat was `#1b1b1f` and the moulding `#0b0b0d`, sixteen levels apart out of
+255 — switching between them changed nothing you could see. Rails meeting at 45 degrees read as a
+joined frame at any tone, which is a difference colour cannot collapse.
+
+The dark board was the other half of it. It was near-black, which made Mounted look like extra
+background; it is a mid charcoal now, which is what a framer would cut for a dark print anyway. The
+hairline where the board is cut is *lighter* than the board for a dark mat, because the bevel
+through a mount shows its lighter core — that cut is the detail that says board rather than border.
 
 The framed piece is a **separate SVG document handed to an `<img>`**, which is the opening panel's
 thumbnail trick and is here for the same reason twice over. A piece mints clip-path and filter ids

@@ -32,13 +32,79 @@ const r = (n) => Math.round(n * 10) / 10
  * Board and moulding colours, chosen against the piece rather than fixed.
  *
  * A white mat around a near-black piece reads as a mistake, and the reverse
- * glows.
+ * glows. But the dark board used to be near-black itself — a mat of #1b1b1f
+ * around a moulding of #0b0b0d, sixteen levels apart out of 255 — which made
+ * Mounted look like extra background and made Gallery look like Mounted. The
+ * dark mat is a mid charcoal now, which is what a framer would cut for a dark
+ * print anyway, and `line` is lighter than the mat it sits in because the
+ * bevel cut through a mount shows the lighter core. That cut is the detail
+ * that says board rather than border.
  */
 function board(scene) {
   return isLight(scene)
-    ? { mat: '#f3efe6', line: '#d8d1c2', frame: '#2a2622' }
-    : { mat: '#1b1b1f', line: '#2e2e35', frame: '#0b0b0d' }
+    ? { mat: '#f3efe6', line: '#d8d1c2', frame: '#2a2622', wood: '#6a4530' }
+    : { mat: '#3f3f4a', line: '#6c6c7a', frame: '#0a0a0c', wood: '#c08f55' }
 }
+
+/**
+ * A colour moved toward white or black by a fraction.
+ *
+ * A fraction rather than a multiplier, because a multiplier does nothing to a
+ * near-black: #0a0a0c times 1.2 is #0c0c0e, which is the same colour. Mixed a
+ * sixth of the way to white it is #39393b, which is a lit facet.
+ */
+function lift(hex, t) {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  const to = t >= 0 ? 255 : 0
+  const a = Math.abs(t)
+  const part = (i) => {
+    const v = parseInt(full.slice(i, i + 2), 16)
+    return Math.round(v + (to - v) * a).toString(16).padStart(2, '0')
+  }
+  return `#${part(0)}${part(2)}${part(4)}`
+}
+
+/**
+ * A moulding as four mitred rails.
+ *
+ * This is what separates a frame from a mat, and it has to be structural
+ * rather than a matter of colour. Mounted and Gallery used to differ only in
+ * tone, so on a dark piece — where the mat and the moulding were both near
+ * black, sixteen levels apart out of 255 — switching between them changed
+ * nothing you could see. Four rails meeting at 45 degrees, each catching the
+ * light on a different face, reads as a joined frame at any tone.
+ *
+ * Lit from the upper left, which is the convention for a drawn object and is
+ * deliberately gentle: the room's own light is applied over the top of this,
+ * per room, by `hangStyle`.
+ */
+function mitre(width, height, depth, colour) {
+  const w = r(width)
+  const h = r(height)
+  const d = r(depth)
+  const rail = (points, t) => ({ tag: 'polygon', attrs: { points, fill: lift(colour, t) } })
+  return [
+    rail(`0,0 ${w},0 ${w - d},${d} ${d},${d}`, 0.17),
+    rail(`0,0 ${d},${d} ${d},${h - d} 0,${h}`, 0.06),
+    rail(`${w},0 ${w},${h} ${w - d},${h - d} ${w - d},${d}`, -0.1),
+    rail(`0,${h} ${d},${h - d} ${w - d},${h - d} ${w},${h}`, -0.2),
+  ]
+}
+
+/** The lip where a moulding meets the mat — a real frame has a step there. */
+const fillet = (x, y, width, height, stroke, weight) => ({
+  tag: 'rect',
+  attrs: {
+    x: r(x),
+    y: r(y),
+    width: r(width),
+    height: r(height),
+    fill: 'none',
+    stroke,
+    'stroke-width': r(weight),
+  },
+})
 
 const rect = (x, y, width, height, fill) => ({
   tag: 'rect',
@@ -60,18 +126,7 @@ function inset(scene, pad) {
 }
 
 /**
- * A bevel, as two flat rectangles.
- *
- * Not a blurred shadow: a Gaussian is exact in a browser and only approximated
- * by other renderers, where two rectangles are the same everywhere.
- */
-const bevel = (width, height, depth) => [
-  rect(0, 0, width, depth, '#ffffff18'),
-  rect(0, height - depth, width, depth, '#00000030'),
-]
-
-/**
- * Four framings — enough to decide by, few enough to flick through.
+ * Five framings — enough to decide by, few enough to flick through.
  *
  * `clip` is on throughout. Bloom, aberration and glitch are given filter
  * regions reaching well past the shapes they filter, and a frame gives them
@@ -120,26 +175,62 @@ export const frames = [
   {
     id: 'gallery',
     name: 'Gallery',
-    compose: (scene) => {
-      const short = Math.min(scene.width, scene.height)
-      const mat = short * 0.12
-      const moulding = short * 0.035
-      const pad = mat + moulding
-      const box = inset(scene, pad)
-      const tone = board(scene)
-      return {
-        ...box,
-        fill: tone.frame,
-        clip: true,
-        behind: [
-          rect(moulding, moulding, box.width - moulding * 2, box.height - moulding * 2, tone.mat),
-          rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, tone.line),
-        ],
-        front: bevel(box.width, box.height, moulding * 0.28),
-      }
-    },
+    compose: (scene) => framed(scene, { mat: 0.115, moulding: 0.042, colour: board(scene).frame }),
+  },
+
+  {
+    id: 'wood',
+    name: 'Wood',
+    compose: (scene) =>
+      framed(scene, {
+        mat: 0.1,
+        moulding: 0.055,
+        colour: board(scene).wood,
+        // Timber is the one moulding with a lip worth drawing: the step down
+        // to the mat is where a wooden frame catches a line of light.
+        lip: 0.14,
+      }),
   },
 ]
+
+/**
+ * A mat inside a mitred moulding — the shape both full frames share.
+ *
+ * `mat` and `moulding` are fractions of the piece's short edge, so a frame is
+ * the same object whatever the piece's proportions.
+ */
+function framed(scene, { mat, moulding, colour, lip = 0 }) {
+  const short = Math.min(scene.width, scene.height)
+  const band = short * moulding
+  const pad = short * mat + band
+  const box = inset(scene, pad)
+  const tone = board(scene)
+
+  return {
+    ...box,
+    fill: colour,
+    clip: true,
+    behind: [
+      rect(band, band, box.width - band * 2, box.height - band * 2, tone.mat),
+      rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, tone.line),
+    ],
+    front: [
+      ...mitre(box.width, box.height, band, colour),
+      ...(lip
+        ? [
+            fillet(
+              band - band * lip * 0.5,
+              band - band * lip * 0.5,
+              box.width - band * 2 + band * lip,
+              box.height - band * 2 + band * lip,
+              lift(colour, 0.3),
+              band * lip,
+            ),
+          ]
+        : []),
+    ],
+  }
+}
 
 export const frameById = Object.fromEntries(frames.map((f) => [f.id, f]))
 export const DEFAULT_FRAME = 'mat'
