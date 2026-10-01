@@ -271,8 +271,20 @@ onMounted(() => {
   window.addEventListener('keydown', onKey)
   window.addEventListener('popstate', onPopState)
 
-  // Arrived straight on a piece, which means a link named it.
-  if (!launching.value && !stillness?.matches) {
+  /**
+   * Arrived straight on a piece, which means a link named it — and the clock
+   * starts, unless the link arrived on the wall.
+   *
+   * A wall link is a link to a composition. Opening the gallery from inside
+   * the studio already pauses playback, for the reason written there: a mount
+   * of a frame that existed for one sixtieth of a second is not a
+   * presentation of anything. A link that opens the gallery has to do the
+   * same, and it is worse if it doesn't — the framed image is composed once,
+   * so it holds the sender's frame, while the piece behind the panel drifts
+   * out from under it. Leaving for the studio then lands on a piece nobody
+   * sent, and copying the link from there passes the drift on.
+   */
+  if (!launching.value && wall.value === null && !stillness?.matches) {
     openingPlay = setTimeout(() => {
       openingPlay = null
       show.play()
