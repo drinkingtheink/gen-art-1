@@ -181,50 +181,62 @@ export const frames = [
   {
     id: 'wood',
     name: 'Wood',
+    // No mount. Timber goes straight onto the print, the way Thin does — a
+    // wooden frame is the frame, not a board with a surround around it.
     compose: (scene) =>
       framed(scene, {
-        mat: 0.1,
-        moulding: 0.055,
+        moulding: 0.05,
         colour: board(scene).wood,
-        // Timber is the one moulding with a lip worth drawing: the step down
-        // to the mat is where a wooden frame catches a line of light.
-        lip: 0.14,
+        // The rebate, where the moulding steps down onto the print. It is the
+        // line a wooden frame catches the light on, and with no mat to give
+        // the frame an inner edge it is doing that job here too.
+        lip: 0.2,
       }),
   },
 ]
 
 /**
- * A mat inside a mitred moulding — the shape both full frames share.
+ * A mitred moulding, optionally around a mat.
  *
  * `mat` and `moulding` are fractions of the piece's short edge, so a frame is
- * the same object whatever the piece's proportions.
+ * the same object whatever the piece's proportions. Without a mat the moulding
+ * sits straight on the print, which is a different object and not a thinner
+ * version of the same one.
  */
-function framed(scene, { mat, moulding, colour, lip = 0 }) {
+function framed(scene, { mat = 0, moulding, colour, lip = 0 }) {
   const short = Math.min(scene.width, scene.height)
   const band = short * moulding
   const pad = short * mat + band
   const box = inset(scene, pad)
   const tone = board(scene)
+  const weight = band * lip
 
   return {
     ...box,
     fill: colour,
     clip: true,
-    behind: [
-      rect(band, band, box.width - band * 2, box.height - band * 2, tone.mat),
-      rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, tone.line),
-    ],
+    // A board, and the hairline where it is cut. Neither exists without a mat:
+    // the board would land exactly where the print does, and there is no cut.
+    behind: mat
+      ? [
+          rect(band, band, box.width - band * 2, box.height - band * 2, tone.mat),
+          rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, tone.line),
+        ]
+      : [],
     front: [
       ...mitre(box.width, box.height, band, colour),
+      // Laid along the inside edge of the moulding rather than straddling it,
+      // so with no mat it stays on the frame instead of drawing a border onto
+      // the artwork.
       ...(lip
         ? [
             fillet(
-              band - band * lip * 0.5,
-              band - band * lip * 0.5,
-              box.width - band * 2 + band * lip,
-              box.height - band * 2 + band * lip,
+              band - weight / 2,
+              band - weight / 2,
+              box.width - band * 2 + weight,
+              box.height - band * 2 + weight,
               lift(colour, 0.3),
-              band * lip,
+              weight,
             ),
           ]
         : []),

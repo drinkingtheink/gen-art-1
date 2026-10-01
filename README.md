@@ -274,6 +274,10 @@ somewhere it can stand. Every frame can appear in every room, so adding either m
 than adds. Board and moulding colours are chosen against the piece: a white mat around a near-black
 work reads as a mistake, and the reverse glows.
 
+Only two of the five carry a mount. Wood is timber straight onto the print, the way Thin is — a
+wooden frame is the frame, not a board with a surround around it — so `framed()` takes the mat as
+optional and drops both the board and its cut line when there isn't one.
+
 A moulding is drawn as **four mitred rails**, each catching the light on a different face, and that
 is deliberate rather than decorative. Mounted and Gallery used to differ only in colour, so on a
 dark piece — where the mat was `#1b1b1f` and the moulding `#0b0b0d`, sixteen levels apart out of
