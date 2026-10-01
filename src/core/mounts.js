@@ -29,22 +29,32 @@ const isLight = (scene) => lightness(scene.background) > 128
 const r = (n) => Math.round(n * 10) / 10
 
 /**
- * Board and moulding colours, chosen against the piece rather than fixed.
+ * Moulding colours, chosen against the piece rather than fixed.
  *
- * A white mat around a near-black piece reads as a mistake, and the reverse
- * glows. But the dark board used to be near-black itself — a mat of #1b1b1f
- * around a moulding of #0b0b0d, sixteen levels apart out of 255 — which made
- * Mounted look like extra background and made Gallery look like Mounted. The
- * dark mat is a mid charcoal now, which is what a framer would cut for a dark
- * print anyway, and `line` is lighter than the mat it sits in because the
- * bevel cut through a mount shows the lighter core. That cut is the detail
- * that says board rather than border.
+ * Only what surrounds the mount is the piece's business: a near-black frame
+ * against a dark work, a softer dark against a light one, and timber that goes
+ * the other way from the piece so it contrasts either direction — pale oak on
+ * a dark print, walnut on a light one.
  */
 function board(scene) {
   return isLight(scene)
-    ? { mat: '#f3efe6', line: '#d8d1c2', frame: '#2a2622', wood: '#6a4530' }
-    : { mat: '#3f3f4a', line: '#6c6c7a', frame: '#0a0a0c', wood: '#c08f55' }
+    ? { frame: '#2a2622', wood: '#6a4530' }
+    : { frame: '#0a0a0c', wood: '#c08f55' }
 }
+
+/**
+ * The mount, which is white paper whatever the piece.
+ *
+ * It used to be cut to suit the work — a charcoal board for a dark piece, on
+ * the reasoning that white around a near-black print reads as a mistake. That
+ * is the wrong way round: white paper is what a framer actually cuts, and a
+ * dark print on white is the most ordinary thing hanging in any gallery.
+ *
+ * `line` is darker than the board because a bevel cut through white paper
+ * shows its own shadow. That cut is the detail that says board rather than
+ * border, and it is the only thing distinguishing a mount from a wide margin.
+ */
+const MOUNT = { mat: '#f2efe8', line: '#d9d3c6' }
 
 /**
  * A colour moved toward white or black by a fraction.
@@ -160,14 +170,13 @@ export const frames = [
     compose: (scene) => {
       const pad = Math.min(scene.width, scene.height) * 0.15
       const box = inset(scene, pad)
-      const tone = board(scene)
       return {
         ...box,
-        fill: tone.mat,
+        fill: MOUNT.mat,
         clip: true,
         // The hairline where the board is cut away is the whole of what tells
         // the eye there is a board at all.
-        behind: [rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, tone.line)],
+        behind: [rect(pad - 2, pad - 2, scene.width + 4, scene.height + 4, MOUNT.line)],
       }
     },
   },
@@ -203,12 +212,12 @@ export const frames = [
  * sits straight on the print, which is a different object and not a thinner
  * version of the same one.
  */
-function framed(scene, { mat = 0, moulding, colour, lip = 0 }) {
+function framed(scene, { mat = 0, moulding, colour, lip = 0, mount = MOUNT }) {
   const short = Math.min(scene.width, scene.height)
   const band = short * moulding
   const pad = short * mat + band
   const box = inset(scene, pad)
-  const tone = board(scene)
+  const tone = mount
   const weight = band * lip
 
   return {

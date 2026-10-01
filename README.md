@@ -292,10 +292,16 @@ dark piece — where the mat was `#1b1b1f` and the moulding `#0b0b0d`, sixteen l
 255 — switching between them changed nothing you could see. Rails meeting at 45 degrees read as a
 joined frame at any tone, which is a difference colour cannot collapse.
 
-The dark board was the other half of it. It was near-black, which made Mounted look like extra
-background; it is a mid charcoal now, which is what a framer would cut for a dark print anyway. The
-hairline where the board is cut is *lighter* than the board for a dark mat, because the bevel
-through a mount shows its lighter core — that cut is the detail that says board rather than border.
+The board was the other half of it, and it went through two answers. It was cut to suit the work —
+near-black against a dark piece — on the reasoning that white around a near-black print reads as a
+mistake. That made Mounted look like extra background and left the moulding nothing to sit against.
+Lifting it to a mid charcoal fixed the legibility and was still the wrong idea: **the mount is white
+paper whatever the piece**, because that is what a framer cuts, and a dark print on white is the
+most ordinary thing hanging in any gallery. Only the moulding is chosen against the work now.
+
+The hairline where the board is cut is slightly *darker* than the board, because a bevel through
+white paper shows its own shadow — and that cut is the whole of what distinguishes a mount from a
+wide margin.
 
 The framed piece is a **separate SVG document handed to an `<img>`**, which is the opening panel's
 thumbnail trick and is here for the same reason twice over. A piece mints clip-path and filter ids
