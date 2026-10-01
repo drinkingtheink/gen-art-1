@@ -24,11 +24,19 @@ const props = defineProps({
   artworkFilter: { type: String, default: '' },
   overlay: { type: Array, default: () => [] },
   title: { type: String, default: '' },
+  /**
+   * The frame, owned by the app rather than by this panel.
+   *
+   * It used to be local state, which made the gallery unshareable: being on
+   * the wall, and which frame the work hung in, existed only for as long as
+   * the component did. Both live in the URL now, so a link can carry them.
+   */
+  frame: { type: String, default: DEFAULT_FRAME },
+  copied: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['dismiss'])
+const emit = defineEmits(['dismiss', 'frame', 'copy'])
 
-const frameId = ref(DEFAULT_FRAME)
 const framed = ref(null)
 let url = null
 
@@ -44,7 +52,7 @@ function compose() {
     url = null
   }
   try {
-    const box = frameById[frameId.value].compose(props.scene)
+    const box = (frameById[props.frame] ?? frameById[DEFAULT_FRAME]).compose(props.scene)
     const markup = renderSvg(props.scene, {
       defs: props.defs,
       artworkFilter: props.artworkFilter,
@@ -75,7 +83,7 @@ function compose() {
   }
 }
 
-watch(frameId, compose)
+watch(() => props.frame, compose)
 
 const closer = useTemplateRef('closer')
 let returnTo = null
@@ -119,16 +127,27 @@ onUnmounted(() => {
         <button ref="closer" type="button" @click="emit('dismiss')">Back to the studio</button>
       </header>
 
-      <div class="frames" role="group" aria-label="Frame">
-        <button
-          v-for="f in frames"
-          :key="f.id"
-          type="button"
-          :class="{ on: f.id === frameId }"
-          :aria-pressed="f.id === frameId"
-          @click="frameId = f.id"
-        >
-          {{ f.name }}
+      <div class="choices">
+        <div class="frames" role="group" aria-label="Frame">
+          <button
+            v-for="f in frames"
+            :key="f.id"
+            type="button"
+            :class="{ on: f.id === frame }"
+            :aria-pressed="f.id === frame"
+            @click="emit('frame', f.id)"
+          >
+            {{ f.name }}
+          </button>
+        </div>
+
+        <!-- The sidebar's own copy button is behind this panel and out of
+             reach, and the link it would hand over is a different link: this
+             one carries `w`, so it opens here rather than in the studio. The
+             confirmation says so, because that is the whole question a sender
+             has about a link like this. -->
+        <button type="button" class="share" @click="emit('copy')">
+          {{ copied ? 'Copied — opens on the wall' : 'Copy link to this wall' }}
         </button>
       </div>
 
@@ -305,11 +324,26 @@ h2 {
   font-size: 0.8rem;
 }
 
+/* Frames left, share right, and allowed to stack rather than squeeze — at
+   narrow widths the four frame buttons already wrap, and a share button
+   crushed onto the end of that reads as a fifth frame. */
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 1.1rem 0 1.2rem;
+}
+
 .frames {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin: 1.1rem 0 1.2rem;
+}
+
+.share {
+  font-size: 0.8rem;
 }
 
 .frames button {

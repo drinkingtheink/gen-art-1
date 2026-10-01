@@ -13,6 +13,11 @@
  * image of the actual artwork. Links written before this — where the same
  * fields sat after `#` — are still read, and get rewritten on load.
  *
+ * One field is not part of the piece: `w` names the frame the work is hung in
+ * and, by being present, says to open On the wall instead of the studio. It is
+ * the one optional field, because a link to a piece and a link to that piece
+ * on a wall should not be the same address.
+ *
  * Nothing here validates against a schema; coerceAll does that on the way in.
  */
 
@@ -71,7 +76,7 @@ function parseQuery(raw) {
   )
 }
 
-export function encodeState({ generatorId, ratioId, grain, effects, treatment, seed, params }) {
+export function encodeState({ generatorId, ratioId, grain, effects, treatment, seed, params, wall }) {
   const encoded = Object.entries(params)
     .map(([key, value]) => `${key}:${encodeURIComponent(value)}`)
     .join(',')
@@ -82,7 +87,13 @@ export function encodeState({ generatorId, ratioId, grain, effects, treatment, s
     `&t=${treatment.bg}:${treatment.rotate}:${treatment.invert ? 1 : 0}:${treatment.muted.join('.')}` +
     `&e=${EFFECT_FIELDS.map((key) => effects[key]).join(':')}` +
     `&s=${encodeURIComponent(seed)}` +
-    `&p=${encoded}`
+    `&p=${encoded}` +
+    // The only optional field, and the only one that is a *view* rather than
+    // part of the piece. Written last so it reads as an instruction appended
+    // to a piece's address, and omitted entirely when the wall is closed —
+    // which keeps an ordinary piece link byte-identical to the ones already
+    // out there, and means the field says something by existing at all.
+    (wall ? `&w=${encodeURIComponent(wall)}` : '')
   )
 }
 
@@ -131,6 +142,16 @@ export function decodeState(search) {
         : effects,
     seed: safe(query.s),
     params,
+    /**
+     * Which frame to hang the piece in, and by being present at all, that it
+     * should be hung — the gallery opens on arrival rather than the studio.
+     *
+     * `undefined` and `''` are distinct here. A link with no `w` is a studio
+     * link; `w=` with nothing after it is still an instruction to hang, and
+     * coerceFrame turns the empty value into the default frame. Anything else
+     * would make a hand-trimmed URL silently drop the thing it was shared for.
+     */
+    wall: query.w === undefined ? undefined : (safe(query.w) ?? ''),
   }
 }
 

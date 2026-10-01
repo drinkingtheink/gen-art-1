@@ -76,6 +76,17 @@ export function previewMeta(search) {
   const palette = getPalette(params.palette)
   const shape = ratio.label.split(' \u00b7 ')[0].toLowerCase()
 
+  /**
+   * A gallery link says so in its card.
+   *
+   * `w` means the link opens the work framed and hanging in a room rather
+   * than on the studio stage, and someone deciding whether to click deserves
+   * to know which of the two they are being sent to. The frame itself is left
+   * unnamed: four frame names would need four different sentences to read
+   * naturally, and "Unframed" would need the sentence to contradict itself.
+   */
+  const hung = named.wall !== undefined
+
   return {
     generator,
     ratio,
@@ -83,9 +94,12 @@ export function previewMeta(search) {
     params,
     state: named,
     title: `${generator.name} \u00b7 ${seed}`,
-    description:
-      `A generative ${generator.name.toLowerCase()} piece in ${palette.name}, ${shape} format. ` +
-      `Open it to change every parameter and re-gen from a new seed.`,
+    description: hung
+      ? `A generative ${generator.name.toLowerCase()} piece in ${palette.name}, ${shape} format, ` +
+        `framed and hanging in a room. Open it to try it in other frames, or take it to the studio ` +
+        `and change every parameter.`
+      : `A generative ${generator.name.toLowerCase()} piece in ${palette.name}, ${shape} format. ` +
+        `Open it to change every parameter and re-gen from a new seed.`,
   }
 }
 

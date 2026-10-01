@@ -18,6 +18,7 @@ import { useShowcase } from '@/composables/useShowcase.js'
 import { useGenerator } from '@/composables/useGenerator.js'
 import { usePermalink } from '@/composables/usePermalink.js'
 import { readUrl } from '@/core/permalink.js'
+import { DEFAULT_FRAME, coerceFrame } from '@/core/mounts.js'
 
 // A shared link is the starting state; otherwise a fresh random seed.
 const opened = readUrl()
@@ -35,7 +36,38 @@ const piece = useGenerator(opened ?? {})
  */
 const launching = ref(!opened?.generatorId)
 
-usePermalink(piece, { paused: launching })
+/**
+ * On the wall, as a place in the URL rather than a flag in memory.
+ *
+ * `null` is the studio; a frame id is the gallery, hung in that frame. It has
+ * to live here rather than inside the panel, because in this app the URL is
+ * what decides which surface is up — the picker already works this way — and
+ * a gallery that existed only as component state could not be sent to anyone.
+ *
+ * A link's `w` is honoured only when the link also names a piece. `?w=mat` on
+ * its own would otherwise open an empty frame over the picker.
+ */
+const wall = ref(
+  opened?.generatorId && opened.wall !== undefined ? coerceFrame(opened.wall) : null,
+)
+
+/**
+ * Loading a link restores the view it was shared from, not only the piece.
+ *
+ * This wraps the generator's own applyState because `w` is the one field that
+ * isn't part of the piece, and useGenerator has no business knowing a gallery
+ * exists. It is also what makes Back and Forward walk in and out of the
+ * gallery: popstate comes through here.
+ */
+function applyShared(state) {
+  piece.applyState(state)
+  wall.value = state.wall === undefined ? null : coerceFrame(state.wall)
+}
+
+const { href: shareHref } = usePermalink(
+  { ...piece, wall, applyState: applyShared },
+  { paused: launching },
+)
 
 const {
   generator,
@@ -104,6 +136,10 @@ function showLaunch() {
   cancelOpeningPlay()
   // The panel covers the stage, so there is nothing to animate behind it.
   show.pause()
+  // Two surfaces cannot both be up. The picker is about to cover everything,
+  // and leaving the wall set would mean Back landed on a gallery for a piece
+  // the picker had already moved on from.
+  wall.value = null
   launching.value = true
   window.history.pushState(null, '', window.location.pathname)
 }
@@ -396,22 +432,30 @@ watch(
  * a mount of a frame that existed for one sixtieth of a second is not a
  * presentation of anything.
  */
-const previewing = ref(false)
+const previewing = computed(() => wall.value !== null)
 
 function openPreview() {
   if (show.playing.value) {
     commitLive()
     show.pause()
   }
-  previewing.value = true
+  wall.value = DEFAULT_FRAME
 }
 
 const copied = ref(false)
 let copyTimer = null
 
+/**
+ * One clipboard path for both buttons — the sidebar's and the gallery's.
+ *
+ * The link comes from `shareHref()` rather than `window.location.href`,
+ * because URL writes are debounced: opening the gallery and copying straight
+ * away read the address bar before `&w=` had landed, and sent a link back to
+ * the studio.
+ */
 async function copyLink() {
   try {
-    await navigator.clipboard.writeText(window.location.href)
+    await navigator.clipboard.writeText(shareHref())
     copied.value = true
     clearTimeout(copyTimer)
     copyTimer = setTimeout(() => { copied.value = false }, 1600)
@@ -432,7 +476,11 @@ async function copyLink() {
       :artwork-filter="artworkFilter"
       :overlay="overlay"
       :title="`${generator.name} · ${seed}`"
-      @dismiss="previewing = false"
+      :frame="wall ?? DEFAULT_FRAME"
+      :copied="copied"
+      @frame="wall = $event"
+      @copy="copyLink"
+      @dismiss="wall = null"
     />
   </Transition>
 

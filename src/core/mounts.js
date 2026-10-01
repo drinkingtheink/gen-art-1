@@ -145,12 +145,31 @@ export const frameById = Object.fromEntries(frames.map((f) => [f.id, f]))
 export const DEFAULT_FRAME = 'mat'
 
 /**
+ * A frame id from outside — a permalink, a hand-edited URL — made safe.
+ *
+ * Same contract as coerceGrain and coerceTreatment: anything unrecognised
+ * becomes the default rather than undefined, because a link that says to hang
+ * the piece should hang it even when it names a frame that no longer exists.
+ * Renaming or retiring a frame therefore ages links gracefully instead of
+ * breaking them.
+ */
+export function coerceFrame(id) {
+  return frameById[id] ? id : DEFAULT_FRAME
+}
+
+/**
  * Rooms the work can hang in.
  *
- * `area` is where the artwork lands, in the photograph's own pixels. These
- * walls are square to the camera, so placement is a scale and a translate. A
- * wall shot at an angle would need a homography, which CSS can do with
- * `matrix3d` and SVG cannot do at all — worth knowing before gathering more.
+ * `area` is the clean wall the artwork is centred on, in the photograph's own
+ * pixels, and `scale` nudges how much of it the piece takes. These rooms are
+ * not shot from the same distance, so a piece sized to its own photograph
+ * comes out looking like a different print in each. The ochre study is the
+ * baseline at 1; the other two are closer shots and take 1.2.
+ *
+ * These walls are square to the camera, so placement is a scale and a
+ * translate. A wall shot at an angle would need a homography, which CSS can do
+ * with `matrix3d` and SVG cannot do at all — worth knowing before gathering
+ * more.
  *
  * `light` is where the light comes from, as a direction the shadow falls in,
  * and `wall` is the colour of the surface. Both are measured from the
@@ -172,6 +191,7 @@ export const rooms = [
     // The clean wall runs x 364-1312, y 176-1072, found by scanning the
     // photograph for the longest unbroken run of wall colour in each row
     // rather than by eye. The hanging area is inset inside that.
+    scale: 1,
     area: { x: 450, y: 250, width: 780, height: 740 },
     light: { x: 1, y: 0.5 },
     wall: '#e8c178',
@@ -190,6 +210,7 @@ export const rooms = [
     width: 1600,
     height: 2000,
     // Clean wall x 356-1252, reaching the top of the frame.
+    scale: 1.2,
     area: { x: 430, y: 160, width: 760, height: 780 },
     /**
      * The bright curtain on the right is a window, and it is not what lights
@@ -219,6 +240,7 @@ export const rooms = [
     // family instead: the wall is red-dominant everywhere, the chair and the
     // tiles read blue, the plant reads green. That leaves the upper two
     // thirds clear, the chair arriving at y 1463 and the floor at 2236.
+    scale: 1.2,
     area: { x: 480, y: 330, width: 790, height: 850 },
     /**
      * Light from the right here, which neither other room does.
@@ -254,7 +276,7 @@ export const rooms = [
  */
 export function placeInRoom(room, framedWidth, framedHeight) {
   const { x, y, width, height } = room.area
-  const fit = Math.min(width / framedWidth, height / framedHeight)
+  const fit = Math.min(width / framedWidth, height / framedHeight) * (room.scale ?? 1)
   const w = framedWidth * fit
   const h = framedHeight * fit
   return {
