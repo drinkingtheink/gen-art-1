@@ -196,12 +196,20 @@ onUnmounted(() => {
 
         <!-- The sidebar's own copy button is behind this panel and out of
              reach, and the link it would hand over is a different link: this
-             one carries `w`, so it opens here rather than in the studio. The
-             confirmation says so, because that is the whole question a sender
-             has about a link like this. -->
+             one carries `w`, so it opens here rather than in the studio. -->
         <button type="button" class="share" @click="emit('copy')">
           <ButtonIcon :glyph="copied ? 'tick' : 'link'" />
-          {{ copied ? 'Copied — opens on the wall' : 'Copy link to this wall' }}
+          <!-- Both labels sit in one grid cell, so the button is always as
+               wide as the longer of them and copying doesn't resize it. It is
+               right-aligned on this row, so the width it loses comes off its
+               left edge: measured, "Share this gallery" is 131px against
+               "Link Copied" at 101px, and the whole lockup jumped 29px at the
+               moment of being clicked. A measured min-width would do the same
+               job until someone edits a label and doesn't re-measure. -->
+          <span class="swap">
+            <span :class="{ gone: copied }">Share this gallery</span>
+            <span :class="{ gone: !copied }">Link Copied</span>
+          </span>
         </button>
       </div>
 
@@ -409,6 +417,24 @@ h2 {
   align-items: center;
   gap: 0.45em;
   font-size: 0.8rem;
+}
+
+.swap {
+  display: grid;
+  /* The shorter label centres in the space the longer one claims, rather than
+     sitting left with the slack trailing after it. */
+  justify-items: center;
+}
+
+/* Stacked, not side by side. */
+.swap > span {
+  grid-area: 1 / 1;
+}
+
+/* visibility, not display: the hidden label has to keep holding the cell open,
+   and this takes it out of the accessibility tree as display would. */
+.swap .gone {
+  visibility: hidden;
 }
 
 .frames button {
