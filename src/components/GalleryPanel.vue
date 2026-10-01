@@ -227,12 +227,12 @@ onUnmounted(() => {
                wide as the longer of them and copying doesn't resize it. It is
                right-aligned on this row, so the width it loses comes off its
                left edge: measured, "Share this gallery" is 131px against
-               "Link Copied" at 101px, and the whole lockup jumped 29px at the
+               "Link copied" at 100px, and the whole lockup jumped 29px at the
                moment of being clicked. A measured min-width would do the same
                job until someone edits a label and doesn't re-measure. -->
           <span class="swap">
             <span :class="{ gone: copied }">Share this gallery</span>
-            <span :class="{ gone: !copied }">Link Copied</span>
+            <span :class="{ gone: !copied }">Link copied</span>
           </span>
         </button>
       </div>
