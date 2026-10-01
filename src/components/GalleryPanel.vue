@@ -1,18 +1,9 @@
 <script setup>
-import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import GenArtMark from './GenArtMark.vue'
 import ButtonIcon from './ButtonIcon.vue'
-import {
-  DEFAULT_FRAME,
-  frameById,
-  frames,
-  artWindow,
-  hangStyle,
-  matrix3dFor,
-  placeInRoom,
-  placeOnPlane,
-  rooms,
-} from '../core/mounts.js'
+import RoomPlate from './RoomPlate.vue'
+import { DEFAULT_FRAME, frameById, frames, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
@@ -80,81 +71,52 @@ function compose() {
 watch(() => props.frame, compose)
 
 /**
- * Rendered width per room, for the angled wall's pixel maths.
+ * Which room is being looked at closely, as an index, or null for the grid.
  *
- * An observer rather than a window listener: this grid reflows at widths the
- * window size alone does not predict.
+ * An index rather than the room itself because stepping is the point: the
+ * arrows walk the same list the grid shows, in the same order.
  */
-const widths = ref({})
-const list = useTemplateRef('list')
-let observer = null
+const enlarged = ref(null)
+const enlargedCloser = useTemplateRef('enlargedCloser')
+let cameFrom = null
 
-/**
- * Where the piece sits in one room.
- *
- * A flat wall is a scale and a translate, so the piece is placed in
- * percentages and holds at any displayed size without measuring anything. An
- * angled wall is a homography, which CSS can only express in pixels — so that
- * case, and only that case, needs the room's rendered width.
- */
-function hungStyle(room) {
-  const f = framed.value
-  if (!f) return null
-
-  if (!room.plane) {
-    const p = placeInRoom(room, f.box.width, f.box.height)
-    return {
-      left: `${p.left * 100}%`,
-      top: `${p.top * 100}%`,
-      width: `${p.width * 100}%`,
-      height: `${p.height * 100}%`,
-      boxShadow: lighting(room).shadow,
-    }
-  }
-
-  const cw = widths.value[room.id]
-  if (!cw) return null
-  const ch = (cw * room.height) / room.width
-  const quad = placeOnPlane(room, f.box.width, f.box.height).map(([x, y]) => [x * cw, y * ch])
-
-  return {
-    left: '0',
-    top: '0',
-    width: `${f.box.width}px`,
-    height: `${f.box.height}px`,
-    transformOrigin: '0 0',
-    transform: matrix3dFor(quad, f.box.width, f.box.height),
-    boxShadow: lighting(room).shadow,
-  }
+function enlarge(index) {
+  cameFrom = document.activeElement
+  enlarged.value = index
+  nextTick(() => enlargedCloser.value?.focus())
 }
 
-/**
- * The room's light, as every layer wants it.
- *
- * One call rather than one per layer, because an angled wall needs the boost
- * — its piece is drawn at full size and transformed down, so lengths inside it
- * shrink — and before this only the shadow was getting it.
- */
-function lighting(room) {
-  const f = framed.value
-  if (!room.plane || !f) return hangStyle(room)
-
-  const cw = widths.value[room.id]
-  if (!cw) return hangStyle(room)
-  const ch = (cw * room.height) / room.width
-  const quad = placeOnPlane(room, f.box.width, f.box.height).map(([x, y]) => [x * cw, y * ch])
-  return hangStyle(room, f.box.width / (quad[1][0] - quad[0][0]))
+function shrink() {
+  enlarged.value = null
+  // Back to the plate that was clicked, not to the top of the panel.
+  nextTick(() => {
+    if (cameFrom?.isConnected) cameFrom.focus()
+    cameFrom = null
+  })
 }
 
-/** The print's own rectangle, for the treatments that belong on it. */
-function printStyle(room) {
-  return { ...artWindow(framed.value.box, props.scene), boxShadow: lighting(room).recess }
+/** Wraps, so the arrows never dead-end and both of them always do something. */
+function step(by) {
+  enlarged.value = (enlarged.value + by + rooms.length) % rooms.length
 }
 
 const closer = useTemplateRef('closer')
 let returnTo = null
 
+/**
+ * Escape means "the smaller thing", so it closes the enlarged plate before it
+ * closes the panel — two presses to leave from in there, which is what every
+ * other nested viewer does and what the hand expects.
+ */
 function onKey(event) {
+  if (enlarged.value !== null) {
+    if (event.key === 'Escape') shrink()
+    else if (event.key === 'ArrowLeft') step(-1)
+    else if (event.key === 'ArrowRight') step(1)
+    else return
+    event.preventDefault()
+    return
+  }
   if (event.key === 'Escape') emit('dismiss')
 }
 
@@ -165,17 +127,10 @@ onMounted(() => {
   window.addEventListener('keydown', onKey)
   closer.value?.focus()
 
-  observer = new ResizeObserver((entries) => {
-    const next = { ...widths.value }
-    for (const entry of entries) next[entry.target.dataset.room] = entry.contentRect.width
-    widths.value = next
-  })
-  for (const el of list.value?.querySelectorAll('[data-room]') ?? []) observer.observe(el)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
-  observer?.disconnect()
   if (url) URL.revokeObjectURL(url)
   if (returnTo?.isConnected) returnTo.focus()
 })
@@ -184,84 +139,74 @@ onUnmounted(() => {
 <template>
   <div class="gallery" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
     <div class="sheet">
-      <header class="head">
-        <div>
-          <h2 id="gallery-title">On the wall</h2>
-          <p class="who">{{ title }}</p>
-        </div>
-        <!-- Decorative: the heading beside it already names the panel, and
-             this is the one surface in the app showing the work off rather
-             than operating on it. -->
-        <p class="crest" aria-hidden="true"><GenArtMark /></p>
-        <!-- Not "Close": this panel is a room you are standing in, and the app's
-             own word for what is behind it is the studio — the launch panel
-             offers to "just open the studio" and this file's transition note
-             describes the sheet as arriving over it. Naming the destination
-             rather than the gesture keeps the gallery/studio pair intact. -->
-        <button ref="closer" type="button" class="leave" @click="emit('dismiss')">
-          <ButtonIcon glyph="back" />
-          Back to the studio
-        </button>
-      </header>
+      <!-- Title, frames and the two actions ride together. Pinning the title
+           row alone would slide the frame buttons under it, and the frames are
+           wanted exactly when you are far down the page looking at one room and
+           want to see it in a different surround. -->
+      <div class="bar">
+        <header class="head">
+          <div>
+            <h2 id="gallery-title">On the wall</h2>
+            <p class="who">{{ title }}</p>
+          </div>
+          <!-- Decorative: the heading beside it already names the panel, and
+               this is the one surface in the app showing the work off rather
+               than operating on it. -->
+          <p class="crest" aria-hidden="true"><GenArtMark /></p>
+          <!-- Not "Close": this panel is a room you are standing in, and the app's
+               own word for what is behind it is the studio — the launch panel
+               offers to "just open the studio" and this file's transition note
+               describes the sheet as arriving over it. Naming the destination
+               rather than the gesture keeps the gallery/studio pair intact. -->
+          <button ref="closer" type="button" class="leave" @click="emit('dismiss')">
+            <ButtonIcon glyph="back" />
+            Back to the studio
+          </button>
+        </header>
 
-      <div class="choices">
-        <div class="frames" role="group" aria-label="Frame">
-          <button
-            v-for="f in frames"
-            :key="f.id"
-            type="button"
-            :class="{ on: f.id === frame }"
-            :aria-pressed="f.id === frame"
-            @click="emit('frame', f.id)"
-          >
-            {{ f.name }}
+        <div class="choices">
+          <div class="frames" role="group" aria-label="Frame">
+            <button
+              v-for="f in frames"
+              :key="f.id"
+              type="button"
+              :class="{ on: f.id === frame }"
+              :aria-pressed="f.id === frame"
+              @click="emit('frame', f.id)"
+            >
+              {{ f.name }}
+            </button>
+          </div>
+
+          <!-- The sidebar's own copy button is behind this panel and out of
+               reach, and the link it would hand over is a different link: this
+               one carries `w`, so it opens here rather than in the studio. -->
+          <button type="button" class="share" @click="emit('copy')">
+            <ButtonIcon :glyph="copied ? 'tick' : 'link'" />
+            <!-- Both labels sit in one grid cell, so the button is always as
+                 wide as the longer of them and copying doesn't resize it. It is
+                 right-aligned on this row, so the width it loses comes off its
+                 left edge: measured, "Share this gallery" is 131px against
+                 "Link copied" at 100px, and the whole lockup jumped 29px at the
+                 moment of being clicked. A measured min-width would do the same
+                 job until someone edits a label and doesn't re-measure. -->
+            <span class="swap">
+              <span :class="{ gone: copied }">Share this gallery</span>
+              <span :class="{ gone: !copied }">Link copied</span>
+            </span>
           </button>
         </div>
-
-        <!-- The sidebar's own copy button is behind this panel and out of
-             reach, and the link it would hand over is a different link: this
-             one carries `w`, so it opens here rather than in the studio. -->
-        <button type="button" class="share" @click="emit('copy')">
-          <ButtonIcon :glyph="copied ? 'tick' : 'link'" />
-          <!-- Both labels sit in one grid cell, so the button is always as
-               wide as the longer of them and copying doesn't resize it. It is
-               right-aligned on this row, so the width it loses comes off its
-               left edge: measured, "Share this gallery" is 131px against
-               "Link copied" at 100px, and the whole lockup jumped 29px at the
-               moment of being clicked. A measured min-width would do the same
-               job until someone edits a label and doesn't re-measure. -->
-          <span class="swap">
-            <span :class="{ gone: copied }">Share this gallery</span>
-            <span :class="{ gone: !copied }">Link copied</span>
-          </span>
-        </button>
       </div>
 
-      <ul ref="list" class="rooms">
-        <li v-for="room in rooms" :key="room.id">
-          <div class="room" :data-room="room.id">
-            <img class="plate" :src="room.src" alt="" />
-            <!-- A shadow on the wall, the room reflected in the glass, and a
-                 breath of the wall's own colour over the work. The piece is
-                 isolated so those blend with the artwork and not with the
-                 photograph underneath it. -->
-            <div v-if="hungStyle(room)" class="hung" :style="hungStyle(room)">
-              <img :src="framed.url" alt="" />
-              <!-- On the print rather than around it: the mat's inner edge
-                   shadowing the paper that sits a few millimetres behind it. -->
-              <span class="print" :style="printStyle(room)" />
-              <!-- The room coming back out of the glazing. Over the artwork,
-                   because that is where a reflection falls and where a piece
-                   otherwise reads as pasted on rather than framed. -->
-              <span class="glaze" :style="{ backgroundImage: lighting(room).glaze }" />
-              <span class="glass" :style="{ backgroundImage: lighting(room).sheen }" />
-              <span class="cast" :style="{ backgroundColor: lighting(room).wall }" />
-              <!-- Last, and over everything: the lit edge of the moulding. A
-                   frame with no edge catching the light reads as a printed
-                   rectangle however well it is placed. -->
-              <span class="edge" :style="{ boxShadow: lighting(room).edge }" />
-            </div>
-          </div>
+      <ul class="rooms">
+        <li v-for="(room, i) in rooms" :key="room.id">
+          <!-- The photograph is the control. A separate "enlarge" button beside
+               it would be a smaller target for the same intent, and the piece
+               on the wall is what the eye is already on. -->
+          <button type="button" class="peek" @click="enlarge(i)">
+            <RoomPlate v-if="framed" :room="room" :framed="framed" :scene="scene" />
+            <span class="said">See {{ room.name }} larger</span>
+          </button>
           <p class="credit">
             {{ room.name }} — photo by
             <a :href="room.credit.profile" target="_blank" rel="noopener noreferrer">{{ room.credit.who }}</a>
@@ -270,6 +215,73 @@ onUnmounted(() => {
           </p>
         </li>
       </ul>
+    </div>
+
+    <!-- One room, as large as the viewport allows. A sibling of the sheet
+         rather than a child of it, so it covers the grid instead of scrolling
+         with it. -->
+    <div
+      v-if="enlarged !== null"
+      class="closer-look"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="`${rooms[enlarged].name}, ${enlarged + 1} of ${rooms.length}`"
+    >
+      <!-- Clicking the surround goes back, the way the dimmed area around any
+           enlarged image does. The plate itself stops the click, or stepping
+           through with the mouse would close it every other press. -->
+      <div class="backdrop" @click="shrink" />
+
+      <header class="look-head">
+        <p class="where">
+          {{ rooms[enlarged].name }}
+          <span class="count">{{ enlarged + 1 }} of {{ rooms.length }}</span>
+        </p>
+        <button ref="enlargedCloser" type="button" @click="shrink">
+          <ButtonIcon glyph="back" />
+          Back to the gallery
+        </button>
+      </header>
+
+      <div class="look-stage">
+        <button type="button" class="step" aria-label="Previous room" @click="step(-1)">‹</button>
+        <!-- Sized by height, because these are portrait photographs and the
+             viewport runs out vertically first. The width follows from the
+             photograph's own proportions so nothing is cropped. -->
+        <div
+          class="look-plate"
+          :style="{
+            width: `min(92vw, ${((76 * rooms[enlarged].width) / rooms[enlarged].height).toFixed(2)}vh)`,
+          }"
+        >
+          <RoomPlate
+            v-if="framed"
+            :key="rooms[enlarged].id"
+            :room="rooms[enlarged]"
+            :framed="framed"
+            :scene="scene"
+          />
+        </div>
+        <button type="button" class="step" aria-label="Next room" @click="step(1)">›</button>
+      </div>
+
+      <p class="credit look-credit">
+        photo by
+        <a
+          :href="rooms[enlarged].credit.profile"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ rooms[enlarged].credit.who }}</a
+        >
+        on
+        <a
+          :href="rooms[enlarged].credit.sourceUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ rooms[enlarged].credit.source }}</a
+        >
+        <span class="hint">— arrow keys to walk the rooms, Escape to go back</span>
+      </p>
     </div>
   </div>
 </template>
@@ -339,7 +351,12 @@ onUnmounted(() => {
   inset: 0;
   z-index: 12;
   overflow-y: auto;
-  padding: 2rem 1rem 3rem;
+  /* No padding at the top, and the sheet carries that space as a margin
+     instead. A sticky child measures `top` from this box's content edge, so
+     padding here held the bar 2rem down the screen and left a strip above it
+     that the rooms scrolled through. As a margin the same gap is still there
+     at rest and the bar can reach the top edge once it is scrolled to. */
+  padding: 0 1rem 3rem;
   background: transparent;
 }
 
@@ -361,7 +378,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 2;
   max-width: 920px;
-  margin: 0 auto;
+  margin: 2rem auto 0;
   padding: 1.4rem 1.5rem 1.8rem;
   border: 1px solid color-mix(in srgb, var(--panel-edge) 80%, transparent);
   border-radius: 16px;
@@ -379,6 +396,37 @@ onUnmounted(() => {
  * one number sets it wherever it appears and nothing has to reach past the
  * component's own rule.
  */
+/**
+ * The top of the panel, kept in reach.
+ *
+ * The rooms are tall photographs and there are three of them, so the way out
+ * and the way to share used to be a long scroll back up. This rides with the
+ * page instead.
+ *
+ * It sticks against `.gallery`, which is the scrolling box, and stops at the
+ * bottom of `.sheet`, which is its parent — so it travels the length of the
+ * panel and no further.
+ */
+.bar {
+  position: sticky;
+  top: 0;
+  /* Over the rooms, which pass underneath. */
+  z-index: 3;
+  /* Out to the sheet's edges rather than stopping at its padding, so what
+     scrolls under is covered the whole way across. The negative top margin
+     cancels the sheet's own top padding, which this now supplies itself. */
+  margin: -1.4rem -1.5rem 0;
+  padding: 1.4rem 1.5rem 1.2rem;
+  /* Opaque, because the artwork travels under it and a 74%-of-panel bar would
+     show it through. Mixing toward --bg rather than toward transparent is what
+     keeps it matching the sheet: the two are eight values apart per channel
+     (#1e1e24 against #16161a), so the opaque mix lands within a shade of what
+     the translucent sheet already renders as. */
+  background: color-mix(in srgb, var(--panel) 74%, var(--bg));
+  /* The sheet's own corners, less the 1px border this sits inside. */
+  border-radius: 15px 15px 0 0;
+}
+
 .head {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -434,7 +482,10 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  margin: 1.1rem 0 1.2rem;
+  /* Bottom spacing moved to the bar's padding. Left here it would collapse
+     through and become a gap below the opaque background, which the rooms
+     would scroll through. */
+  margin: 1.1rem 0 0;
 }
 
 .frames {
@@ -491,58 +542,170 @@ h2 {
   list-style: none;
 }
 
-.room {
-  position: relative;
-  /* The piece is placed as a percentage, so its shadow is measured against the
-     photograph's width too — in pixels it would be right at exactly one size. */
-  container-type: inline-size;
-  border: 1px solid var(--panel-edge);
+/**
+ * The photograph as a button.
+ *
+ * Reset rather than restyle: the app's buttons carry a fill, a border and
+ * padding, all of which would frame the frame. What is left is the cursor and
+ * a focus ring, plus a lift on hover so it reads as something to press without
+ * anything being drawn on top of the work.
+ */
+.peek {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
   border-radius: var(--radius);
+  cursor: zoom-in;
+  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.peek:hover {
+  background: none;
+  transform: translateY(-2px);
+}
+
+/* The global rule nudges a pressed button down a pixel, which fights the lift. */
+.peek:active {
+  transform: translateY(-1px);
+}
+
+/* Said to a screen reader and to nobody else: sighted users have the
+   photograph and the cursor, which say the same thing. */
+.said {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
   overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/**
+ * One room, enlarged.
+ *
+ * Fixed and over everything, including this panel's own sheet. It is the same
+ * frosted treatment the gallery uses, one layer deeper and darker, so the room
+ * being looked at is the only lit thing on the screen.
+ */
+.closer-look {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.6rem;
+  padding: 1rem 1rem 1.2rem;
+}
+
+.closer-look .backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+}
+
+.look-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.where {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.count {
+  margin-left: 0.5rem;
+  color: var(--ink-dim);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.look-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-height: 0;
+  /* The plate is sized from the viewport's height, so on an unusually short
+     one it can outgrow this row. Scrolling beats cropping the room. */
+  overflow: auto;
+}
+
+.look-plate {
+  /* The plate measures itself, so it needs a width it can be measured at —
+     the height is the photograph's own business. */
+  flex: none;
+  max-height: 100%;
   line-height: 0;
 }
 
-.room .plate {
-  display: block;
+/**
+ * The arrows.
+ *
+ * Round and quiet, sitting beside the plate rather than over it, because they
+ * would otherwise be the first thing in front of a piece the panel exists to
+ * show off. Kept out of the tab order's way by being plain buttons in document
+ * order: previous, plate, next.
+ */
+.step {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+}
+
+.step:hover {
+  background: var(--panel);
+}
+
+.closer-look .look-credit {
+  max-width: 1100px;
   width: 100%;
-  height: auto;
+  margin: 0 auto;
+  text-align: center;
 }
 
-/* Placed as a fraction of the photograph, so it holds at any displayed size. */
-.room .hung {
-  position: absolute;
-  /* Its own stacking context, so the sheen and the colour cast fall on the
-     artwork rather than on the room behind it. */
-  isolation: isolate;
+.hint {
+  margin-left: 0.4rem;
+  opacity: 0.7;
 }
 
-.room .hung img {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
+/* Below this the arrows and the plate stop sharing a row comfortably. */
+@media (max-width: 560px) {
+  .look-stage {
+    gap: 0.3rem;
+  }
 
-.room .hung span {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
+  .step {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+  }
 
-.room .hung .cast {
-  opacity: 0.07;
-  mix-blend-mode: soft-light;
-}
-
-/* Nothing of their own — they are only the shadows they carry. */
-.room .hung .edge,
-.room .hung .print {
-  background: none;
-}
-
-/* The one layer not covering the whole mounted object: it is placed on the
-   print, so it must drop the `inset: 0` the others rely on. */
-.room .hung .print {
-  inset: auto;
+  .hint {
+    display: none;
+  }
 }
 
 .credit {
