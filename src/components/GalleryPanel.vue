@@ -111,7 +111,12 @@ onUnmounted(() => {
              this is the one surface in the app showing the work off rather
              than operating on it. -->
         <p class="crest" aria-hidden="true"><GenArtMark /></p>
-        <button ref="closer" type="button" @click="emit('dismiss')">Close</button>
+        <!-- Not "Close": this panel is a room you are standing in, and the app's
+             own word for what is behind it is the studio — the launch panel
+             offers to "just open the studio" and this file's transition note
+             describes the sheet as arriving over it. Naming the destination
+             rather than the gesture keeps the gallery/studio pair intact. -->
+        <button ref="closer" type="button" @click="emit('dismiss')">Back to the studio</button>
       </header>
 
       <div class="frames" role="group" aria-label="Frame">
