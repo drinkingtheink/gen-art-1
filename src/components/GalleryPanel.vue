@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import GenArtMark from './GenArtMark.vue'
 import ButtonIcon from './ButtonIcon.vue'
 import RoomPlate from './RoomPlate.vue'
@@ -70,53 +70,10 @@ function compose() {
 
 watch(() => props.frame, compose)
 
-/**
- * Which room is being looked at closely, as an index, or null for the grid.
- *
- * An index rather than the room itself because stepping is the point: the
- * arrows walk the same list the grid shows, in the same order.
- */
-const enlarged = ref(null)
-const enlargedCloser = useTemplateRef('enlargedCloser')
-let cameFrom = null
-
-function enlarge(index) {
-  cameFrom = document.activeElement
-  enlarged.value = index
-  nextTick(() => enlargedCloser.value?.focus())
-}
-
-function shrink() {
-  enlarged.value = null
-  // Back to the plate that was clicked, not to the top of the panel.
-  nextTick(() => {
-    if (cameFrom?.isConnected) cameFrom.focus()
-    cameFrom = null
-  })
-}
-
-/** Wraps, so the arrows never dead-end and both of them always do something. */
-function step(by) {
-  enlarged.value = (enlarged.value + by + rooms.length) % rooms.length
-}
-
 const closer = useTemplateRef('closer')
 let returnTo = null
 
-/**
- * Escape means "the smaller thing", so it closes the enlarged plate before it
- * closes the panel — two presses to leave from in there, which is what every
- * other nested viewer does and what the hand expects.
- */
 function onKey(event) {
-  if (enlarged.value !== null) {
-    if (event.key === 'Escape') shrink()
-    else if (event.key === 'ArrowLeft') step(-1)
-    else if (event.key === 'ArrowRight') step(1)
-    else return
-    event.preventDefault()
-    return
-  }
   if (event.key === 'Escape') emit('dismiss')
 }
 
@@ -199,14 +156,8 @@ onUnmounted(() => {
       </div>
 
       <ul class="rooms">
-        <li v-for="(room, i) in rooms" :key="room.id">
-          <!-- The photograph is the control. A separate "enlarge" button beside
-               it would be a smaller target for the same intent, and the piece
-               on the wall is what the eye is already on. -->
-          <button type="button" class="peek" @click="enlarge(i)">
-            <RoomPlate v-if="framed" :room="room" :framed="framed" :scene="scene" />
-            <span class="said">See {{ room.name }} larger</span>
-          </button>
+        <li v-for="room in rooms" :key="room.id">
+          <RoomPlate v-if="framed" :room="room" :framed="framed" :scene="scene" />
           <p class="credit">
             {{ room.name }} — photo by
             <a :href="room.credit.profile" target="_blank" rel="noopener noreferrer">{{ room.credit.who }}</a>
@@ -217,72 +168,6 @@ onUnmounted(() => {
       </ul>
     </div>
 
-    <!-- One room, as large as the viewport allows. A sibling of the sheet
-         rather than a child of it, so it covers the grid instead of scrolling
-         with it. -->
-    <div
-      v-if="enlarged !== null"
-      class="closer-look"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="`${rooms[enlarged].name}, ${enlarged + 1} of ${rooms.length}`"
-    >
-      <!-- Clicking the surround goes back, the way the dimmed area around any
-           enlarged image does. The plate itself stops the click, or stepping
-           through with the mouse would close it every other press. -->
-      <div class="backdrop" @click="shrink" />
-
-      <header class="look-head">
-        <p class="where">
-          {{ rooms[enlarged].name }}
-          <span class="count">{{ enlarged + 1 }} of {{ rooms.length }}</span>
-        </p>
-        <button ref="enlargedCloser" type="button" @click="shrink">
-          <ButtonIcon glyph="back" />
-          Back to the gallery
-        </button>
-      </header>
-
-      <div class="look-stage">
-        <button type="button" class="step" aria-label="Previous room" @click="step(-1)">‹</button>
-        <!-- Sized by height, because these are portrait photographs and the
-             viewport runs out vertically first. The width follows from the
-             photograph's own proportions so nothing is cropped. -->
-        <div
-          class="look-plate"
-          :style="{
-            width: `min(92vw, ${((76 * rooms[enlarged].width) / rooms[enlarged].height).toFixed(2)}vh)`,
-          }"
-        >
-          <RoomPlate
-            v-if="framed"
-            :key="rooms[enlarged].id"
-            :room="rooms[enlarged]"
-            :framed="framed"
-            :scene="scene"
-          />
-        </div>
-        <button type="button" class="step" aria-label="Next room" @click="step(1)">›</button>
-      </div>
-
-      <p class="credit look-credit">
-        photo by
-        <a
-          :href="rooms[enlarged].credit.profile"
-          target="_blank"
-          rel="noopener noreferrer"
-          >{{ rooms[enlarged].credit.who }}</a
-        >
-        on
-        <a
-          :href="rooms[enlarged].credit.sourceUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          >{{ rooms[enlarged].credit.source }}</a
-        >
-        <span class="hint">— arrow keys to walk the rooms, Escape to go back</span>
-      </p>
-    </div>
   </div>
 </template>
 
@@ -540,172 +425,6 @@ h2 {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-/**
- * The photograph as a button.
- *
- * Reset rather than restyle: the app's buttons carry a fill, a border and
- * padding, all of which would frame the frame. What is left is the cursor and
- * a focus ring, plus a lift on hover so it reads as something to press without
- * anything being drawn on top of the work.
- */
-.peek {
-  display: block;
-  width: 100%;
-  padding: 0;
-  background: none;
-  border: 0;
-  border-radius: var(--radius);
-  cursor: zoom-in;
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
-.peek:hover {
-  background: none;
-  transform: translateY(-2px);
-}
-
-/* The global rule nudges a pressed button down a pixel, which fights the lift. */
-.peek:active {
-  transform: translateY(-1px);
-}
-
-/* Said to a screen reader and to nobody else: sighted users have the
-   photograph and the cursor, which say the same thing. */
-.said {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/**
- * One room, enlarged.
- *
- * Fixed and over everything, including this panel's own sheet. It is the same
- * frosted treatment the gallery uses, one layer deeper and darker, so the room
- * being looked at is the only lit thing on the screen.
- */
-.closer-look {
-  position: fixed;
-  inset: 0;
-  z-index: 3;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 0.6rem;
-  padding: 1rem 1rem 1.2rem;
-}
-
-.closer-look .backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(18px) saturate(1.1);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-}
-
-.look-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.where {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.count {
-  margin-left: 0.5rem;
-  color: var(--ink-dim);
-  font-weight: 400;
-  letter-spacing: 0.04em;
-}
-
-.look-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  min-height: 0;
-  /* The plate is sized from the viewport's height, so on an unusually short
-     one it can outgrow this row. Scrolling beats cropping the room. */
-  overflow: auto;
-}
-
-.look-plate {
-  /* The plate measures itself, so it needs a width it can be measured at —
-     the height is the photograph's own business. */
-  flex: none;
-  max-height: 100%;
-  line-height: 0;
-}
-
-/**
- * The arrows.
- *
- * Round and quiet, sitting beside the plate rather than over it, because they
- * would otherwise be the first thing in front of a piece the panel exists to
- * show off. Kept out of the tab order's way by being plain buttons in document
- * order: previous, plate, next.
- */
-.step {
-  flex: none;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  font-size: 1.5rem;
-  line-height: 1;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--panel) 70%, transparent);
-}
-
-.step:hover {
-  background: var(--panel);
-}
-
-.closer-look .look-credit {
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.hint {
-  margin-left: 0.4rem;
-  opacity: 0.7;
-}
-
-/* Below this the arrows and the plate stop sharing a row comfortably. */
-@media (max-width: 560px) {
-  .look-stage {
-    gap: 0.3rem;
-  }
-
-  .step {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1.2rem;
-  }
-
-  .hint {
-    display: none;
-  }
 }
 
 .credit {
