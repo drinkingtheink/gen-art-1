@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import GenArtMark from './GenArtMark.vue'
+import LinkIcon from './LinkIcon.vue'
 import { DEFAULT_FRAME, frameById, frames, hangStyle, placeInRoom, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
@@ -147,6 +148,7 @@ onUnmounted(() => {
              confirmation says so, because that is the whole question a sender
              has about a link like this. -->
         <button type="button" class="share" @click="emit('copy')">
+          <LinkIcon :done="copied" />
           {{ copied ? 'Copied — opens on the wall' : 'Copy link to this wall' }}
         </button>
       </div>
@@ -343,6 +345,9 @@ h2 {
 }
 
 .share {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
   font-size: 0.8rem;
 }
 

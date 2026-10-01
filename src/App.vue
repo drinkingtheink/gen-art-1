@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, watchEffe
 import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GenArtMark from '@/components/GenArtMark.vue'
+import LinkIcon from '@/components/LinkIcon.vue'
 import GalleryPanel from '@/components/GalleryPanel.vue'
 import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
@@ -519,6 +520,7 @@ async function copyLink() {
       />
 
       <button type="button" class="copy" @click="copyLink">
+        <LinkIcon :done="copied" />
         {{ copied ? 'Link copied' : 'Copy link to this piece' }}
       </button>
 
@@ -738,6 +740,13 @@ async function copyLink() {
 }
 
 .copy {
+  display: flex;
+  align-items: center;
+  /* Centred as a pair rather than left-aligned with the icon out on the edge:
+     the button is full width and the label is what you read, so the glyph
+     travels with it. */
+  justify-content: center;
+  gap: 0.45em;
   width: 100%;
   color: var(--ink-dim);
   font-size: 0.8rem;
