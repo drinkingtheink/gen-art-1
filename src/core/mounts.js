@@ -154,10 +154,10 @@ export const DEFAULT_FRAME = 'mat'
  *
  * `light` is where the light comes from, as a direction the shadow falls in,
  * and `wall` is the colour of the surface. Both are measured from the
- * photograph rather than guessed: in this one the wall reads 195.6 to the left
- * of the hanging area against 174.9 to the right, and the framed poster
- * already in the shot has wall at #b7a88b on its left and #4b3e1a on its
- * right. Light from the upper left, shadow down and to the right.
+ * photograph rather than guessed: in this one the wall reads 185.3 across its
+ * left quarter against 175.9 across its right, so the light is to the left,
+ * while top and bottom come out level at 182.0 and 182.3 — so the shadow runs
+ * sideways with only a little fall.
  *
  * `credit` travels with the photograph rather than living on the page, so a
  * room cannot be added without its attribution.
@@ -167,11 +167,14 @@ export const rooms = [
     id: 'ochre',
     name: 'Ochre study',
     src: '/rooms/ochre-study.jpg',
-    width: 1333,
-    height: 2000,
-    area: { x: 430, y: 210, width: 690, height: 660 },
-    light: { x: 1, y: 0.62 },
-    wall: '#e1b96d',
+    width: 1600,
+    height: 1933,
+    // The clean wall runs x 364-1312, y 176-1072, found by scanning the
+    // photograph for the longest unbroken run of wall colour in each row
+    // rather than by eye. The hanging area is inset inside that.
+    area: { x: 450, y: 250, width: 780, height: 740 },
+    light: { x: 1, y: 0.5 },
+    wall: '#e8c178',
     credit: {
       who: 'Julia',
       profile: 'https://unsplash.com/@beazy?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
