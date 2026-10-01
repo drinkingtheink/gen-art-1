@@ -1,18 +1,20 @@
 <script setup>
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
-import { mounts, placeInPhoto } from '../core/mounts.js'
+import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { DEFAULT_FRAME, frameById, frames, placeInRoom, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
- * The current piece, presented several ways at once.
+ * The current piece, standing in a real room.
  *
- * Every cell is a separate SVG document handed to an `<img>` — the same choice
- * the opening panel makes for its thumbnails, and for the same reason twice
- * over. A piece mints clip-path and filter ids from its own seed, so five
- * presentations of one piece inlined together would be five collisions by
- * construction; and the stage is left completely alone, which matters because
- * export serialises the live stage node and would otherwise pick up whatever
- * chrome a gallery had added to it.
+ * The framed piece is a separate SVG document handed to an `<img>`, which is
+ * the opening panel's thumbnail trick and is here for the same reason twice
+ * over: a piece mints clip-path and filter ids from its own seed, so two
+ * framings of it inlined together would collide, and the stage is left alone,
+ * which matters because export serialises the live stage node.
+ *
+ * The photograph stays a plain `<img>` underneath. It cannot join the SVG: one
+ * shown in an `<img>` may not load anything external, so the only way in would
+ * be to carry the whole photograph as a data URI.
  */
 
 const props = defineProps({
@@ -25,48 +27,53 @@ const props = defineProps({
 
 const emit = defineEmits(['dismiss'])
 
-const cells = ref([])
-const urls = []
-let frame = 0
-let stopped = false
+const frameId = ref(DEFAULT_FRAME)
+const framed = ref(null)
+let url = null
 
 /**
- * One cell per animation frame, as the opening panel does.
+ * One framed document, reused by every room.
  *
- * Composing five documents of a heavy piece in one pass is long enough to show
- * as a stall; a frame apart, the browser paints between them and the gallery
- * fills in visibly instead.
+ * The frame is a property of the piece, not of the wall, so changing rooms
+ * costs nothing and changing frame costs exactly one render.
  */
-function build(index) {
-  if (stopped || index >= mounts.length) return
-  const mount = mounts[index]
+function compose() {
+  if (url) {
+    URL.revokeObjectURL(url)
+    url = null
+  }
   try {
-    const composed = mount.compose(props.scene)
+    const box = frameById[frameId.value].compose(props.scene)
     const markup = renderSvg(props.scene, {
       defs: props.defs,
       artworkFilter: props.artworkFilter,
       overlay: props.overlay,
-      frame: composed,
+      frame: box,
     })
-    const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }))
-    urls.push(url)
-
-    const cell = { mount, url, aspect: `${composed.width} / ${composed.height}` }
-    if (mount.kind === 'photo') {
-      const place = placeInPhoto(mount.photo, composed.width, composed.height)
-      cell.place = {
-        left: `${place.left * 100}%`,
-        top: `${place.top * 100}%`,
-        width: `${place.width * 100}%`,
-        height: `${place.height * 100}%`,
-      }
+    url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }))
+    framed.value = {
+      url,
+      places: Object.fromEntries(
+        rooms.map((room) => {
+          const p = placeInRoom(room, box.width, box.height)
+          return [
+            room.id,
+            {
+              left: `${p.left * 100}%`,
+              top: `${p.top * 100}%`,
+              width: `${p.width * 100}%`,
+              height: `${p.height * 100}%`,
+            },
+          ]
+        }),
+      ),
     }
-    cells.value = [...cells.value, cell]
   } catch {
-    // One mount failing is a missing cell, not a dead gallery.
+    framed.value = null
   }
-  frame = requestAnimationFrame(() => build(index + 1))
 }
+
+watch(frameId, compose)
 
 const closer = useTemplateRef('closer')
 let returnTo = null
@@ -78,18 +85,14 @@ function onKey(event) {
 onMounted(() => {
   // Where the keyboard was before this opened, so it can be put back.
   returnTo = document.activeElement
-  build(0)
+  compose()
   window.addEventListener('keydown', onKey)
   closer.value?.focus()
 })
 
 onUnmounted(() => {
-  stopped = true
-  cancelAnimationFrame(frame)
   window.removeEventListener('keydown', onKey)
-  for (const url of urls) URL.revokeObjectURL(url)
-  // Returning focus is the half the opening panel leaves out; without it the
-  // keyboard lands back at the top of the document.
+  if (url) URL.revokeObjectURL(url)
   if (returnTo?.isConnected) returnTo.focus()
 })
 </script>
@@ -99,37 +102,43 @@ onUnmounted(() => {
     <div class="sheet">
       <header class="head">
         <div>
-          <h2 id="gallery-title">Preview</h2>
+          <h2 id="gallery-title">On the wall</h2>
           <p class="who">{{ title }}</p>
         </div>
-        <button ref="closer" type="button" class="close" @click="emit('dismiss')">Close</button>
+        <button ref="closer" type="button" @click="emit('dismiss')">Close</button>
       </header>
 
-      <ul class="grid">
-        <li v-for="cell in cells" :key="cell.mount.id" :class="{ wide: cell.mount.kind !== 'photo' }">
-          <!-- A photograph is a real place the work is standing in, so the
-               artwork is laid over it rather than inlined into it: an SVG in an
-               `<img>` may not load anything external, and the only way in would
-               be to carry the whole photograph as a data URI per cell. -->
-          <div v-if="cell.mount.kind === 'photo'" class="room">
-            <img class="plate" :src="cell.mount.photo.src" alt="" />
-            <img class="hung" :src="cell.url" :style="cell.place" alt="" />
-          </div>
-          <div v-else class="flat" :style="{ aspectRatio: cell.aspect }">
-            <img :src="cell.url" alt="" />
-          </div>
+      <div class="frames" role="group" aria-label="Frame">
+        <button
+          v-for="f in frames"
+          :key="f.id"
+          type="button"
+          :class="{ on: f.id === frameId }"
+          :aria-pressed="f.id === frameId"
+          @click="frameId = f.id"
+        >
+          {{ f.name }}
+        </button>
+      </div>
 
-          <div class="caption">
-            <span class="name">{{ cell.mount.name }}</span>
-            <span class="note">{{ cell.mount.note }}</span>
-            <!-- Attribution travels with the photograph, not with the page. -->
-            <span v-if="cell.mount.credit" class="credit">
-              Photo by
-              <a :href="cell.mount.credit.profile" target="_blank" rel="noopener noreferrer">{{ cell.mount.credit.who }}</a>
-              on
-              <a :href="cell.mount.credit.sourceUrl" target="_blank" rel="noopener noreferrer">{{ cell.mount.credit.source }}</a>
-            </span>
+      <ul class="rooms">
+        <li v-for="room in rooms" :key="room.id">
+          <div class="room">
+            <img class="plate" :src="room.src" alt="" />
+            <img
+              v-if="framed"
+              class="hung"
+              :src="framed.url"
+              :style="framed.places[room.id]"
+              alt=""
+            />
           </div>
+          <p class="credit">
+            {{ room.name }} — photo by
+            <a :href="room.credit.profile" target="_blank" rel="noopener noreferrer">{{ room.credit.who }}</a>
+            on
+            <a :href="room.credit.sourceUrl" target="_blank" rel="noopener noreferrer">{{ room.credit.source }}</a>
+          </p>
         </li>
       </ul>
     </div>
@@ -146,16 +155,16 @@ onUnmounted(() => {
   background: transparent;
 }
 
-/* The same frost the opening panel uses, and the same reason for the explicit
-   z-index: a ::before is its element's first child, so at an equal z-index the
-   sheet would paint under it. */
+/* The frost, with the explicit z-index the opening panel's comment explains:
+   a ::before is its element's first child, so at an equal z-index the sheet
+   would paint under it. */
 .gallery::before {
   position: fixed;
   inset: 0;
   z-index: 1;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter: blur(13px) saturate(1.2);
-  -webkit-backdrop-filter: blur(13px) saturate(1.2);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
   content: '';
   pointer-events: none;
 }
@@ -163,9 +172,9 @@ onUnmounted(() => {
 .sheet {
   position: relative;
   z-index: 2;
-  max-width: 1180px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 1.4rem 1.5rem 1.8rem;
   border: 1px solid color-mix(in srgb, var(--panel-edge) 80%, transparent);
   border-radius: 16px;
   background: color-mix(in srgb, var(--panel) 74%, transparent);
@@ -177,12 +186,11 @@ onUnmounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.3rem;
 }
 
 h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -194,34 +202,34 @@ h2 {
   font-size: 0.8rem;
 }
 
-.grid {
+.frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.1rem 0 1.2rem;
+}
+
+.frames button {
+  font-size: 0.8rem;
+}
+
+.frames button.on {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent-edge);
+}
+
+.frames button.on:hover {
+  background: var(--accent-hot);
+}
+
+.rooms {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.2rem;
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-/* A room shot is portrait and wants the height; a flat mount does not. */
-.grid li.wide {
-  grid-row: span 1;
-}
-
-.flat {
-  display: grid;
-  place-items: center;
-  background: #101015;
-  border: 1px solid var(--panel-edge);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.flat img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
 }
 
 .room {
@@ -238,29 +246,17 @@ h2 {
   height: auto;
 }
 
-/* Positioned as a fraction of the photograph, so it holds at any cell size. */
+/* Placed as a fraction of the photograph, so it holds at any displayed size. */
 .room .hung {
   position: absolute;
   object-fit: contain;
 }
 
-.caption {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.5rem 0.1rem 0;
-}
-
-.name {
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.note,
 .credit {
+  margin: 0.5rem 0 0;
   color: var(--ink-dim);
   font-size: 0.72rem;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .credit a {

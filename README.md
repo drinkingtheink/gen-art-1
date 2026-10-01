@@ -251,39 +251,36 @@ on anything moving. It watches what actually defines the piece instead — gener
 params, palette use, grain, effects — none of which move while the clock runs, because playback
 drives the lived params and only pausing writes them back.
 
-## Preview gallery
+## On the wall
 
-A piece presented several ways at once — bare, mounted on a board, in a thin frame, in a gallery
-frame, hung on a wall to scale, and standing in a real room. It opens from **See it framed**, which
-sits under the work rather than in the sidebar: it is a question about the piece in front of you,
-so it is asked where the piece is. Quiet until the stage is hovered or it takes focus. Mounts live in `src/core/mounts.js`
-and are data: a mount says what surrounds the artwork and where the artwork sits inside it, so
-adding a presentation is adding an entry, the same bargain the generator registry makes.
+A piece hung in a real room, opened from **See it on a wall** under the stage — it is a question
+about the work in front of you, so it is asked where the work is.
 
-Every cell is a **separate SVG document handed to an `<img>`**, which is the opening panel's
+`src/core/mounts.js` holds two lists, because they are two independent choices. A **frame** is what
+surrounds the artwork — Unframed, Thin, Mounted, Gallery — and a **room** is a photograph of
+somewhere it can stand. Every frame can appear in every room, so adding either multiplies rather
+than adds. Board and moulding colours are chosen against the piece: a white mat around a near-black
+work reads as a mistake, and the reverse glows.
+
+The framed piece is a **separate SVG document handed to an `<img>`**, which is the opening panel's
 thumbnail trick and is here for the same reason twice over. A piece mints clip-path and filter ids
-from its own seed, so five presentations of one piece inlined together would be five collisions by
-construction. And the stage is left completely alone — export serialises the live stage node, so a
-gallery that framed the stage would quietly change what "export this piece" means.
+from its own seed, so two framings of it inlined together would collide; and the stage is left
+alone, which matters because export serialises the live stage node, so a gallery that framed the
+stage would quietly change what exporting means.
 
-The artwork is clipped to its own rectangle inside a mount, which is not cosmetic: bloom,
+The artwork is clipped to its own rectangle inside a frame, which is not cosmetic: bloom,
 aberration and glitch are given filter regions reaching well past the shapes they filter, and on
-the stage the viewBox edge hides that. Measured in a browser, an unclipped mount had 11,523 mat
-pixels contaminated by spill; clipped, none. Clipping is off by default in the serialiser though,
-and mounts opt in — turning it on everywhere recropped sixteen of the twenty link previews, because
+the stage the viewBox edge hides that. Measured in a browser, an unclipped mat had 11,523 pixels
+contaminated by spill; clipped, none. Clipping stays off by default in the serialiser though, and
+frames opt in — turning it on everywhere recropped sixteen of the twenty link previews, because
 most pieces draw something outside their own bounds.
-
-The wall mount is drawn to scale. `ratios.js` notes the A-series shape lands on A0 in millimetres,
-so a piece has a true size: the wall is a 2.6m by 2.1m view with a 100mm skirting and the frame
-hung at 1500mm, gallery height. The first attempt showed a full 2.4m wall, which is honest and
-useless — at A2 the print came out a stamp in the corner.
 
 ### Photographs
 
-A photo mount is composed in HTML rather than SVG — the photograph in one `<img>`, the framed
-artwork in another on top. It has to be: an SVG shown in an `<img>` may not load anything external,
+The room cannot join that SVG document. An SVG shown in an `<img>` may not load anything external,
 so a `<image href="/rooms/...">` inside one renders as a hole, and the only way in would be to
-carry the whole photograph as a data URI in every cell.
+carry the whole photograph as a data URI. So the room is a plain `<img>` and the framed piece is
+laid over it in HTML, placed as fractions of the photograph so it holds at any displayed size.
 
 That also decides what is worth photographing. **Shoot flat-on** — camera square to the wall. A
 flat wall needs only a scale and a translate, which works everywhere. A wall shot at an angle needs
@@ -292,7 +289,8 @@ wall, keep the light even, and record the four corner points of the rectangle th
 occupy; that quad is the one piece of metadata the placement needs and is far easier to note when
 shooting than to recover later.
 
-Photographs carry their own attribution, in the mount definition, shown under the cell.
+Attribution lives in the room definition rather than on the page, so a room cannot be added without
+its credit.
 
 ## Canvas shapes
 

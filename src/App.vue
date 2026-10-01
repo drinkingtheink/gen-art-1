@@ -534,7 +534,7 @@ async function copyLink() {
       <!-- Under the work rather than in the sidebar: it is a question about
            the piece in front of you, so it is asked where the piece is. -->
       <button v-if="!presenting" type="button" class="see-framed" @click="openPreview">
-        See it framed
+        See it on a wall
       </button>
 
       <button v-if="presenting" type="button" class="leave" @click="leavePresent">
@@ -722,44 +722,46 @@ async function copyLink() {
  *
  * Absolute rather than a second grid item, so the artwork stays centred in the
  * cell exactly as it was — the stage's sizing is a careful balance of
- * `aspect-ratio` against `max-width/height: 100%`, and giving the grid a second
- * child to place would have disturbed it.
+ * `aspect-ratio` against `max-width/height: 100%`, and giving the grid a
+ * second child to place would have disturbed it.
  *
- * Quiet until wanted. It lives over the work, so it holds back to a whisper
- * and comes up on hover of the stage, or as soon as it is focused — a keyboard
- * user never gets the hover that would reveal it.
+ * It was a whisper at first, revealed on hover, and nobody found it. It is a
+ * real control now: the accent, full strength, sitting on the piece. The one
+ * concession is that it lifts clear on hover rather than sitting there inert.
  */
 .see-framed {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 0.9rem;
   left: 50%;
+  padding: 0.45rem 1rem;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent-edge);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   transform: translateX(-50%);
-  padding: 0.3rem 0.8rem;
-  color: var(--ink-dim);
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
-  border-color: transparent;
-  font-size: 0.78rem;
-  opacity: 0.35;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: opacity 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-}
-
-.stage-area:hover .see-framed {
-  opacity: 1;
+  box-shadow: 0 6px 20px -8px rgb(0 0 0 / 70%);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
 .see-framed:hover,
 .see-framed:focus-visible {
-  opacity: 1;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--panel) 92%, transparent);
-  border-color: var(--panel-edge);
+  background: var(--accent-hot);
+  border-color: var(--accent-edge);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 12px 26px -10px rgb(0 0 0 / 75%);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .see-framed {
     transition: none;
   }
+
+  .see-framed:hover,
+  .see-framed:focus-visible {
+    transform: translateX(-50%);
+  }
 }
+
 </style>
