@@ -11,6 +11,15 @@
 export const MAX_RASTER_EDGE = 8192
 
 /**
+ * The multipliers the PNG control offers.
+ *
+ * Here rather than in the control, because the about page works out what each
+ * paper size needs and has to answer in multipliers you can actually pick: it
+ * is no use being told a size wants 4.2x when the menu goes 1, 2, 4, 8.
+ */
+export const PNG_SCALES = [1, 2, 4, 8]
+
+/**
  * A copy of the live stage, cleaned of anything app-specific and given an
  * explicit size. Firefox in particular won't rasterise an SVG without one.
  */

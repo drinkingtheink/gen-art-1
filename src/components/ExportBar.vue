@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, useTemplateRef, watch } from 'vue'
-import { MAX_RASTER_EDGE } from '../core/export.js'
+import { MAX_RASTER_EDGE, PNG_SCALES } from '../core/export.js'
 
 /**
  * Export controls. The work is done by the parent, which holds the stage
@@ -95,12 +95,9 @@ const printSize = computed(() => {
   return { w: px(width), h: px(height), inW: inches(width), inH: inches(height), clamped }
 })
 
-const SCALES = [
-  { value: 1, label: '1x · 1000px' },
-  { value: 2, label: '2x · 2000px' },
-  { value: 4, label: '4x · 4000px' },
-  { value: 8, label: '8x · 8000px' },
-]
+/* Labelled here, but the multipliers themselves are shared — the about page
+   has to answer in the same ones this menu offers. */
+const SCALES = PNG_SCALES.map((value) => ({ value, label: `${value}x · ${value * 1000}px` }))
 </script>
 
 <template>

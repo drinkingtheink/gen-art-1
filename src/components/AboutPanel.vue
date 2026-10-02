@@ -5,7 +5,8 @@ import JhMonogram from './JhMonogram.vue'
 import ButtonIcon from './ButtonIcon.vue'
 import { generators } from '../generators/index.js'
 import { palettes } from '../core/palettes.js'
-import { ratios } from '../core/ratios.js'
+import { getRatio, ratios } from '../core/ratios.js'
+import { MAX_RASTER_EDGE, PNG_SCALES } from '../core/export.js'
 import { SEED_COUNT } from '../core/rng.js'
 
 /**
@@ -38,6 +39,48 @@ const dials = computed(() => {
     .sort((a, b) => a - b)
   return counts[counts.length >> 1]
 })
+
+/**
+ * ISO 216, in millimetres. Physical constants, so these are written down —
+ * nothing in the app can change what A3 is.
+ */
+const PAPER = [
+  { name: 'A4', w: 210, h: 297 },
+  { name: 'A3', w: 297, h: 420 },
+  { name: 'A2', w: 420, h: 594 },
+  { name: 'A1', w: 594, h: 841 },
+  { name: 'A0', w: 841, h: 1189 },
+]
+
+/**
+ * What to export for each one, worked out rather than written down.
+ *
+ * It depends on three things the app owns — the A-series canvas, the raster
+ * clamp and the multipliers the PNG menu offers — so typed out it would be
+ * wrong the first time any of them moved, and wrong quietly. The answer is in
+ * multipliers you can actually pick: A3 needs 4.2x, and since the menu goes 1,
+ * 2, 4, 8 the answer is 8x.
+ */
+const MM_PER_INCH = 25.4
+const DPI = 300
+const sheet = getRatio('a-portrait')
+const longEdge = Math.max(sheet.width, sheet.height)
+
+const sizes = PAPER.map((paper) => {
+  const scale = PNG_SCALES.find((s) => {
+    const used = Math.min(s, MAX_RASTER_EDGE / longEdge)
+    return ((longEdge * used) / DPI) * MM_PER_INCH >= paper.h
+  })
+  const inch = (mm) => (mm / MM_PER_INCH).toFixed(1)
+  return {
+    ...paper,
+    inches: `${inch(paper.w)} × ${inch(paper.h)} in`,
+    mm: `${paper.w} × ${paper.h} mm`,
+    how: scale ? `PNG at ${scale}×` : 'SVG',
+  }
+})
+
+const shapes = ratios.length
 
 const emit = defineEmits(['dismiss'])
 
@@ -111,7 +154,7 @@ onUnmounted(() => {
           <p>
             Every piece is a program, not a picture. {{ generators.length }} generators, each a pure
             function of a seed and a few numbers. {{ palettes.length }} palettes,
-            {{ ratios.length }} canvas shapes.
+            {{ shapes }} canvas shapes.
           </p>
           <p>
             Nothing is stored or uploaded. The link carries everything, so it rebuilds the piece
@@ -139,19 +182,22 @@ onUnmounted(() => {
             the file. <strong>PNG</strong> is pixels, 1× to 8×, capped at 8192px — about 27 inches
             on the long edge.
           </p>
-          <!-- Against the scales the control actually offers, not the scale each
-               size would need. 1, 2, 4, 8 are the only choices, so A3 wanting
-               4.2x means the answer is 8x. -->
           <table class="sizes">
             <thead>
-              <tr><th>Paper</th><th>Size</th><th>Export</th></tr>
+              <tr>
+                <th>Paper</th>
+                <th>Millimetres</th>
+                <th>Inches</th>
+                <th>Export</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>A4</td><td>210 × 297 mm</td><td>PNG at 4×</td></tr>
-              <tr><td>A3</td><td>297 × 420 mm</td><td>PNG at 8×</td></tr>
-              <tr><td>A2</td><td>420 × 594 mm</td><td>PNG at 8×</td></tr>
-              <tr><td>A1</td><td>594 × 841 mm</td><td>SVG</td></tr>
-              <tr><td>A0</td><td>841 × 1189 mm</td><td>SVG</td></tr>
+              <tr v-for="size in sizes" :key="size.name">
+                <td>{{ size.name }}</td>
+                <td>{{ size.mm }}</td>
+                <td>{{ size.inches }}</td>
+                <td>{{ size.how }}</td>
+              </tr>
             </tbody>
           </table>
           <p class="note">
