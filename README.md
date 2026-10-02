@@ -198,8 +198,13 @@ run past 200KB — which the panel says out loud before you paste one into a sty
 deliberately no inline-PNG mode: this is high-entropy line art, the worst case for PNG. Attractor is
 the closest it comes, 344KB of SVG against 413KB of PNG.
 
+**A phone background** is the same raster path with the canvas sized to the screen instead of to a
+multiplier, and the piece scaled to cover it. It is offered only at phone width, where it is the one
+export that needs no decision; see [Operate on a desktop, browse anywhere](#operate-on-a-desktop-browse-anywhere).
+
 Files are named for the piece — `gen-art-truchet-still-hokusai-12.svg` — so a file on disk is
-traceable back to the seed that made it.
+traceable back to the seed that made it. A background takes the same name with `-phone` before the
+extension, so it lands beside the plain export rather than over it.
 
 ## On the wall
 
@@ -446,14 +451,30 @@ Operating wants a desktop — twenty generators, a hundred-odd sliders, export. 
 link from here is opened on a phone more often than anywhere else, so the one thing that must not
 break is seeing the piece.
 
-![The studio at phone width: no sidebar, a line reading "Browsing. The controls, effects and export
-are on a desktop", the dendrite upright and full-bleed, and a tray of four
-actions](docs/pieces/narrow.png)
+![The studio at phone width: no sidebar, a line saying the fine-tuning is on a desktop, a
+full-width button offering the piece as a phone background, the dendrite upright, and a tray of
+four actions](docs/pieces/narrow.png)
 
 Under **700px** the sidebar goes and what is left is the whole of the looking: the work full-bleed,
 the tray under it — play, re-gen, roll a new piece, see it on a wall — and a line where the sidebar
 was saying where the rest lives. The gallery already collapses to one column. In a 404px frame:
 single column, artwork 383px, tray on screen, no scrolling in either axis.
+
+**And one thing a phone does better than a desktop.** The export bar asks you to pick a multiplier
+and answers in inches at 300dpi, which is a print decision made at a desk. A phone needs none of
+that, because the device already knows the only size that matters — its own screen — so the narrow
+header offers the piece as a background and asks nothing. `screen` rather than the viewport, since a
+wallpaper covers the display and the viewport is the display minus the browser's furniture; times
+the pixel ratio, capped at 3, because `screen` is in CSS pixels and a 402×874 reading is a 1206×2622
+panel. The short edge is always the width, whichever way the phone is being held: a lock screen is
+portrait even when you turned sideways to look.
+
+No canvas shape here is a phone's ~1:2 — the tallest is 1:√2 — so the render scales to **cover** and
+crops the overflow, centred, rather than fitting the piece inside the frame. A background with bars
+down two sides is not a background, and these are fields rather than compositions with a subject, so
+a lost margin costs less than a letterbox. It goes through the same export path as everything else,
+which means playback pauses first and the file you saved is a piece you can get back from its own
+permalink.
 
 The narrow header is a second element rather than the sidebar's reflowed, and exactly one of the two
 is ever displayed, so the wordmark is never on screen twice or in the accessibility tree twice.

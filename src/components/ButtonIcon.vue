@@ -23,13 +23,14 @@ defineProps({
    * same control a moment apart — `play` and `pause` are the two halves of
    * another, `back` is the way out of a panel, and `dice` is a roll. `grid`
    * and `info` are the pair in the sidebar head: the two ways out of the
-   * studio, and they have to read as a pair.
+   * studio, and they have to read as a pair. `download` is a file leaving for
+   * the device it is asked on.
    */
   glyph: {
     type: String,
     default: 'link',
     validator: (v) =>
-      ['link', 'tick', 'back', 'grid', 'play', 'pause', 'regen', 'dice', 'info'].includes(v),
+      ['link', 'tick', 'back', 'grid', 'play', 'pause', 'regen', 'dice', 'info', 'download'].includes(v),
   },
 })
 </script>
@@ -114,6 +115,16 @@ defineProps({
         <circle cx="12" cy="12" r="1.25" />
         <circle cx="15.3" cy="8.7" r="1.25" />
       </g>
+    </template>
+
+    <!-- An arrow into a tray. The tray is three sides of a box rather than
+         four, which is what keeps it reading as somewhere a file arrives
+         instead of as a second frame around the arrow. The stem is long
+         enough that the head is a head and not the whole glyph. -->
+    <template v-else-if="glyph === 'download'">
+      <path d="M12 3.8v10.4" />
+      <path d="M7.6 10.2 12 14.6l4.4-4.4" />
+      <path d="M4.6 16.3v2.1a1.8 1.8 0 0 0 1.8 1.8h11.2a1.8 1.8 0 0 0 1.8-1.8v-2.1" />
     </template>
 
     <!-- The bar through the middle, and the two half-links it joins. Drawn on

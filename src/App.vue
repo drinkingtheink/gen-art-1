@@ -12,7 +12,14 @@ import PaletteBar from '@/components/PaletteBar.vue'
 import ShowcaseBar from '@/components/ShowcaseBar.vue'
 import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
-import { buildFilename, downloadBlob, renderToPngBlob, serializeScene } from '@/core/export.js'
+import {
+  buildFilename,
+  downloadBlob,
+  phoneCanvas,
+  renderToPngBlob,
+  renderToWallpaperBlob,
+  serializeScene,
+} from '@/core/export.js'
 import { adviceFor, buildCssRule, byteLength, formatBytes, toDataUri } from '@/core/css.js'
 import { randomState } from '@/core/random.js'
 import { presetFor } from '@/core/showcase.js'
@@ -448,6 +455,37 @@ function exportPng(scale) {
 }
 
 /**
+ * The screen's own pixels, settled once.
+ *
+ * Read at startup rather than per click: `screen` and the pixel ratio do not
+ * change under a phone, and the number is on screen before the button is
+ * pressed — recomputing it would only risk the label and the file disagreeing.
+ */
+const phonePixels = phoneCanvas()
+
+/**
+ * The piece as this phone's background.
+ *
+ * The one export that belongs on a phone. Everything else in the export bar
+ * asks you to choose a size and tells you what it is in inches at 300dpi,
+ * which is a print decision made at a desk; this asks nothing, because the
+ * device already knows the only answer there is — its own screen.
+ *
+ * It goes through `runExport` like the rest, so playback pauses first and the
+ * frame you saved is a piece you could get back from the permalink.
+ */
+function exportWallpaper() {
+  return runExport(async () => {
+    const svg = stageSvg()
+    if (!svg) throw new Error('the stage is not ready')
+    const { blob, width, height } = await renderToWallpaperBlob(svg, phonePixels)
+    const name = buildFilename(generatorId.value, seed.value, 'png', 'phone')
+    downloadBlob(blob, name)
+    return `Saved to your downloads — ${width}×${height}.`
+  })
+}
+
+/**
  * The piece as a CSS rule, on the clipboard.
  *
  * Source is the live stage, same as the SVG export, so what you paste is what
@@ -644,6 +682,19 @@ async function copyLink() {
         Explore the Gallery. But to fine-tune, add effects, play with color, and
         export print-size files, you'll need desktop.
       </p>
+
+      <!-- The one thing a phone can do better than a desktop, so it is asked
+           here and nowhere else: the device knows its own screen, and the file
+           it gets is cut to those exact pixels rather than to a paper size. -->
+      <div class="keep">
+        <button type="button" class="keepsake" :disabled="exporting" @click="exportWallpaper">
+          <ButtonIcon glyph="download" />
+          {{ exporting ? 'Saving…' : 'Save as phone background' }}
+        </button>
+        <p class="said">
+          {{ exportStatus || `Fits this screen — ${phonePixels.width}×${phonePixels.height}px.` }}
+        </p>
+      </div>
     </header>
 
     <aside class="sidebar">
@@ -1181,8 +1232,68 @@ async function copyLink() {
     line-height: 1.35;
   }
 
-  /* The work gets the room the sidebar was taking. */
+  /**
+   * The offer, directly under the sentence that just said what a phone cannot
+   * do. It is the answer to that sentence, so it reads as part of it rather
+   * than as another control in the header.
+   */
+  .pocket .keep {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.15rem;
+  }
+
+  /* Full width and in the accent, which no other button in this header is: it
+     is the one thing here worth being asked for, and a thumb finds an edge-to-
+     edge target without aiming. */
+  .pocket .keepsake {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    padding: 0.55rem 0.9rem;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border-color: var(--accent-edge);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .pocket .keepsake:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  /* The pixel size before the press, what happened after it. Two lines' worth
+     of room is held from the start, because the answer is longer than the
+     offer — mid-playback it also says the piece was paused — and growing the
+     header would push the artwork down the screen at the moment you were
+     looking at it. */
+  .pocket .said {
+    min-height: 2.7em;
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 0.7rem;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  /* The work gets the room the sidebar was taking, and takes it from the top.
+     
+     Centred, the slack between the header and the tray is split above and
+     below the piece, which puts a band of empty panel under a header that is
+     already the tallest thing on the screen and pushes the artwork down past
+     the middle of the phone. Aligned to the start, all of that slack falls to
+     the bottom — where the tray is absolutely placed anyway, so it lands in
+     space the piece was being overlaid with rather than in space nothing was
+     using. Horizontal centring is untouched: `place-items` set both, and only
+     the block axis is wrong here. */
   .stage-area {
+    align-items: start;
     padding: 0.75rem;
   }
 }
