@@ -57,6 +57,17 @@ defineProps({
       <path d="M11 5.5 4.5 12l6.5 6.5" />
     </template>
 
+    <!-- Four panes, not nine. A 3x3 of dots is the obvious drawing for "all of
+         them" and turns to mush at 13px: a 2px stroke on a zero-length segment
+         is barely a pixel once the glyph is 1.05em. Four squares with a real
+         gap between them survive the size. -->
+    <template v-else-if="glyph === 'grid'">
+      <rect x="3.6" y="3.6" width="7" height="7" rx="1.2" />
+      <rect x="13.4" y="3.6" width="7" height="7" rx="1.2" />
+      <rect x="3.6" y="13.4" width="7" height="7" rx="1.2" />
+      <rect x="13.4" y="13.4" width="7" height="7" rx="1.2" />
+    </template>
+
     <!-- Stroked like the rest rather than filled, which is the whole point of
          keeping them in one file: a solid triangle at this weight would read
          heavier than the words beside it and heavier than the tick it sits

@@ -123,8 +123,8 @@ as a blob URL rather than inline SVG — the browser rasterises it once, and eig
 documents would mean eighteen sets of clip-path ids sharing one namespace and about two megabytes
 of live DOM for a screen of thumbnails.
 
-The name in the sidebar is a button back to the picker, and there is an explicit **All pieces**
-beside the strapline for anyone who does not think to try it. Both push the bare URL rather than
+The name in the sidebar is a button back to the picker, and there is an explicit grid button on
+the same line for anyone who does not think to try it. Both push the bare URL rather than
 only flipping a flag, because here the URL is what decides whether the picker is up — leaving it
 naming a piece would mean a reload skipped the panel and Back stepped past the picker instead of
 to it. Before this the only way back was the browser's Back button, which worked only if the picker
@@ -253,7 +253,7 @@ drives the lived params and only pausing writes them back.
 
 ## About
 
-A modal, opened from **About** beside *All pieces*. Three sections: what the thing is, how to print
+A modal, opened from the **?** on the wordmark's line, beside the grid that goes back to the picker. Three sections: what the thing is, how to print
 it, and a colophon — which fits one screen without scrolling, and is the reason it is three and not
 five.
 
