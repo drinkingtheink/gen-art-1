@@ -535,23 +535,59 @@ async function copyLink() {
   />
 
   <div class="app" :class="{ presenting }">
+    <!-- The sidebar's header, for the widths that have no sidebar. Exactly one
+         of the two is ever displayed, so the wordmark is never on screen twice
+         and only one of them is in the accessibility tree. -->
+    <header class="pocket">
+      <h1 class="wordmark">
+        <button type="button" class="home" title="Back to all pieces" @click="showLaunch">
+          <GenArtMark />gen<span>·</span>Art
+        </button>
+      </h1>
+      <span class="ways-out">
+        <button type="button" class="all" @click="showLaunch">All pieces</button>
+        <button type="button" class="all" @click="about = true">About</button>
+      </span>
+      <p class="note">Browsing. The controls, effects and export are on a desktop.</p>
+    </header>
+
     <aside class="sidebar">
       <header class="head">
-        <h1 class="wordmark">
-          <button type="button" class="home" title="Back to all pieces" @click="showLaunch">
-            <GenArtMark />gen<span>·</span>Art
-          </button>
-        </h1>
-        <p class="tagline">
-          <span>Every Pause a Masterpiece</span>
-          <!-- Grouped, so the pair wraps together and stays right-aligned when
-               the strapline leaves them no room. Loose, the second one drops to
-               its own line on its own and reads as a mistake. -->
+        <!-- Up on the name's line rather than under the strapline. These are
+             the two ways out of the studio, and as words they were competing
+             with the strapline for the same row; as marks they sit in the space
+             the wordmark was already leaving empty.
+
+             Labelled, because an icon on its own is a guess. Both carry the
+             words for a screen reader and for a hover. -->
+        <div class="top">
+          <h1 class="wordmark">
+            <button type="button" class="home" title="Back to all pieces" @click="showLaunch">
+              <GenArtMark />gen<span>·</span>Art
+            </button>
+          </h1>
           <span class="ways-out">
-            <button type="button" class="all" @click="showLaunch">All pieces</button>
-            <button type="button" class="all" @click="about = true">About</button>
+            <button
+              type="button"
+              class="way"
+              title="All pieces"
+              aria-label="All pieces"
+              @click="showLaunch"
+            >
+              <ButtonIcon glyph="grid" />
+            </button>
+            <button
+              type="button"
+              class="way"
+              title="About"
+              aria-label="About"
+              @click="about = true"
+            >
+              <span aria-hidden="true">?</span>
+            </button>
           </span>
-        </p>
+        </div>
+        <p class="tagline"><span>Every Pause a Masterpiece</span></p>
       </header>
 
       <Toolbar
@@ -682,6 +718,11 @@ async function copyLink() {
   display: grid;
   grid-template-columns: var(--sidebar) 1fr;
   height: 100%;
+}
+
+/* Carried by the sidebar at every width that has one. */
+.pocket {
+  display: none;
 }
 
 /* Presentation mode — nothing on screen but the work. */
@@ -823,29 +864,47 @@ async function copyLink() {
 
 /* Low-key on purpose: it has to be findable without competing with the name
    above it or the piece picker below. */
+/* On the wordmark's line, pushed to the far end of it. */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
 .ways-out {
   display: flex;
   flex: none;
-  align-items: baseline;
-  gap: 0.1rem;
-  margin-left: auto;
+  gap: 0.15rem;
 }
 
-.all {
-  flex: none;
-  padding: 0.1rem 0.4rem;
+/**
+ * Square, quiet, and the same size whichever one it is.
+ *
+ * One holds a glyph and the other holds a question mark set in the interface
+ * face, so the only way they read as a pair is for the box to be identical and
+ * the content to be centred in it. The `?` is given the icon's weight rather
+ * than the body's, or it sits lighter than the thing beside it.
+ */
+.way {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
   color: var(--ink-dim);
   background: none;
   border-color: transparent;
-  font-family: inherit;
-  font-size: 0.72rem;
-  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
-.all:hover {
-  color: var(--accent);
-  background: none;
-  border-color: var(--panel-edge);
+.way:hover,
+.way:focus-visible {
+  color: var(--ink);
+  background: var(--panel-edge);
+  border-color: transparent;
 }
 
 .rule {
@@ -983,4 +1042,53 @@ async function copyLink() {
   }
 }
 
+/**
+ * Below this the app stops being an instrument and becomes a window.
+ *
+ * The number is not a guess. The sidebar is a fixed 288px track, so on a 402px
+ * phone it takes 288 and leaves the artwork 114 — a full-height control column
+ * beside a postage stamp. Operating wants a desktop and always did; looking
+ * does not, and a link shared from here is opened on a phone more often than
+ * anywhere else, so the one thing that must not break is seeing the piece.
+ *
+ * What survives is the whole of the looking: the work full-bleed, and the tray
+ * under it — play, re-gen, roll a new piece, see it on a wall. What goes is
+ * the sidebar, which is the operating.
+ */
+@media (max-width: 700px) {
+  .app {
+    grid-template-columns: 1fr;
+    /* minmax(0,1fr) rather than 1fr: a grid row sized to its content refuses
+       to shrink below it, and the stage would push the tray off the bottom. */
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .pocket {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--panel);
+    border-bottom: 1px solid var(--panel-edge);
+  }
+
+  .pocket .note {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  /* The work gets the room the sidebar was taking. */
+  .stage-area {
+    padding: 0.75rem;
+  }
+}
 </style>
