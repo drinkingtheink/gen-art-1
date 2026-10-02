@@ -432,6 +432,12 @@ One wrinkle in the compositing: an angled piece is drawn at its own size and the
 onto the quad, so every length inside it shrinks by that factor — the shadow included. It is given
 the inverse as a boost so it lands at the size the flat rooms use.
 
+Flat or angled is a measurement, not a glance. The limewash wall looks like the slatted one and is
+not: its board gaps sit at the same x read high on the wall or low, drifting under 10px over 700px
+of height, and their pitch wanders — 232, 236, 240, 233, 247 — without converging. That is reclaimed
+boards being different widths, not a wall receding, so it takes an `area` and no plane. Worth
+checking every time, because two of these walls looked ordinary and were not.
+
 ### A wall with nothing repeating on it
 
 The steel wall is the harder case: no slats, no grid, nothing evenly spaced to fit the projective

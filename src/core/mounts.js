@@ -483,6 +483,47 @@ export const rooms = [
       sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
     },
   },
+  /**
+   * Limewashed boards, and flat on to the camera — which was checked rather
+   * than assumed, because the last two walls looked ordinary and were not.
+   *
+   * The gaps between boards sit at the same x whether read high on the wall or
+   * low, drifting under 10px over 700px of height, so the camera is level and
+   * square. Their pitch runs 232, 236, 240, 233, 247 across the frame: it
+   * wanders but does not converge, which is reclaimed boards being different
+   * widths rather than a wall receding. A plane would be the wrong tool here.
+   */
+  {
+    id: 'limewash',
+    name: 'Limewash wall',
+    src: '/rooms/limewash-wall.jpg',
+    width: 1600,
+    height: 2000,
+    // The sofa back holds y 1197-1205 across the middle of the frame and the
+    // cushion reaches up to 900 on the right, so the art stops short of both.
+    // Sized for what it becomes, not what it says: `scale` multiplies this, so
+    // the box that has to clear the furniture is this one grown by a fifth.
+    area: { x: 440, y: 220, width: 720, height: 720 },
+    /**
+     * Lit from above, and very nearly head on.
+     *
+     * The wall reads 184.9 across its top band against 153.8 across its
+     * bottom, but 164.1 / 182.5 / 166.1 left to right — brightest in the
+     * middle, which is a lens falling off rather than a window anywhere. The
+     * only side evidence is the table top, 40.0 on its left against 59.3 on
+     * its right, so the lean is slight and to the right. Nearly all of this
+     * shadow falls straight down, which is what a frontal wall should do.
+     */
+    light: { x: -0.3, y: 1 },
+    wallColour: '#aba79e',
+    scale: 1.2,
+    credit: {
+      who: 'Anne K',
+      profile: 'https://unsplash.com/@dualdefiance?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+      source: 'Unsplash',
+      sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+    },
+  },
 ]
 
 /**
