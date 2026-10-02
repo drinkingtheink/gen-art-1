@@ -213,9 +213,13 @@ onUnmounted(() => {
 
         <section>
           <h3>Colophon</h3>
+          <!-- What it is built with is a developer's question and there is a
+               link to the source right here for anyone asking it. What is left
+               is the one fact a person using this needs: no re-drawing, no
+               re-encoding, no second version of the work. -->
           <p>
-            Vue and Vite. No backend, no database, no accounts. The artwork is SVG throughout —
-            what is on screen is the document you export.
+            The artwork is SVG throughout — what is on screen is the document you export, not a
+            copy of it.
           </p>
           <!-- The mark is part of the link rather than a decoration sitting
                beside one. It already lit to the accent on hover, so it was
