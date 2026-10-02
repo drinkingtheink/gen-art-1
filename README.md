@@ -462,14 +462,27 @@ is ever displayed, so the wordmark is never on screen twice or in the accessibil
 rule wins; placed beside the `.app` rules where it reads best, its `display: none` loses to the
 `.sidebar` rule further down and the sidebar stays up.
 
-Below 700px a rolled piece is pinned to portrait, or a phone gets a 16:9 as often as anything else —
-a letterbox in a column. The shape is overridden *after* the roll rather than in place of it:
-`randomState` draws the generator, then the shape, then every param from one seeded sequence, so
-skipping the shape draw shifts the sequence and the same word-seed would roll different art on a
-phone than on a desktop. The draw still happens and its result is discarded. Only the shape is
-pinned — twenty-five narrow rolls come back portrait every time and still draw sixteen different
-generators between them. The breakpoint is watched rather than read once, so a phone turned on its
-side crosses it.
+Below 700px the app reaches for **portrait** wherever it is choosing a shape for itself: the first
+piece of a bare visit, the twenty cards in the picker, and a roll. Otherwise a phone gets a 16:9 as
+often as anything else — a letterbox in a column. 2:3 rather than 1:√2 because a phone viewport is
+nearer 1:2 than either, and the taller of the two wastes less.
+
+A link that names a shape is obeyed on any screen. The permalink is the piece, and a phone
+reshaping someone's composition on arrival would be the same bug as rerolling it.
+
+The cards change shape with it, rather than staying square and opening something else — a card is
+the piece clicking it opens, and that promise is worth more than a uniform grid. The palette roll
+sits outside the shape for the same reason the cards are regenerated and not restretched: crossing
+the breakpoint reshapes twenty pieces, and rolling colour there would recolour them as a side
+effect. The narrow grid is two columns, stated rather than fitted, because `auto-fill` at 168px
+drops to one on a 390px phone and one column of upright cards is 9,400px of scrolling.
+
+On a roll the shape is overridden *after* the draw rather than in place of it: `randomState` draws
+the generator, then the shape, then every param from one seeded sequence, so skipping the shape draw
+shifts the sequence and the same word-seed would roll different art on a phone than on a desktop.
+The draw still happens and its result is discarded. Only the shape is pinned — twenty-five narrow
+rolls come back portrait every time and still draw sixteen different generators between them. The
+breakpoint is watched rather than read once, so a phone turned on its side crosses it.
 
 ## Layout
 

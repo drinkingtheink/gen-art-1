@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import ButtonIcon from './ButtonIcon.vue'
 import GenArtMark from './GenArtMark.vue'
 import LaunchBackdrop from './LaunchBackdrop.vue'
-import { launchPieces, renderThumbnail } from '../core/launch.js'
+import { launchPiecesFor, renderThumbnail } from '../core/launch.js'
+import { getRatio } from '../core/ratios.js'
 
 /**
  * The front door, shown when a visit names no piece.
@@ -21,7 +22,25 @@ import { launchPieces, renderThumbnail } from '../core/launch.js'
 
 const emit = defineEmits(['pick', 'randomize', 'dismiss', 'about'])
 
-const pieces = launchPieces
+/**
+ * The shape every card is drawn and opened at.
+ *
+ * Decided by the app rather than here, because it follows the same breakpoint
+ * the sidebar does and that number lives in App.vue. A card is the piece
+ * clicking it opens, so this is the one setting that has to reach both the
+ * thumbnail and the state behind it.
+ */
+const props = defineProps({
+  shape: { type: String, default: 'square' },
+})
+
+const pieces = computed(() => launchPiecesFor(props.shape))
+
+/** The cards' aspect, taken from the ratio so the box matches the artwork. */
+const thumbAspect = computed(() => {
+  const ratio = getRatio(props.shape)
+  return `${ratio.width} / ${ratio.height}`
+})
 
 /**
  * Thumbnails arrive one per frame rather than all at once.
@@ -31,13 +50,19 @@ const pieces = launchPieces
  * paints between pieces and the grid fills in visibly instead.
  */
 const thumbnails = ref({})
-const urls = []
+let urls = []
 let frame = 0
 let stopped = false
 
+/** Hand the blobs back. A rebuild drops twenty of them and so does leaving. */
+function releaseUrls() {
+  for (const url of urls) URL.revokeObjectURL(url)
+  urls = []
+}
+
 function build(index) {
-  if (stopped || index >= pieces.length) return
-  const piece = pieces[index]
+  if (stopped || index >= pieces.value.length) return
+  const piece = pieces.value[index]
   try {
     const markup = renderThumbnail(piece)
     const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }))
@@ -49,6 +74,25 @@ function build(index) {
   }
   frame = requestAnimationFrame(() => build(index + 1))
 }
+
+/**
+ * Crossing the breakpoint redraws the grid.
+ *
+ * The thumbnails are rasterised SVG at a fixed canvas, so they cannot simply
+ * be restretched into the new box — a square piece in a portrait frame is a
+ * squashed piece, and it would also stop being what clicking it opens. Rare
+ * enough to rebuild from scratch: a phone turning on its side, or a window
+ * dragged across 700px.
+ */
+watch(
+  () => props.shape,
+  () => {
+    cancelAnimationFrame(frame)
+    releaseUrls()
+    thumbnails.value = {}
+    build(0)
+  },
+)
 
 const dice = useTemplateRef('dice')
 
@@ -68,7 +112,7 @@ onUnmounted(() => {
   stopped = true
   cancelAnimationFrame(frame)
   window.removeEventListener('keydown', onKey)
-  for (const url of urls) URL.revokeObjectURL(url)
+  releaseUrls()
 })
 </script>
 
@@ -109,7 +153,7 @@ onUnmounted(() => {
       <ul class="grid">
         <li v-for="piece in pieces" :key="piece.generator.id">
           <button type="button" class="card" @click="emit('pick', piece.state)">
-            <span class="thumb">
+            <span class="thumb" :style="{ aspectRatio: thumbAspect }">
               <!-- Empty alt on purpose: the piece's name sits right below it,
                    and an artwork has no text to transcribe. -->
               <img v-if="thumbnails[piece.generator.id]" :src="thumbnails[piece.generator.id]" alt="" />
@@ -377,6 +421,21 @@ onUnmounted(() => {
   list-style: none;
 }
 
+/* Two columns, stated rather than fitted.
+   
+   `auto-fill` at 168px wants 349px to place a second column and a 390px phone
+   leaves 342 inside the sheet, so it drops to one — which was survivable while
+   the cards were square and is not now they are upright: one column of
+   portraits is a 470px card and 9,400px of scrolling to see twenty of them.
+   Two columns halve that and still leave each card wider than the thumbnails
+   the desktop grid shows. */
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+
 .card {
   display: flex;
   flex-direction: column;
@@ -399,9 +458,10 @@ onUnmounted(() => {
   transform: none;
 }
 
+/* The aspect is bound per card from the ratio in use, because the cards are
+   square where there is room for a grid and upright where there is not. */
 .thumb {
   display: block;
-  aspect-ratio: 1;
   background: #101015;
   border-bottom: 1px solid var(--panel-edge);
 }

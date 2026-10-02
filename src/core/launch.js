@@ -12,8 +12,11 @@
  * wall of pieces in the sets they were written in. It is rolled here, into the
  * state the card carries, precisely so the thumbnail and the click still agree.
  *
- * Thumbnails are square because every piece was authored at 1000x1000, and
- * because a grid of cards wants one shape.
+ * The shape is asked for rather than fixed. Square is what every piece was
+ * authored at and what a grid of cards wants, and it is what the panel uses
+ * wherever there is room for a grid. A phone has room for one column, and a
+ * square there opens a square — so the shape travels with the card, because
+ * the card is the piece and the two cannot disagree.
  */
 
 import { defaultsFor } from './params.js'
@@ -24,15 +27,28 @@ import { presetFor } from './showcase.js'
 import { renderSvg } from './svg.js'
 import { generators, getGenerator } from '../generators/index.js'
 
-export const launchPieces = generators.map((generator) => ({
+/**
+ * Everything about a card except the shape, settled once per visit.
+ *
+ * The palette roll lives here rather than in `launchPiecesFor` precisely
+ * because that function is called again when the window crosses the
+ * breakpoint: rolled there, turning a phone on its side would recolour all
+ * twenty pieces as a side effect of reshaping them.
+ */
+const CARDS = generators.map((generator) => ({
   generator,
-  state: {
-    generatorId: generator.id,
-    ratioId: 'square',
-    seed: randomSeed(createRng(`launch:${generator.id}`)),
-    params: { ...defaultsFor(generator), palette: randomPaletteId() },
-  },
+  seed: randomSeed(createRng(`launch:${generator.id}`)),
+  params: { ...defaultsFor(generator), palette: randomPaletteId() },
 }))
+
+/** The panel's offer, at one canvas shape. */
+export function launchPiecesFor(ratioId = 'square') {
+  const shape = getRatio(ratioId).id
+  return CARDS.map(({ generator, seed, params }) => ({
+    generator,
+    state: { generatorId: generator.id, ratioId: shape, seed, params },
+  }))
+}
 
 /**
  * A standalone SVG document for one card.

@@ -22,6 +22,36 @@ import { usePermalink } from '@/composables/usePermalink.js'
 import { readUrl } from '@/core/permalink.js'
 import { DEFAULT_FRAME, coerceFrame } from '@/core/mounts.js'
 
+/**
+ * Narrow enough that the sidebar is gone — the same 700px the stylesheet at
+ * the bottom of this file uses, which is the one number that has to stay in
+ * step by hand.
+ *
+ * Watched rather than read once: a phone turned on its side crosses this, and
+ * so does a dragged window.
+ *
+ * Declared up here, above the first piece, because the shape the app reaches
+ * for when nothing names one depends on it.
+ */
+const NARROW = window.matchMedia?.('(max-width: 700px)')
+const narrow = ref(NARROW?.matches ?? false)
+NARROW?.addEventListener('change', (event) => (narrow.value = event.matches))
+
+/**
+ * The shape the app picks when it is choosing for itself.
+ *
+ * A phone is a column, and a 3:2 in a column is a letterbox with the whole
+ * screen's width wasted above and below it. 2:3 rather than 1:√2 because a
+ * phone viewport is nearer 1:2 than either, and the taller of the two wastes
+ * less.
+ *
+ * It applies only where nothing else has an opinion: the first piece of a bare
+ * visit, the cards in the picker, and a roll. A link that names a shape is
+ * obeyed, on any screen — the permalink is the piece, and a phone reshaping
+ * someone's composition on arrival would be the same bug as rerolling it.
+ */
+const ownShape = computed(() => (narrow.value ? 'portrait' : 'square'))
+
 // A shared link is the starting state; otherwise a fresh random seed.
 const opened = readUrl()
 
@@ -42,7 +72,7 @@ const opened = readUrl()
  * the fragment. Everything below this line is already too late to see it.
  */
 const ARRIVED_AT_ABOUT = window.location.hash === '#about'
-const piece = useGenerator(opened ?? {})
+const piece = useGenerator(opened ?? { ratioId: NARROW?.matches ? 'portrait' : undefined })
 
 /**
  * A visit that names no piece opens on the picker instead of dropping straight
@@ -136,18 +166,6 @@ const show = useShowcase()
 const stillness = window.matchMedia?.('(prefers-reduced-motion: reduce)')
 
 /**
- * Narrow enough that the sidebar is gone — the same 700px the stylesheet at
- * the bottom of this file uses, which is the one number that has to stay in
- * step by hand.
- *
- * Watched rather than read once: a phone turned on its side crosses this, and
- * so does a dragged window.
- */
-const NARROW = window.matchMedia?.('(max-width: 700px)')
-const narrow = ref(NARROW?.matches ?? false)
-NARROW?.addEventListener('change', (event) => (narrow.value = event.matches))
-
-/**
  * A rolled piece, upright on a narrow screen.
  *
  * The shape is overridden *after* the roll rather than in place of it, which
@@ -159,7 +177,7 @@ NARROW?.addEventListener('change', (event) => (narrow.value = event.matches))
  */
 function rollPiece() {
   const rolled = randomState()
-  return narrow.value ? { ...rolled, ratioId: 'portrait' } : rolled
+  return narrow.value ? { ...rolled, ratioId: ownShape.value } : rolled
 }
 
 function leaveLaunch() {
@@ -601,6 +619,7 @@ async function copyLink() {
 
   <LaunchPanel
     v-if="launching"
+    :shape="ownShape"
     @pick="startWith"
     @randomize="startWith(rollPiece())"
     @about="about = true"
