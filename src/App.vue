@@ -640,7 +640,10 @@ async function copyLink() {
         <button type="button" class="all" @click="showLaunch">All pieces</button>
         <button type="button" class="all" @click="about = true">About</button>
       </span>
-      <p class="note">Browsing. The controls, effects and export are on a desktop.</p>
+      <p class="note">
+        Explore the Gallery. But to fine-tune, add effects, play with color, and
+        export print-size files, you'll need desktop.
+      </p>
     </header>
 
     <aside class="sidebar">
