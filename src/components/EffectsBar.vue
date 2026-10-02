@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { BLEND_MODES } from '../core/grain.js'
-import { INTERFERENCE_BLENDS } from '../core/effects.js'
+import { EFFECT_DEFAULTS, SCANLINE_BLENDS } from '../core/effects.js'
 
 /**
  * Post effects, grouped together because they all act on the finished piece
@@ -15,11 +15,11 @@ const props = defineProps({
 const emit = defineEmits(['update-effects', 'update-grain'])
 
 const blends = BLEND_MODES
-const staticBlends = INTERFERENCE_BLENDS
+const scanlineBlends = SCANLINE_BLENDS
 
 const anyOn = computed(
   () =>
-    props.effects.interference > 0 ||
+    props.effects.scanlines > 0 ||
     props.effects.glitch > 0 ||
     props.effects.bloom > 0 ||
     props.effects.aberration > 0 ||
@@ -27,13 +27,14 @@ const anyOn = computed(
     props.grain.amount > 0,
 )
 
+/**
+ * Back to the defaults, read from where the defaults live.
+ *
+ * This used to carry its own copy of every number, which is how it ended up
+ * still resetting an effect that no longer exists: two lists, one edited.
+ */
 function reset() {
-  emit('update-effects', {
-    interference: 0, interferenceScale: 0.05, interferenceBlend: 'screen', interferenceBurst: 0.5,
-    glitch: 0, glitchScale: 0.06,
-    bloom: 0, bloomRadius: 8, bloomThreshold: 0.35,
-    aberration: 0, aberrationAngle: 0, vignette: 0, vignetteSpread: 0.55,
-  })
+  emit('update-effects', { ...EFFECT_DEFAULTS })
   emit('update-grain', { amount: 0 })
 }
 </script>
@@ -43,24 +44,19 @@ function reset() {
     <span class="field-label">Effects</span>
 
     <label class="row">
-      <span class="lbl"><span>Static</span><output>{{ effects.interference.toFixed(2) }}</output></span>
-      <input type="range" min="0" max="1" step="0.01" :value="effects.interference"
-             @input="emit('update-effects', { interference: Number($event.target.value) })" />
+      <span class="lbl"><span>Scanlines</span><output>{{ effects.scanlines.toFixed(2) }}</output></span>
+      <input type="range" min="0" max="1" step="0.01" :value="effects.scanlines"
+             @input="emit('update-effects', { scanlines: Number($event.target.value) })" />
     </label>
-    <template v-if="effects.interference > 0">
+    <template v-if="effects.scanlines > 0">
       <label class="row sub">
-        <span class="lbl"><span>Burst</span><output>{{ effects.interferenceBurst.toFixed(2) }}</output></span>
-        <input type="range" min="0" max="1" step="0.01" :value="effects.interferenceBurst"
-               @input="emit('update-effects', { interferenceBurst: Number($event.target.value) })" />
+        <span class="lbl"><span>Line gap</span><output>{{ effects.scanlineGap.toFixed(1) }}</output></span>
+        <input type="range" min="3" max="30" step="0.5" :value="effects.scanlineGap"
+               @input="emit('update-effects', { scanlineGap: Number($event.target.value) })" />
       </label>
-      <label class="row sub">
-        <span class="lbl"><span>Streak</span><output>{{ effects.interferenceScale.toFixed(3) }}</output></span>
-        <input type="range" min="0.005" max="0.6" step="0.005" :value="effects.interferenceScale"
-               @input="emit('update-effects', { interferenceScale: Number($event.target.value) })" />
-      </label>
-      <select class="sub-select" :value="effects.interferenceBlend" aria-label="Static blend mode"
-              @change="emit('update-effects', { interferenceBlend: $event.target.value })">
-        <option v-for="b in staticBlends" :key="b.value" :value="b.value">{{ b.label }}</option>
+      <select class="sub-select" :value="effects.scanlineBlend" aria-label="Scanline blend mode"
+              @change="emit('update-effects', { scanlineBlend: $event.target.value })">
+        <option v-for="b in scanlineBlends" :key="b.value" :value="b.value">{{ b.label }}</option>
       </select>
     </template>
 

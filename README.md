@@ -547,19 +547,24 @@ from it. Otherwise the sequence is decided purely by elapsed time and your pick 
 Glitch, bloom, chromatic aberration and a vignette, grouped with the grain because they all act on
 the finished piece rather than on how it was made. Canvas state, so no generator knows they exist.
 
-Static is broadcast interference: turbulence drawn out into horizontal streaks — low frequency
-across, high down — then crushed to a few discrete levels, because smooth turbulence reads as haze
-and hard steps read as a signal breaking up.
+Scanlines are a **tiled pattern**, not a filter. They replaced a static effect that built noise out
+of `feTurbulence` stepped through `feComponentTransfer` — a lot of machinery to arrive at something
+that read as grain however it was tuned, which is the sort of thing worth deleting rather than
+tuning again. Lines are not noise: they are a shape, and a shape is a pattern.
 
-It interrupts rather than sits there. Constant static stops reading as interference and becomes
-texture, so time is chopped into slots, only some fire, and the ones that do cut hard in and out at
-varying strength — about 20% of the time at the default. `Burst` at 0 leaves it on permanently;
-higher makes the interruptions rarer and shorter. When it's quiet no node is emitted at all.
+`patternUnits` is `userSpaceOnUse`, so `Line gap` is in the piece's own coordinates and the same
+number gives the same density whatever the canvas shape — `objectBoundingBox` would stretch the
+spacing with the ratio. The dark band is half the pitch, which is what a line and its gap being
+equal means.
 
-The bursts run on **their own clock**, not the showcase one. Driving them from showcase meant they
-only ever fired during playback, so a piece sitting still showed static permanently — the opposite
-of interference. The clock runs only while static is on and bursting, so a piece without it costs
-nothing.
+The blend decides what the lines are *made of* as much as how they sit. Three of the four are black
+and one is white, because screened black is the identity and so is differenced black: offering
+those would have put two entries in the menu that changed nothing, which is the sort of control
+that makes a person distrust the rest of them.
+
+Removing static took its clock with it. Bursts had needed one of their own — the showcase clock
+only ran during playback, so a piece sitting still showed static permanently — and with the effect
+gone there was nothing left for `useFlicker` to drive, so the file went too.
 
 Glitch is horizontal slice displacement — the scanline tear. Turbulence stretched almost flat
 across and steep down varies only by row; quantising it to a handful of discrete levels turns a

@@ -96,7 +96,7 @@ export function randomParams(generator, rng) {
  *
  * Grain and effects are deliberately absent, so they land on their defaults.
  * They sit over the finished piece rather than in it, and a random pile of
- * bloom, static and aberration reads as a broken render rather than as a
+ * bloom, scanlines and aberration reads as a broken render rather than as a
  * choice — what's being rolled here is the artwork.
  */
 export function randomState(seed = randomSeed()) {

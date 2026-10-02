@@ -29,7 +29,8 @@
  * field has ever had is listed below instead, and a link is matched to its
  * own by length — which is why appending is the only safe way to grow it.
  */
-export const EFFECT_FIELDS = [
+/** The nine that have never moved, whatever has come and gone around them. */
+const SETTLED_FIELDS = [
   'glitch',
   'glitchScale',
   'bloom',
@@ -39,18 +40,35 @@ export const EFFECT_FIELDS = [
   'aberrationAngle',
   'vignette',
   'vignetteSpread',
-  'interference',
-  'interferenceScale',
-  'interferenceBlend',
-  'interferenceBurst',
 ]
 
-/** Field order as it stood when links of each length were written. */
+export const EFFECT_FIELDS = [...SETTLED_FIELDS, 'scanlines', 'scanlineGap', 'scanlineBlend']
+
+/**
+ * Field order as it stood when links of each length were written.
+ *
+ * The thirteen-field generation is kept by name rather than deleted with the
+ * effect it belonged to. A link written then still carries four static values,
+ * and reading them under their own names lets `coerceEffects` drop them on the
+ * floor — where reading them positionally under the new names would pour them
+ * into the scanline controls. Everything a reader of an old link should still
+ * get, the nine settled fields, is at the same index in every generation.
+ *
+ * Twelve is the one length that means two things: scanlines now, and static
+ * before bursts were added to it. Links from that window turn their static
+ * into scanlines of the same strength, which is a fair reading of what they
+ * were asking for, at the tightest line gap.
+ */
 const EFFECT_HISTORY = {
-  7: EFFECT_FIELDS.slice(2, 9), // before glitch
-  9: EFFECT_FIELDS.slice(0, 9), // before static
-  12: EFFECT_FIELDS.slice(0, 12), // before static bursts
-  13: EFFECT_FIELDS,
+  7: SETTLED_FIELDS.slice(2), // before glitch
+  9: SETTLED_FIELDS, // before static
+  13: [
+    ...SETTLED_FIELDS,
+    'interference',
+    'interferenceScale',
+    'interferenceBlend',
+    'interferenceBurst',
+  ],
 }
 
 function decodeEffects(raw) {
