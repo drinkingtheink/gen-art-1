@@ -8,6 +8,7 @@ import {
   paletteIdAtCycle,
   randomBackground,
 } from '../core/palettes.js'
+import { randomParams } from '../core/random.js'
 import { createRng, randomSeed } from '../core/rng.js'
 import { paramsAt } from '../core/showcase.js'
 import { buildEffects, coerceEffects } from '../core/effects.js'
@@ -281,8 +282,34 @@ export function useGenerator(initial = {}) {
     if (trimmed) seed.value = trimmed
   }
 
+  /**
+   * Re-gen: the same piece, rolled again.
+   *
+   * A new seed on its own only reshuffles what the generator draws from the
+   * same numbers, so pressing it gave another arrangement of one idea — the
+   * grid stayed 12, the margin stayed 30, and twenty presses produced twenty
+   * variations of the same picture. It rolls the params as well now, which is
+   * what makes it a re-generation rather than a reshuffle.
+   *
+   * The palette is held, and held properly: it is handed to randomParams so
+   * the colour params are drawn against it, not stamped over the top
+   * afterwards. Generator and shape are held too — changing those is what the
+   * piece picker and Randomized piece are for, and this is the button for
+   * staying where you are.
+   *
+   * Params come off the new seed rather than Math.random, so the roll is a
+   * function of a seed like everything else here. That is not the same as the
+   * seed being enough to rebuild the piece: typing one back into the field
+   * sets the seed and leaves the params where they are, because setSeed does
+   * not re-roll. The permalink is what carries a piece, as it always was.
+   */
   function regen() {
-    seed.value = randomSeed()
+    const next = randomSeed()
+    seed.value = next
+    params.value = coerceAll(
+      generator.value,
+      randomParams(generator.value, createRng(`regen:${next}`), params.value.palette),
+    )
   }
 
   function resetParams() {

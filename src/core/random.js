@@ -76,11 +76,17 @@ function randomValue(spec, rng, palette) {
  * A random, valid param set for one generator.
  *
  * The palette is settled first because colour params draw from it — a stroke
- * has to be chosen against the set it will sit in, not before it.
+ * has to be chosen against the set it will sit in, not before it. Pass
+ * `keepPalette` to hold a set and roll everything else against it, which is
+ * what Re-gen does.
  */
-export function randomParams(generator, rng) {
+export function randomParams(generator, rng, keepPalette = null) {
   const paletteSpec = generator.params.find((spec) => spec.type === 'palette')
-  const paletteId = paletteSpec ? rng.pick(paletteSpec.options).value : null
+  const paletteId = keepPalette ?? (paletteSpec ? rng.pick(paletteSpec.options).value : null)
+  // Not only what the palette param is set to. Colour params draw *from* the
+  // set, so a kept palette has to be the one they are drawn against too —
+  // rolling against a random set and then overwriting the id afterwards would
+  // leave every stroke colour belonging to a palette that is no longer there.
   const palette = getPalette(paletteId)
 
   return Object.fromEntries(
