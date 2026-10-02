@@ -89,6 +89,7 @@ const {
   setShowcase,
   commitLive,
   selectGenerator,
+  selectPalette,
   setRatio,
   setGrain,
   setEffects,
@@ -556,7 +557,7 @@ async function copyLink() {
         :treatment="treatment"
         :selected="params.palette"
         @update="setTreatment"
-        @select="setParam('palette', $event)"
+        @select="selectPalette"
       />
 
       <hr class="rule" />

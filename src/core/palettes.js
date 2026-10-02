@@ -1106,6 +1106,24 @@ export function paletteIdAtCycle(position, startId = null, hold = 0.55) {
 }
 
 /** Swatch sources for the background picker, in the order they're shown. */
+/**
+ * A background drawn out of the palette itself.
+ *
+ * Returns a treatment `bg`: BG_PALETTE for the set's own paper, or an index
+ * into its colours. The paper is one of the six rather than the assumed
+ * answer — it is the colour chosen for the job, so it stays in the draw, but
+ * leaving it as the default is the thing being moved away from.
+ *
+ * Takes an rng where the caller has one, so a rolled piece stays a function of
+ * its seed; falls back to Math.random for a press, where the result is written
+ * to the address bar the moment it is made and is reproducible from there.
+ */
+export function randomBackground(palette, rng = null) {
+  const float = rng ? rng.float : Math.random
+  const options = [BG_PALETTE, ...palette.colors.map((_, i) => i)]
+  return options[Math.floor(float() * options.length)]
+}
+
 export function backgroundChoices(palette) {
   return [
     { value: BG_PALETTE, color: palette.bg, label: 'Palette paper' },
