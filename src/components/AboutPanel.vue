@@ -89,65 +89,60 @@ onUnmounted(() => {
         <section>
           <h3>What this is</h3>
           <p>
-            Every piece here is a small program rather than a picture. There are
-            {{ generators.length }} of them, and each one is a pure function of a seed and a handful
-            of numbers — move any number and the piece answers at once. {{ palettes.length }}
-            palettes and {{ ratios.length }} canvas shapes sit on top of that.
+            Every piece is a program, not a picture. {{ generators.length }} generators, each a pure
+            function of a seed and a few numbers. {{ palettes.length }} palettes,
+            {{ ratios.length }} canvas shapes.
           </p>
           <p>
-            Nothing is stored and nothing is uploaded. A link carries the generator, the seed and
-            every parameter, so the piece is rebuilt from the address alone — which is why a link
-            you send someone opens on exactly what you were looking at, down to the last decimal.
+            Nothing is stored or uploaded. The link carries everything, so it rebuilds the piece
+            exactly — down to the last decimal.
           </p>
           <p>
-            <strong>Every Pause a Masterpiece</strong> is the method, not a slogan. Press
-            <strong>Play</strong> and the piece drifts through its own parameters; press
-            <strong>Pause</strong> and whatever is on screen at that instant becomes the piece —
-            kept at full precision, not snapped back to the nearest slider step, because a
-            thousandth is the difference between the frame you stopped on and a near miss. That
-            frame is what the link carries and what the export gives you.
+            <strong>Every Pause a Masterpiece</strong> is the method. Play, and the piece drifts
+            through its own parameters. Pause, and that frame <em>is</em> the piece — kept at full
+            precision, not snapped back to the nearest slider step. That frame is what the link
+            carries and what you export.
           </p>
         </section>
 
         <section>
           <h3>Printing</h3>
           <p>
-            These are built to be printed, and the two export buttons are for two different jobs.
+            <strong>SVG</strong> is vector: no size limit, and a pen plotter draws it straight from
+            the file. <strong>PNG</strong> is pixels, 1× to 8×, capped at 8192px — about 27 inches
+            on the long edge.
           </p>
-          <dl>
-            <dt>SVG, for anything large</dt>
-            <dd>
-              Real vector — shapes and coordinates, not pixels — so it enlarges without limit and
-              without softening. This is the file to hand a print shop for anything above about A2,
-              and a pen plotter will read it and draw the paths directly.
-            </dd>
-
-            <dt>PNG, for everything else</dt>
-            <dd>
-              Choose 1× to 8×. The line under the button gives the size in inches at 300dpi, which
-              is what a shop means by photographic quality — so you can see what you are getting
-              before you commit. The largest comes to roughly 27 inches on the long edge; past that
-              the answer is the SVG.
-            </dd>
-
-            <dt>The A-series shapes are real paper</dt>
-            <dd>
-              <strong>√2:1</strong> is 1189 × 841, which is A0 in millimetres. A piece made in that
-              shape drops onto A0, A1, A2 or A3 with nothing cropped and no white edge to trim.
-            </dd>
-          </dl>
+          <!-- Against the scales the control actually offers, not the scale each
+               size would need. 1, 2, 4, 8 are the only choices, so A3 wanting
+               4.2x means the answer is 8x. -->
+          <table class="sizes">
+            <thead>
+              <tr><th>Paper</th><th>Size</th><th>Export</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>A4</td><td>210 × 297 mm</td><td>PNG at 4×</td></tr>
+              <tr><td>A3</td><td>297 × 420 mm</td><td>PNG at 8×</td></tr>
+              <tr><td>A2</td><td>420 × 594 mm</td><td>PNG at 8×</td></tr>
+              <tr><td>A1</td><td>594 × 841 mm</td><td>SVG</td></tr>
+              <tr><td>A0</td><td>841 × 1189 mm</td><td>SVG</td></tr>
+            </tbody>
+          </table>
           <p class="note">
-            Grain and the effects are raster: they come through on a PNG, and a plotter quietly
-            ignores them and draws the artwork underneath. Colours are sRGB, which is worth telling
-            whoever prints it.
+            Those are for the A-series canvas — <strong>√2:1</strong> is 1189 × 841, A0 in
+            millimetres, so it lands on any of them uncropped. Other shapes differ; the line under
+            the PNG button always gives the real inches.
+          </p>
+          <p class="note">
+            Grain and effects are raster — a PNG keeps them, a plotter ignores them and draws the
+            paths. Colours are sRGB.
           </p>
         </section>
 
         <section>
           <h3>Colophon</h3>
           <p>
-            Vue and Vite, no backend, no database, no accounts. The artwork is SVG all the way
-            through — what you see on screen is the same document that leaves in the export.
+            Vue and Vite. No backend, no database, no accounts. The artwork is SVG throughout —
+            what is on screen is the document you export.
           </p>
           <!-- The mark is part of the link rather than a decoration sitting
                beside one. It already lit to the accent on hover, so it was
@@ -341,21 +336,45 @@ p:last-child {
   font-size: 0.82rem;
 }
 
-dl {
-  margin: 0 0 0.7rem;
+/* The one thing on this page that is a lookup rather than a read. Right-align
+   the answer column so the eye runs down PNG / PNG / PNG / SVG / SVG and sees
+   where the line falls without reading a word of it. */
+.sizes {
+  width: 100%;
+  margin: 0.9rem 0;
+  border-collapse: collapse;
+  font-size: 0.84rem;
 }
 
-dt {
-  margin-top: 0.8rem;
-  font-size: 0.85rem;
+.sizes th {
+  padding: 0 0 0.35rem;
+  color: var(--ink-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 70%, transparent);
+}
+
+.sizes td {
+  padding: 0.34rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 45%, transparent);
+  color: var(--ink-dim);
+}
+
+.sizes tr:last-child td {
+  border-bottom: 0;
+}
+
+.sizes td:first-child {
+  color: var(--ink);
   font-weight: 600;
 }
 
-dd {
-  margin: 0.2rem 0 0;
-  font-size: 0.86rem;
-  line-height: 1.6;
-  color: var(--ink-dim);
+.sizes th:last-child,
+.sizes td:last-child {
+  text-align: right;
 }
 
 strong {
