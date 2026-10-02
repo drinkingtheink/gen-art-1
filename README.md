@@ -253,18 +253,21 @@ drives the lived params and only pausing writes them back.
 
 ## About
 
-A modal, opened from **About** beside *All pieces*. Five sections: what the thing is, how to print
-it, the wall preview, the photographers, and a colophon.
+A modal, opened from **About** beside *All pieces*. Three sections: what the thing is, how to print
+it, and a colophon — which fits one screen without scrolling, and is the reason it is three and not
+five.
 
 It is also where the strapline gets explained rather than repeated. *Every Pause a Masterpiece* is
 a description of the mechanism: pausing freezes exactly what the stage is drawing into the piece's
 own parameters, at full precision — not snapped back to the nearest slider step, because a
 thousandth is the difference between the frame you stopped on and a near miss.
 
-Its counts and its credits are read from the registries rather than written out. A page that says
-"twenty generators" is wrong the moment a twenty-first lands and nobody thinks to look here, and
-the photographers matter more than that — a room cannot be added without its credit, so this
-cannot be allowed to fall behind the rooms.
+Its counts are read from the registries rather than written out: a page that says "twenty
+generators" is wrong the moment a twenty-first lands and nobody thinks to look here.
+
+The photographers are credited under their own rooms in the gallery, where someone looking at a
+room would ask. A second list on this page would be a second thing to keep current for nobody's
+benefit.
 
 It is **local state, not URL state**. The wall is in the link because which room a piece hangs in
 is part of what you would send someone; having read the about page is not, and a link that opened

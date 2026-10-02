@@ -3,19 +3,20 @@ import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 import GenArtMark from './GenArtMark.vue'
 import JhMonogram from './JhMonogram.vue'
 import ButtonIcon from './ButtonIcon.vue'
-import { frames, rooms } from '../core/mounts.js'
 import { generators } from '../generators/index.js'
 import { palettes } from '../core/palettes.js'
 import { ratios } from '../core/ratios.js'
 
 /**
- * What this is, how to print it, and who the photographs belong to.
+ * What this is and how to print it.
  *
- * The counts and the credits are read from the registries rather than written
- * out, because a page that says "twenty generators" is wrong the moment a
- * twenty-first lands and nobody thinks to look here. The same goes for the
- * photographers: a room cannot be added without its credit, and this cannot
- * fall behind the rooms.
+ * The counts are read from the registries rather than written out, because a
+ * page that says "twenty generators" is wrong the moment a twenty-first lands
+ * and nobody thinks to look here.
+ *
+ * The photographers are credited under their own rooms in the gallery, which
+ * is where someone looking at a room would ask. A second list here would be a
+ * second thing to keep current for no one's benefit.
  */
 
 const emit = defineEmits(['dismiss'])
@@ -140,33 +141,6 @@ onUnmounted(() => {
             ignores them and draws the artwork underneath. Colours are sRGB, which is worth telling
             whoever prints it.
           </p>
-        </section>
-
-        <section>
-          <h3>Seeing it on a wall first</h3>
-          <p>
-            <strong>See it on a wall</strong>, under the piece, hangs the work in a photographed
-            room — {{ rooms.length }} of them, in {{ frames.length }} framings, at the size it would
-            actually hang. Two of the walls are not square to the camera, so the piece is laid onto
-            them in perspective rather than pasted flat. It is a way to settle how big to print and
-            what to frame it in before paying for either.
-          </p>
-        </section>
-
-        <section>
-          <h3>The photographs</h3>
-          <p>
-            The rooms are other people's work, used with thanks. All from
-            <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>.
-          </p>
-          <ul class="credits">
-            <li v-for="room in rooms" :key="room.id">
-              <span>{{ room.name }}</span>
-              <a :href="room.credit.profile" target="_blank" rel="noopener noreferrer">
-                {{ room.credit.who }}
-              </a>
-            </li>
-          </ul>
         </section>
 
         <section>
@@ -387,28 +361,6 @@ dd {
 strong {
   color: var(--ink);
   font-weight: 600;
-}
-
-/* Room on the left, photographer on the right, with the gap between them
-   doing the joining — a list of pairs rather than a paragraph of commas. */
-.credits {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.84rem;
-}
-
-.credits li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.32rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 55%, transparent);
-  color: var(--ink-dim);
-}
-
-.credits li:last-child {
-  border-bottom: 0;
 }
 
 a {
