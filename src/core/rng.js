@@ -135,3 +135,14 @@ export function randomSeed(rng = null) {
   const pick = (list) => list[Math.floor(float() * list.length)]
   return `${pick(ADJECTIVES)}-${pick(ARTISTS)}-${Math.floor(float() * 100)}`
 }
+
+/**
+ * How many seeds randomSeed can produce.
+ *
+ * Derived rather than written down, for the reason the About page gives about
+ * its other counts: a number typed out here is wrong the first time a word is
+ * added to either list and nobody thinks to look. The 100 is the numeric tail
+ * randomSeed appends, and it is the one part of this that has to stay in step
+ * by hand — it is written once, directly above.
+ */
+export const SEED_COUNT = ADJECTIVES.length * ARTISTS.length * 100

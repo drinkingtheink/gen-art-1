@@ -1,11 +1,12 @@
 <script setup>
-import { onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import GenArtMark from './GenArtMark.vue'
 import JhMonogram from './JhMonogram.vue'
 import ButtonIcon from './ButtonIcon.vue'
 import { generators } from '../generators/index.js'
 import { palettes } from '../core/palettes.js'
 import { ratios } from '../core/ratios.js'
+import { SEED_COUNT } from '../core/rng.js'
 
 /**
  * What this is and how to print it.
@@ -18,6 +19,25 @@ import { ratios } from '../core/ratios.js'
  * is where someone looking at a room would ask. A second list here would be a
  * second thing to keep current for no one's benefit.
  */
+
+/**
+ * Every piece that could be started, before a single dial is touched.
+ *
+ * Computed for the same reason the counts are: multiplied out by hand it goes
+ * stale the moment a generator or a palette lands. The dials are counted the
+ * same way — the median generator's continuous params, which is what decides
+ * whether the number after this one reads as "a dozen" honestly.
+ */
+const starts = computed(
+  () => generators.length * ratios.length * palettes.length * SEED_COUNT,
+)
+
+const dials = computed(() => {
+  const counts = generators
+    .map((g) => g.params.filter((p) => p.type === 'range').length)
+    .sort((a, b) => a - b)
+  return counts[counts.length >> 1]
+})
 
 const emit = defineEmits(['dismiss'])
 
@@ -102,6 +122,13 @@ onUnmounted(() => {
             through its own parameters. Pause, and that frame <em>is</em> the piece — kept at full
             precision, not snapped back to the nearest slider step. That frame is what the link
             carries and what you export.
+          </p>
+          <p>
+            Which is why yours is yours. There are
+            <strong>{{ starts.toLocaleString() }}</strong> places to begin — every generator against
+            every shape, palette and seed — and from any of them about
+            {{ dials }} dials move continuously and are recorded exactly where you stopped them.
+            Nobody arrives at your frame by accident.
           </p>
         </section>
 
