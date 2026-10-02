@@ -35,8 +35,18 @@ const piece = useGenerator(opened ?? {})
  *
  * The test is `g`, not "any query at all": a link arriving with a tracking
  * parameter stuck on the end still names no piece.
+ *
+ * `#about` is the exception, and the only one. It is how the two legal
+ * documents get back here: they are their own pages, so leaving one has to be
+ * a real navigation, and landing on the picker would drop whoever followed the
+ * link out of the piece they were looking at. The fragment rather than a query
+ * field because the query string is the piece — adding a non-piece field to it
+ * would put a view flag in every link that carried it. usePermalink's first
+ * write strips the fragment, which is the same rewriting an old `#…` link
+ * already gets on arrival, so the address settles back to an ordinary one.
  */
-const launching = ref(!opened?.generatorId)
+const RETURNING = typeof window !== 'undefined' && window.location.hash === '#about'
+const launching = ref(!opened?.generatorId && !RETURNING)
 
 /**
  * On the wall, as a place in the URL rather than a flag in memory.
@@ -291,6 +301,7 @@ function onKey(event) {
  */
 function onPopState() {
   launching.value = !readUrl()?.generatorId
+  if (launching.value) about.value = false
   // The panel covers the stage, so there's nothing to animate behind it.
   if (launching.value) show.pause()
 }
@@ -483,7 +494,7 @@ const previewing = computed(() => wall.value !== null)
  * you would send someone. Having read the about page is not — a link that
  * opened on it would be a link about the app rather than about a piece.
  */
-const about = ref(false)
+const about = ref(RETURNING)
 
 function openPreview() {
   if (show.playing.value) {
@@ -551,7 +562,7 @@ async function copyLink() {
   </Transition>
 
   <Transition name="about">
-    <AboutPanel v-if="about" @dismiss="about = false" />
+    <AboutPanel v-if="about" :return-to="shareHref()" @dismiss="about = false" />
   </Transition>
 
   <LaunchPanel
@@ -610,7 +621,7 @@ async function copyLink() {
               aria-label="About"
               @click="about = true"
             >
-              <span aria-hidden="true">?</span>
+              <ButtonIcon glyph="info" />
             </button>
           </span>
         </div>

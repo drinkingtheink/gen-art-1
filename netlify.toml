@@ -11,3 +11,18 @@
   # resvg ships its rasteriser as a .wasm file. esbuild bundles JS and would
   # otherwise leave it behind, so it has to be named explicitly.
   included_files = ["node_modules/@resvg/resvg-wasm/index_bg.wasm"]
+
+# /terms and /privacy without the extension, rewritten rather than redirected
+# so the address bar keeps the clean form. Status 200 is the rewrite; a 301
+# here would bounce every visitor through a second request to see the same
+# page. Both sit above nothing else, because every other path on this site is
+# a query string on `/` and resolves to index.html on its own.
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200

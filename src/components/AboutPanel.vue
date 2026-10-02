@@ -82,6 +82,28 @@ const sizes = PAPER.map((paper) => {
 
 const shapes = ratios.length
 
+/**
+ * Where the legal pages send someone back to.
+ *
+ * They are their own documents rather than panels, so leaving one is a real
+ * navigation and the app starts again from whatever address it lands on. The
+ * piece travels with the link so that return is to the piece you were looking
+ * at, with this panel open, rather than to the picker.
+ *
+ * Handed in rather than read off `window.location`, for the reason the copy
+ * button is: writes to the address bar are debounced, so the bar can still say
+ * what it said before the last thing you did.
+ */
+const props = defineProps({
+  returnTo: { type: String, default: '' },
+})
+
+/** `/terms?from=…`, carrying the piece and nothing else. */
+const legalHref = (page) => {
+  const search = props.returnTo ? new URL(props.returnTo, window.location.origin).search : ''
+  return search ? `/${page}?from=${encodeURIComponent(search)}` : `/${page}`
+}
+
 const emit = defineEmits(['dismiss'])
 
 const closer = useTemplateRef('closer')
@@ -149,100 +171,115 @@ onUnmounted(() => {
       </header>
 
       <div class="body">
-        <section>
-          <h3>What this is</h3>
-          <p>
-            Every piece is a program, not a picture. {{ generators.length }} generators, each a pure
-            function of a seed and a few numbers. {{ palettes.length }} palettes,
-            {{ shapes }} canvas shapes.
-          </p>
-          <p>
-            Nothing is stored or uploaded. The link carries everything, so it rebuilds the piece
-            exactly — down to the last decimal.
-          </p>
-          <p>
-            <strong>Every Pause a Masterpiece</strong> is the method. Play, and the piece drifts
-            through its own parameters. Pause, and that frame <em>is</em> the piece — kept at full
-            precision, not snapped back to the nearest slider step. That frame is what the link
-            carries and what you export.
-          </p>
-          <p>
-            Which is why yours is yours. There are
-            <strong>{{ starts.toLocaleString() }}</strong> places to begin — every generator against
-            every shape, palette and seed — and from any of them about
-            {{ dials }} dials move continuously and are recorded exactly where you stopped them.
-            Nobody arrives at your frame by accident.
-          </p>
-        </section>
+        <div class="prose">
+          <section>
+            <h3>What this is</h3>
+            <p>
+              Every piece is a program, not a picture. {{ generators.length }} generators, each a pure
+              function of a seed and a few numbers. {{ palettes.length }} palettes,
+              {{ shapes }} canvas shapes.
+            </p>
+            <p>
+              Nothing is stored or uploaded. The link carries everything, so it rebuilds the piece
+              exactly — down to the last decimal.
+            </p>
+            <p>
+              <strong>Every Pause a Masterpiece</strong> is the method. Play, and the piece drifts
+              through its own parameters. Pause, and that frame <em>is</em> the piece — kept at full
+              precision, not snapped back to the nearest slider step. That frame is what the link
+              carries and what you export.
+            </p>
+            <p>
+              Which is why yours is yours. There are
+              <strong>{{ starts.toLocaleString() }}</strong> places to begin — every generator against
+              every shape, palette and seed — and from any of them about
+              {{ dials }} dials move continuously and are recorded exactly where you stopped them.
+              Nobody arrives at your frame by accident.
+            </p>
+          </section>
 
-        <section>
-          <h3>Printing</h3>
-          <p>
-            <strong>SVG</strong> is vector: no size limit, and a pen plotter draws it straight from
-            the file. <strong>PNG</strong> is pixels, 1× to 8×, capped at 8192px — about 27 inches
-            on the long edge.
-          </p>
-          <table class="sizes">
-            <thead>
-              <tr>
-                <th>Paper</th>
-                <th>Millimetres</th>
-                <th>Inches</th>
-                <th>Export</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="size in sizes" :key="size.name">
-                <td>{{ size.name }}</td>
-                <td>{{ size.mm }}</td>
-                <td>{{ size.inches }}</td>
-                <td>{{ size.how }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="note">
-            Those are for the A-series canvas — <strong>√2:1</strong> is 1189 × 841, A0 in
-            millimetres, so it lands on any of them uncropped. Other shapes differ; the line under
-            the PNG button always gives the real inches.
-          </p>
-          <p class="note">
-            Grain and effects are raster — a PNG keeps them, a plotter ignores them and draws the
-            paths. Colours are sRGB.
-          </p>
-        </section>
+          <section>
+            <h3>Printing</h3>
+            <p>
+              <strong>SVG</strong> is vector: no size limit, and a pen plotter draws it straight from
+              the file. <strong>PNG</strong> is pixels, 1× to 8×, capped at 8192px — about 27 inches
+              on the long edge.
+            </p>
+            <table class="sizes">
+              <thead>
+                <tr>
+                  <th>Paper</th>
+                  <th>Millimetres</th>
+                  <th>Inches</th>
+                  <th>Export</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="size in sizes" :key="size.name">
+                  <td>{{ size.name }}</td>
+                  <td>{{ size.mm }}</td>
+                  <td>{{ size.inches }}</td>
+                  <td>{{ size.how }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="note">
+              Those are for the A-series canvas — <strong>√2:1</strong> is 1189 × 841, A0 in
+              millimetres, so it lands on any of them uncropped. Other shapes differ; the line under
+              the PNG button always gives the real inches.
+            </p>
+            <p class="note">
+              Grain and effects are raster — a PNG keeps them, a plotter ignores them and draws the
+              paths. Colours are sRGB.
+            </p>
+          </section>
 
-        <section>
-          <h3>Colophon</h3>
-          <!-- What it is built with is a developer's question and there is a
-               link to the source right here for anyone asking it. What is left
-               is the one fact a person using this needs: no re-drawing, no
-               re-encoding, no second version of the work. -->
-          <p>
-            The artwork is SVG throughout — what is on screen is the document you export, not a
-            copy of it.
-          </p>
-          <!-- The mark is part of the link rather than a decoration sitting
-               beside one. It already lit to the accent on hover, so it was
-               behaving like a link before it was one. Hidden from a screen
-               reader because the words next to it are its name. -->
-          <p class="sign">
-            <a
-              class="maker"
-              href="https://www.drinkingtheink.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <JhMonogram aria-hidden="true" />
-              <span>drinkingtheink.com</span>
-            </a>
-            <a
-              href="https://github.com/drinkingtheink/gen-art-1"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Source on GitHub</a
-            >
-          </p>
-        </section>
+          <section>
+            <h3>Colophon</h3>
+            <!-- What it is built with is a developer's question and there is a
+                 link to the source right here for anyone asking it. What is left
+                 is the one fact a person using this needs: no re-drawing, no
+                 re-encoding, no second version of the work. -->
+            <p>
+              The artwork is SVG throughout — what is on screen is the document you export, not a
+              copy of it.
+            </p>
+            <!-- The mark is part of the link rather than a decoration sitting
+                 beside one. It already lit to the accent on hover, so it was
+                 behaving like a link before it was one. Hidden from a screen
+                 reader because the words next to it are its name. -->
+            <p class="sign">
+              <a
+                class="maker"
+                href="https://www.drinkingtheink.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <JhMonogram aria-hidden="true" />
+                <span>drinkingtheink.com</span>
+              </a>
+              <a
+                href="https://github.com/drinkingtheink/gen-art-1"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Source on GitHub</a
+              >
+            </p>
+          </section>
+        </div>
+
+        <!-- The measured prose column leaves a standing gutter the width of
+             the close button. These are the two things here that are looked up
+             rather than read, so they go in it rather than becoming a fourth
+             section someone has to scroll past the printing table to find. -->
+        <aside class="rail" aria-labelledby="about-legal">
+          <h3 id="about-legal">Legal</h3>
+          <ul>
+            <li><a :href="legalHref('terms')">Terms of Use</a></li>
+            <li><a :href="legalHref('privacy')">Privacy Policy</a></li>
+          </ul>
+          <p class="rail-note">No cookies, no accounts, nothing stored.</p>
+        </aside>
       </div>
     </div>
   </div>
@@ -378,10 +415,48 @@ h2 {
 }
 
 .body {
+  display: grid;
+  /* The prose column is measured rather than full width: long lines are hard
+     to come back to, and this is the one screen in the app that is read rather
+     than operated. The rail takes the gutter that measure already leaves. */
+  grid-template-columns: minmax(0, 58ch) 1fr;
+  align-items: start;
+  gap: 1.8rem;
   margin-top: 1.6rem;
-  /* Measured rather than full width: long lines are hard to come back to, and
-     this is the one screen in the app that is read rather than operated. */
-  max-width: 58ch;
+}
+
+.prose {
+  min-width: 0;
+}
+
+/* Under about 620px the sheet is narrower than the measure, so there is no
+   gutter to put anything in and the rail goes under the prose instead. */
+@media (max-width: 620px) {
+  .body {
+    grid-template-columns: 1fr;
+    gap: 1.7rem;
+  }
+}
+
+.rail ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail li + li {
+  margin-top: 0.35rem;
+}
+
+.rail a {
+  font-size: 0.84rem;
+}
+
+.rail-note {
+  margin: 0.8rem 0 0;
+  color: var(--ink-dim);
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 section + section {

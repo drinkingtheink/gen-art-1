@@ -21,12 +21,15 @@ defineProps({
   /**
    * Which shape. `link` and `tick` are the two halves of a copy button — the
    * same control a moment apart — `play` and `pause` are the two halves of
-   * another, `back` is the way out of a panel, and `dice` is a roll.
+   * another, `back` is the way out of a panel, and `dice` is a roll. `grid`
+   * and `info` are the pair in the sidebar head: the two ways out of the
+   * studio, and they have to read as a pair.
    */
   glyph: {
     type: String,
     default: 'link',
-    validator: (v) => ['link', 'tick', 'back', 'play', 'pause', 'regen', 'dice'].includes(v),
+    validator: (v) =>
+      ['link', 'tick', 'back', 'grid', 'play', 'pause', 'regen', 'dice', 'info'].includes(v),
   },
 })
 </script>
@@ -48,6 +51,16 @@ defineProps({
     focusable="false"
   >
     <path v-if="glyph === 'tick'" d="M4.5 12.6 9.6 17.7 19.5 6.6" />
+
+    <!-- The stem is drawn from the bottom up and the tittle is a zero-length
+         line, so the round cap that ends every other glyph here is what draws
+         the dot. A filled circle would be the one solid mark in a stroked set
+         and would sit heavier than the ring around it. -->
+    <template v-else-if="glyph === 'info'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 16.6v-5.2" />
+      <path d="M12 7.9h.01" />
+    </template>
 
     <!-- A shaft long enough to read as travel rather than as a chevron. The
          head is a third of it, which is the proportion that still looks like
