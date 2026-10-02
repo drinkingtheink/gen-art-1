@@ -116,6 +116,33 @@ const show = useShowcase()
  */
 const stillness = window.matchMedia?.('(prefers-reduced-motion: reduce)')
 
+/**
+ * Narrow enough that the sidebar is gone — the same 700px the stylesheet at
+ * the bottom of this file uses, which is the one number that has to stay in
+ * step by hand.
+ *
+ * Watched rather than read once: a phone turned on its side crosses this, and
+ * so does a dragged window.
+ */
+const NARROW = window.matchMedia?.('(max-width: 700px)')
+const narrow = ref(NARROW?.matches ?? false)
+NARROW?.addEventListener('change', (event) => (narrow.value = event.matches))
+
+/**
+ * A rolled piece, upright on a narrow screen.
+ *
+ * The shape is overridden *after* the roll rather than in place of it, which
+ * matters more than it looks: `randomState` draws the generator, then the
+ * shape, then every param from one seeded sequence. Skip the shape draw and
+ * the sequence shifts, so the same seed would make different art on a phone
+ * than on a desktop — and the whole premise is that a seed reproduces a piece
+ * anywhere. Drawing it and discarding it keeps them identical.
+ */
+function rollPiece() {
+  const rolled = randomState()
+  return narrow.value ? { ...rolled, ratioId: 'portrait' } : rolled
+}
+
 function leaveLaunch() {
   launching.value = false
   if (!stillness?.matches) show.play()
@@ -469,16 +496,16 @@ function openPreview() {
 /**
  * A whole new piece, from the tray rather than from the opening panel.
  *
- * The same roll the panel's dice makes — `randomState()` — so the two agree
+ * The same roll the panel's dice makes — `rollPiece()` — so the two agree
  * about what "random" means here: a generator, a shape, a seed and every
  * param, with grain and effects left on their defaults, because a random pile
- * of bloom and static reads as a broken render rather than as a choice.
+ * of bloom and scanlines reads as a broken render rather than as a choice.
  *
  * Re-gen sits beside this and is the smaller version of it: a new seed for
  * the piece you already have. This replaces the piece.
  */
 function randomize() {
-  applyState(randomState())
+  applyState(rollPiece())
 }
 
 const copied = ref(false)
@@ -530,7 +557,7 @@ async function copyLink() {
   <LaunchPanel
     v-if="launching"
     @pick="startWith"
-    @randomize="startWith(randomState())"
+    @randomize="startWith(rollPiece())"
     @dismiss="leaveLaunch"
   />
 
