@@ -46,13 +46,6 @@ const PALETTES = [
     colors: ['#25113d', '#7b4ab8', '#b98ce8', '#f6e48a', '#c8ff2e'],
   },
   {
-    id: 'ocotillo',
-    name: 'Ocotillo',
-    bg: '#f5ecd8',
-    // 0.48
-    colors: ['#241f0e', '#5c6b2f', '#f2dca0', '#f5a623', '#e0197f'],
-  },
-  {
     id: 'geyser',
     name: 'Geyser',
     bg: '#eef5f2',
@@ -60,11 +53,11 @@ const PALETTES = [
     colors: ['#073d4a', '#1f96a8', '#8fe0cf', '#f5e04a', '#e85a14'],
   },
   {
-    id: 'ukiyo',
-    name: 'Ukiyo',
-    bg: '#f2ece0',
-    // 0.49
-    colors: ['#101c3d', '#3d7fa6', '#e8dca8', '#c25a2a', '#c8203c'],
+    id: 'ocotillo',
+    name: 'Ocotillo',
+    bg: '#f5ecd8',
+    // 0.48
+    colors: ['#241f0e', '#5c6b2f', '#f2dca0', '#f5a623', '#e0197f'],
   },
   {
     id: 'mesa',
@@ -74,6 +67,20 @@ const PALETTES = [
     colors: ['#1f120e', '#2f6b5c', '#f2dca8', '#cf7a2a', '#e34a14'],
   },
   {
+    id: 'ukiyo',
+    name: 'Ukiyo',
+    bg: '#f2ece0',
+    // 0.49
+    colors: ['#101c3d', '#3d7fa6', '#e8dca8', '#c25a2a', '#c8203c'],
+  },
+  {
+    id: 'bracken',
+    name: 'Bracken',
+    bg: '#090e07',
+    // 0.50
+    colors: ['#1c350c', '#089816', '#1cbd73', '#1a5cde', '#05f0e0'],
+  },
+  {
     id: 'fauve',
     name: 'Fauve',
     bg: '#f5efe2',
@@ -81,18 +88,25 @@ const PALETTES = [
     colors: ['#123f2e', '#1f6fa8', '#f2d94a', '#e8431f', '#ff1f8f'],
   },
   {
+    id: 'indigo',
+    name: 'Indigo',
+    bg: '#e8e5f9',
+    // 0.50
+    colors: ['#300df6', '#3b0884', '#841dbc', '#e0a312', '#f4014b'],
+  },
+  {
+    id: 'mauveine',
+    name: 'Mauveine',
+    bg: '#faeffb',
+    // 0.50
+    colors: ['#e22eea', '#54117f', '#5523d2', '#07f485', '#14cdfb'],
+  },
+  {
     id: 'tropic',
     name: 'Tropic',
     bg: '#041012',
     // 0.50
     colors: ['#0d3a37', '#16a08f', '#ffd12e', '#ff6b3d', '#ff2d8f'],
-  },
-  {
-    id: 'thicket',
-    name: 'Thicket',
-    bg: '#f7f4ec',
-    // 0.51
-    colors: ['#8fd98a', '#1d6b45', '#2a1208', '#b5431c', '#f2b705'],
   },
   {
     id: 'cochineal',
@@ -109,6 +123,41 @@ const PALETTES = [
     colors: ['#2e0a2c', '#8a1063', '#e0229c', '#ff6fc8', '#ffd1ec'],
   },
   {
+    id: 'thicket',
+    name: 'Thicket',
+    bg: '#f7f4ec',
+    // 0.51
+    colors: ['#8fd98a', '#1d6b45', '#2a1208', '#b5431c', '#f2b705'],
+  },
+  {
+    id: 'absinthe',
+    name: 'Absinthe',
+    bg: '#e7f7e4',
+    // 0.52
+    colors: ['#4ef029', '#028c2c', '#1ac69b', '#2719e1', '#1656f2'],
+  },
+  {
+    id: 'amethyst',
+    name: 'Amethyst',
+    bg: '#0c040b',
+    // 0.52
+    colors: ['#3f0b37', '#711181', '#831ec7', '#0fe66e', '#0d7ff2'],
+  },
+  {
+    id: 'mulberry',
+    name: 'Mulberry',
+    bg: '#0f070a',
+    // 0.52
+    colors: ['#330313', '#7c0e5d', '#c324cd', '#14c2eb', '#010cf7'],
+  },
+  {
+    id: 'nettle',
+    name: 'Nettle',
+    bg: '#0a0e05',
+    // 0.52
+    colors: ['#253a0d', '#107219', '#19d090', '#4009f0', '#12e6fe'],
+  },
+  {
     id: 'sodium',
     name: 'Sodium',
     bg: '#10101c',
@@ -116,18 +165,18 @@ const PALETTES = [
     colors: ['#2a2440', '#f5e6c8', '#ffb000', '#ff6a00', '#ff2d55'],
   },
   {
-    id: 'pennant',
-    name: 'Pennant',
-    bg: '#f7f4ef',
-    // 0.54
-    colors: ['#8fb8f5', '#0d1b2e', '#00843d', '#c8102e', '#ffc400'],
+    id: 'foxglove',
+    name: 'Foxglove',
+    bg: '#fce9f7',
+    // 0.53
+    colors: ['#ee2ab7', '#701598', '#2c0dd3', '#1ce457', '#0e07f4'],
   },
   {
-    id: 'jadeite',
-    name: 'Jadeite',
-    bg: '#04100d',
+    id: 'fennel',
+    name: 'Fennel',
+    bg: '#0e0e06',
     // 0.54
-    colors: ['#0c2f28', '#0f6b52', '#17c48e', '#5cffd0', '#ffd23d'],
+    colors: ['#302e03', '#4b8d0e', '#0dc314', '#1db7ea', '#02faaf'],
   },
   {
     id: 'flame',
@@ -137,11 +186,32 @@ const PALETTES = [
     colors: ['#eae2b7', '#fcbf49', '#003049', '#f77f00', '#d62828'],
   },
   {
+    id: 'jadeite',
+    name: 'Jadeite',
+    bg: '#04100d',
+    // 0.54
+    colors: ['#0c2f28', '#0f6b52', '#17c48e', '#5cffd0', '#ffd23d'],
+  },
+  {
     id: 'ozone',
     name: 'Ozone',
     bg: '#060d14',
     // 0.54
     colors: ['#0f2b40', '#1f7fc2', '#4fd6ff', '#c9fbff', '#a3ff12'],
+  },
+  {
+    id: 'pennant',
+    name: 'Pennant',
+    bg: '#f7f4ef',
+    // 0.54
+    colors: ['#8fb8f5', '#0d1b2e', '#00843d', '#c8102e', '#ffc400'],
+  },
+  {
+    id: 'peridot',
+    name: 'Peridot',
+    bg: '#040b04',
+    // 0.54
+    colors: ['#084406', '#287708', '#6dc413', '#e71c53', '#fad017'],
   },
   {
     id: 'ultra',
@@ -151,11 +221,11 @@ const PALETTES = [
     colors: ['#f8f9fa', '#ffd60a', '#0033cc', '#e63946', '#0b090a'],
   },
   {
-    id: 'peacock',
-    name: 'Peacock',
-    bg: '#03080e',
+    id: 'acid',
+    name: 'Acid',
+    bg: '#0b0b10',
     // 0.55
-    colors: ['#092a45', '#0f6f8f', '#1bbfae', '#8f4dff', '#ffcf2e'],
+    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
   },
   {
     id: 'aster',
@@ -165,18 +235,25 @@ const PALETTES = [
     colors: ['#9fb0ef', '#2a2fc0', '#0d0f3d', '#ffd500', '#ff2e7a'],
   },
   {
-    id: 'acid',
-    name: 'Acid',
-    bg: '#0b0b10',
-    // 0.55
-    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
-  },
-  {
     id: 'klaxon',
     name: 'Klaxon',
     bg: '#fbfbf9',
     // 0.55
     colors: ['#9fe8f2', '#00a3c4', '#1b1b3a', '#ffd400', '#ff1f8f'],
+  },
+  {
+    id: 'peacock',
+    name: 'Peacock',
+    bg: '#03080e',
+    // 0.55
+    colors: ['#092a45', '#0f6f8f', '#1bbfae', '#8f4dff', '#ffcf2e'],
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    bg: '#050d16',
+    // 0.56
+    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
   },
   {
     id: 'citrus',
@@ -193,13 +270,6 @@ const PALETTES = [
     colors: ['#b3d4ff', '#2a5db0', '#071634', '#ff8a00', '#e01b24'],
   },
   {
-    id: 'helium',
-    name: 'Helium',
-    bg: '#0f0410',
-    // 0.56
-    colors: ['#35102e', '#a82a5e', '#ff5c7a', '#ffd84d', '#00e5ff'],
-  },
-  {
     id: 'hedgerow',
     name: 'Hedgerow',
     bg: '#f9f5f0',
@@ -207,11 +277,18 @@ const PALETTES = [
     colors: ['#c2d98f', '#2f7a12', '#2a0b26', '#a81070', '#ffc107'],
   },
   {
-    id: 'aurora',
-    name: 'Aurora',
-    bg: '#050d16',
+    id: 'helium',
+    name: 'Helium',
+    bg: '#0f0410',
     // 0.56
-    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
+    colors: ['#35102e', '#a82a5e', '#ff5c7a', '#ffd84d', '#00e5ff'],
+  },
+  {
+    id: 'kingfisher',
+    name: 'Kingfisher',
+    bg: '#e4fafb',
+    // 0.56
+    colors: ['#28edf5', '#0b4583', '#141cce', '#d90bd3', '#e304f9'],
   },
   {
     id: 'lagoon',
@@ -221,18 +298,11 @@ const PALETTES = [
     colors: ['#082a3d', '#0f6f99', '#17c8e0', '#6cf7ff', '#ff4d6d'],
   },
   {
-    id: 'oxblood',
-    name: 'Oxblood',
-    bg: '#fdf6ec',
-    // 0.57
-    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
-  },
-  {
-    id: 'cyanotype',
-    name: 'Cyanotype',
-    bg: '#f1f4f8',
-    // 0.57
-    colors: ['#04080f', '#10325e', '#4b86c9', '#cfe4f7', '#ffdd00'],
+    id: 'rhodamine',
+    name: 'Rhodamine',
+    bg: '#fae4f3',
+    // 0.56
+    colors: ['#f00eaa', '#84103b', '#c10d1e', '#83ec19', '#feb104'],
   },
   {
     id: 'cinnabar',
@@ -242,11 +312,39 @@ const PALETTES = [
     colors: ['#4a0d06', '#a81f0c', '#f03a10', '#ff8a2b', '#00ecd1'],
   },
   {
+    id: 'cyanotype',
+    name: 'Cyanotype',
+    bg: '#f1f4f8',
+    // 0.57
+    colors: ['#04080f', '#10325e', '#4b86c9', '#cfe4f7', '#ffdd00'],
+  },
+  {
+    id: 'emerald',
+    name: 'Emerald',
+    bg: '#edfaf5',
+    // 0.57
+    colors: ['#10f1a1', '#0b8832', '#13c114', '#db0a08', '#98f808'],
+  },
+  {
+    id: 'oxblood',
+    name: 'Oxblood',
+    bg: '#fdf6ec',
+    // 0.57
+    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
+  },
+  {
     id: 'bitumen',
     name: 'Bitumen',
     bg: '#0c0806',
     // 0.59
     colors: ['#140a02', '#4a2a10', '#a16c38', '#f0dcb8', '#00e5ff'],
+  },
+  {
+    id: 'malachite',
+    name: 'Malachite',
+    bg: '#effdf5',
+    // 0.59
+    colors: ['#11ee6c', '#0a8215', '#3ebd20', '#ed0d86', '#e9fe07'],
   },
   {
     id: 'venom',
@@ -256,18 +354,25 @@ const PALETTES = [
     colors: ['#0a2e18', '#0f7a35', '#1fd65a', '#7dff3d', '#ff00a8'],
   },
   {
-    id: 'jewel',
-    name: 'Jewel',
-    bg: '#06040a',
-    // 0.60
-    colors: ['#1a0f3d', '#153fa8', '#0f9e6b', '#c41e5c', '#ffc824'],
-  },
-  {
     id: 'cryolite',
     name: 'Cryolite',
     bg: '#eef4f8',
     // 0.60
     colors: ['#120c4d', '#1f3fc4', '#1f8fe0', '#3fdde0', '#a8f7ff'],
+  },
+  {
+    id: 'heliotrope',
+    name: 'Heliotrope',
+    bg: '#efeaf8',
+    // 0.60
+    colors: ['#6b2ded', '#670a74', '#ba147a', '#beea0d', '#f4123c'],
+  },
+  {
+    id: 'jewel',
+    name: 'Jewel',
+    bg: '#06040a',
+    // 0.60
+    colors: ['#1a0f3d', '#153fa8', '#0f9e6b', '#c41e5c', '#ffc824'],
   },
   {
     id: 'marigold',
@@ -284,11 +389,53 @@ const PALETTES = [
     colors: ['#03140a', '#10561f', '#2f8f4c', '#d8f0a8', '#ff007f'],
   },
   {
-    id: 'voltage',
-    name: 'Voltage',
-    bg: '#01050f',
-    // 0.63
-    colors: ['#0b1240', '#2233ff', '#00b3ff', '#7de8ff', '#ff2e00'],
+    id: 'conifer',
+    name: 'Conifer',
+    bg: '#080e0c',
+    // 0.61
+    colors: ['#0b2f23', '#03960b', '#6ec11f', '#f36c1f', '#93fe10'],
+  },
+  {
+    id: 'limelight',
+    name: 'Limelight',
+    bg: '#f7fbf5',
+    // 0.61
+    colors: ['#73f914', '#209808', '#17c01f', '#0a18ed', '#08a9f3'],
+  },
+  {
+    id: 'smalt',
+    name: 'Smalt',
+    bg: '#05050c',
+    // 0.61
+    colors: ['#0c0844', '#0f2690', '#1357c1', '#3ae70e', '#09f929'],
+  },
+  {
+    id: 'viridian',
+    name: 'Viridian',
+    bg: '#050e0c',
+    // 0.61
+    colors: ['#044336', '#08862b', '#2dc40d', '#dc9b10', '#f6e716'],
+  },
+  {
+    id: 'byzantine',
+    name: 'Byzantine',
+    bg: '#05040a',
+    // 0.62
+    colors: ['#130d3e', '#4d0381', '#b718b8', '#e8c51a', '#fb0316'],
+  },
+  {
+    id: 'delphinium',
+    name: 'Delphinium',
+    bg: '#0c040e',
+    // 0.62
+    colors: ['#2f0935', '#3b0b85', '#171abe', '#0ae24e', '#02f5ea'],
+  },
+  {
+    id: 'gentian',
+    name: 'Gentian',
+    bg: '#f8f2f9',
+    // 0.62
+    colors: ['#bb0fee', '#23108c', '#095bd2', '#18ef16', '#0dfcd8'],
   },
   {
     id: 'chlorophyll',
@@ -298,6 +445,20 @@ const PALETTES = [
     colors: ['#0a2e14', '#17662a', '#4fa314', '#a8d419', '#eaff4a'],
   },
   {
+    id: 'tyrian',
+    name: 'Tyrian',
+    bg: '#09030a',
+    // 0.63
+    colors: ['#2e0436', '#7c1255', '#d40425', '#55ed03', '#fc3509'],
+  },
+  {
+    id: 'voltage',
+    name: 'Voltage',
+    bg: '#01050f',
+    // 0.63
+    colors: ['#0b1240', '#2233ff', '#00b3ff', '#7de8ff', '#ff2e00'],
+  },
+  {
     id: 'citron',
     name: 'Citron',
     bg: '#0a0c02',
@@ -305,18 +466,25 @@ const PALETTES = [
     colors: ['#2b3206', '#7a8c0b', '#cfe015', '#fff23d', '#ff3b1f'],
   },
   {
-    id: 'solar',
-    name: 'Solar',
-    bg: '#0e0900',
-    // 0.65
-    colors: ['#3a2600', '#a06a00', '#ffc400', '#ffef8a', '#7c3bff'],
-  },
-  {
     id: 'electric',
     name: 'Electric',
     bg: '#10002b',
     // 0.65
     colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
+  },
+  {
+    id: 'mallard',
+    name: 'Mallard',
+    bg: '#060e11',
+    // 0.65
+    colors: ['#0a303e', '#07966f', '#07d238', '#e3f00f', '#9cf816'],
+  },
+  {
+    id: 'solar',
+    name: 'Solar',
+    bg: '#0e0900',
+    // 0.65
+    colors: ['#3a2600', '#a06a00', '#ffc400', '#ffef8a', '#7c3bff'],
   },
   {
     id: 'jade',
@@ -338,6 +506,13 @@ const PALETTES = [
     bg: '#0d0221',
     // 0.68
     colors: ['#2d0b4e', '#7209b7', '#f72585', '#ff8500', '#ffe66d'],
+  },
+  {
+    id: 'orchid',
+    name: 'Orchid',
+    bg: '#f9f2f9',
+    // 0.70
+    colors: ['#fd0ef7', '#750b33', '#d33415', '#93da1a', '#f4f912'],
   },
   {
     id: 'flare',
