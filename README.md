@@ -432,6 +432,26 @@ One wrinkle in the compositing: an angled piece is drawn at its own size and the
 onto the quad, so every length inside it shrinks by that factor — the shadow included. It is given
 the inverse as a boost so it lands at the size the flat rooms use.
 
+### A wall with nothing repeating on it
+
+The steel wall is the harder case: no slats, no grid, nothing evenly spaced to fit the projective
+map to. It was assembled from what the photograph does have. The panel seam holds x 590-598 over
+1200px of height, so the camera is level and verticals stay vertical. The base line fits to a mean
+of 5.6px once the sunlight on the floor is kept out of the search. And **the horizon came from the
+sunlight**: a streak on the floor has two parallel edges, which converge on the horizon, and a
+constant real width, so its image width grows in proportion to the distance below the horizon.
+Both put it at y 947, independently — which is the kind of agreement worth looking for before
+trusting a number this much rests on.
+
+Foreshortening is the one thing assumed rather than measured: it needs a focal length, which needs
+a second vanishing point, and the perpendicular wall's base is behind a plant. It takes the slatted
+wall's measured 1.6× frame width, and the render is the check.
+
+The two walls also disagree about which way `v` runs — up from the floor here, down from the
+ceiling there — because that is what each photograph gave to measure from. So `placeOnPlane` orders
+its corners by where they land rather than by the order it generated them: taken positionally the
+two conventions differ by a vertical flip, which would hang the work upside down.
+
 Attribution lives in the room definition rather than on the page, so a room cannot be added without
 its credit.
 

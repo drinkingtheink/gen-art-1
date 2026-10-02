@@ -428,6 +428,61 @@ export const rooms = [
       sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
     },
   },
+  /**
+   * Patinated steel, and the first wall measured without a grid on it.
+   *
+   * The slatted wall handed over its perspective in the slats. This one has
+   * nothing repeating, so the plane was assembled from what it does have.
+   *
+   * The panel seam holds x 590-598 over 1200px of height, so the camera is
+   * level and verticals stay vertical. The wall's base line fits to a mean of
+   * 5.6px across the frame once the sunlight on the floor is excluded from the
+   * search. And the horizon came from that sunlight: the streak's two edges are
+   * parallel lines on the floor, so they converge on the horizon, and its
+   * width grows in proportion to the distance below the horizon. Both put it at
+   * y 947, independently.
+   *
+   * One thing is assumed rather than measured. Foreshortening needs a focal
+   * length, which needs a second vanishing point, and the perpendicular wall's
+   * base is behind the plant. So it takes the slatted wall's measured 1.6x
+   * frame width — an ordinary interior focal length — giving 51 degrees off the
+   * image plane and a camera 0.81 panel widths up, which is about 1.05m if a
+   * panel is 1.3m. That is a sane room, and the render is the check.
+   *
+   * `wall` counts `v` *upward* from the floor here, where the slatted wall
+   * counts down from its ceiling. Both are natural given what each photograph
+   * offers to measure from, which is why placeOnPlane orders its corners by
+   * where they land rather than by the order it made them.
+   */
+  {
+    id: 'steel',
+    name: 'Steel wall',
+    src: '/rooms/steel-wall.jpg',
+    width: 1333,
+    height: 2000,
+    plane: [
+      [0.48675141, 0, 0.4456114],
+      [0.092350541, -0.42603526, 0.8185075],
+      [0.1950381, 0, 1],
+    ],
+    // Hung clear of eye level rather than straddling it. The horizon sits at
+    // v 0.81 and a piece crossing it has one edge tilting each way, which is
+    // correct and still reads as a lean rather than as a plane.
+    wall: { u0: -0.55, u1: 0.65, v0: 0.88, v1: 1.56 },
+    // The window is off to the right and two surfaces standing clear of the
+    // wall agree: the pot reads 50.5 on its left against 89.6 on its right,
+    // the floor 107.3 against 144.7. The wall itself reads the other way,
+    // 83.3 to 58.6, but it is turning away from the camera as it goes — which
+    // is exactly the confound an angled wall introduces.
+    light: { x: -1, y: 0.3 },
+    wallColour: '#4e463d',
+    credit: {
+      who: 'Declan Sun',
+      profile: 'https://unsplash.com/@declansun?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+      source: 'Unsplash',
+      sourceUrl: 'https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText',
+    },
+  },
 ]
 
 /**
@@ -489,7 +544,20 @@ export function placeOnPlane(room, framedWidth, framedHeight) {
   if (dv > spanV) { dv = spanV; du = (dv * framedWidth) / framedHeight }
   const u = u0 + (spanU - du) / 2
   const v = v0 + (spanV - dv) / 2
-  return [[u, v], [u + du, v], [u + du, v + dv], [u, v + dv]].map(([a, b]) => project(room.plane, a, b))
+  const corners = [[u, v], [u + du, v], [u + du, v + dv], [u, v + dv]].map(([a, b]) =>
+    project(room.plane, a, b),
+  )
+
+  // Ordered by where they land rather than by the order they were generated.
+  // A wall's `v` may count upward from the floor or downward from a ceiling —
+  // both are natural depending on what the photograph gives you to measure
+  // from — and the transform needs top-left, top-right, bottom-right,
+  // bottom-left regardless. Taken positionally the two conventions differ by a
+  // vertical flip, which would hang the work upside down.
+  const byX = [...corners].sort((p, r) => p[0] - r[0])
+  const [leftTop, leftFoot] = byX.slice(0, 2).sort((p, r) => p[1] - r[1])
+  const [rightTop, rightFoot] = byX.slice(2).sort((p, r) => p[1] - r[1])
+  return [leftTop, rightTop, rightFoot, leftFoot]
 }
 
 /**
