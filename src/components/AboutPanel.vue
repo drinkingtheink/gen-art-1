@@ -74,7 +74,7 @@ onUnmounted(() => {
     <div class="sheet">
       <header class="head">
         <div>
-          <h2 id="about-title">About</h2>
+          <h2 id="about-title">About gen<span class="sep">·</span>Art</h2>
           <p class="who">Generative artwork for a wall or a homepage</p>
         </div>
         <p class="crest" aria-hidden="true"><GenArtMark /></p>
@@ -97,6 +97,14 @@ onUnmounted(() => {
             Nothing is stored and nothing is uploaded. A link carries the generator, the seed and
             every parameter, so the piece is rebuilt from the address alone — which is why a link
             you send someone opens on exactly what you were looking at, down to the last decimal.
+          </p>
+          <p>
+            <strong>Every Pause a Masterpiece</strong> is the method, not a slogan. Press
+            <strong>Play</strong> and the piece drifts through its own parameters; press
+            <strong>Pause</strong> and whatever is on screen at that instant becomes the piece —
+            kept at full precision, not snapped back to the nearest slider step, because a
+            thousandth is the difference between the frame you stopped on and a near miss. That
+            frame is what the link carries and what the export gives you.
           </p>
         </section>
 
@@ -167,8 +175,20 @@ onUnmounted(() => {
             Vue and Vite, no backend, no database, no accounts. The artwork is SVG all the way
             through — what you see on screen is the same document that leaves in the export.
           </p>
+          <!-- The mark is part of the link rather than a decoration sitting
+               beside one. It already lit to the accent on hover, so it was
+               behaving like a link before it was one. Hidden from a screen
+               reader because the words next to it are its name. -->
           <p class="sign">
-            <JhMonogram aria-hidden="true" />
+            <a
+              class="maker"
+              href="https://www.drinkingtheink.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <JhMonogram aria-hidden="true" />
+              <span>drinkingtheink.com</span>
+            </a>
             <a
               href="https://github.com/drinkingtheink/gen-art-1"
               target="_blank"
@@ -290,6 +310,13 @@ onUnmounted(() => {
   justify-self: end;
 }
 
+/* The separator takes the accent, as it does in the wordmark itself. No
+   negative margin here: that one is pulling against a flex row's gap, and this
+   is ordinary inline text. */
+.sep {
+  color: var(--accent);
+}
+
 h2 {
   margin: 0;
   font-size: 1.05rem;
@@ -397,13 +424,36 @@ a:hover {
 .sign {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-top: 1.1rem;
+  font-size: 0.84rem;
 }
 
+.maker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  /* The rule underlines links, and an underline running under the mark and the
+     gap looks like a mistake. The name carries it instead. */
+  text-decoration: none;
+}
+
+.maker span {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Hovering anywhere on the link lights the mark, not just the mark itself —
+   the component's own `:hover` only fires over the glyph. */
+.maker:hover :deep(.monogram *) {
+  fill: var(--accent);
+  animation-play-state: paused;
+}
+
+/* Sized by width, which is how the component is built: it sets its own width
+   and lets the height follow from the viewBox. */
 .sign :deep(.monogram) {
-  width: auto;
-  height: 1.9rem;
-  flex: none;
+  width: 22px;
 }
 </style>

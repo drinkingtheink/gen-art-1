@@ -256,6 +256,11 @@ drives the lived params and only pausing writes them back.
 A modal, opened from **About** beside *All pieces*. Five sections: what the thing is, how to print
 it, the wall preview, the photographers, and a colophon.
 
+It is also where the strapline gets explained rather than repeated. *Every Pause a Masterpiece* is
+a description of the mechanism: pausing freezes exactly what the stage is drawing into the piece's
+own parameters, at full precision — not snapped back to the nearest slider step, because a
+thousandth is the difference between the frame you stopped on and a near miss.
+
 Its counts and its credits are read from the registries rather than written out. A page that says
 "twenty generators" is wrong the moment a twenty-first lands and nobody thinks to look here, and
 the photographers matter more than that — a room cannot be added without its credit, so this
