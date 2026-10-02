@@ -21,12 +21,12 @@ defineProps({
   /**
    * Which shape. `link` and `tick` are the two halves of a copy button — the
    * same control a moment apart — `play` and `pause` are the two halves of
-   * another, and `back` is the way out of a panel.
+   * another, `back` is the way out of a panel, and `dice` is a roll.
    */
   glyph: {
     type: String,
     default: 'link',
-    validator: (v) => ['link', 'tick', 'back', 'play', 'pause', 'regen'].includes(v),
+    validator: (v) => ['link', 'tick', 'back', 'play', 'pause', 'regen', 'dice'].includes(v),
   },
 })
 </script>
@@ -77,6 +77,19 @@ defineProps({
     <template v-else-if="glyph === 'regen'">
       <path d="M20.6 5.4v4.9h-4.9" />
       <path d="M18.9 14.5A7.4 7.4 0 1 1 17.2 6.8l3.4 3.5" />
+    </template>
+
+    <!-- A die showing three, because three pips on the diagonal stay legible
+         at 13px where five or six turn to a smudge. The pips are filled while
+         everything else here is stroked — a 1.2 radius ring would close up at
+         this size and read as a dot anyway, just a muddier one. -->
+    <template v-else-if="glyph === 'dice'">
+      <rect x="4.3" y="4.3" width="15.4" height="15.4" rx="3.4" />
+      <g fill="currentColor" stroke="none">
+        <circle cx="8.7" cy="15.3" r="1.25" />
+        <circle cx="12" cy="12" r="1.25" />
+        <circle cx="15.3" cy="8.7" r="1.25" />
+      </g>
     </template>
 
     <!-- The bar through the middle, and the two half-links it joins. Drawn on

@@ -456,6 +456,21 @@ function openPreview() {
   wall.value = DEFAULT_FRAME
 }
 
+/**
+ * A whole new piece, from the tray rather than from the opening panel.
+ *
+ * The same roll the panel's dice makes — `randomState()` — so the two agree
+ * about what "random" means here: a generator, a shape, a seed and every
+ * param, with grain and effects left on their defaults, because a random pile
+ * of bloom and static reads as a broken render rather than as a choice.
+ *
+ * Re-gen sits beside this and is the smaller version of it: a new seed for
+ * the piece you already have. This replaces the piece.
+ */
+function randomize() {
+  applyState(randomState())
+}
+
 const copied = ref(false)
 let copyTimer = null
 
@@ -596,9 +611,9 @@ async function copyLink() {
         :artwork-filter="artworkFilter"
       />
 
-      <!-- Under the work rather than in the sidebar: these are the three things
-           you do *to the piece in front of you*, so they are asked where the
-           piece is. Everything else stays in the panel, which is where you go
+      <!-- Under the work rather than in the sidebar: these are the things you
+           do *to the piece in front of you*, so they are asked where the piece
+           is. Everything else stays in the panel, which is where you go
            to change what the piece is. -->
       <div v-if="!presenting" class="stage-controls">
         <!-- The same two controls as the showcase bar, sharing its state —
@@ -611,6 +626,11 @@ async function copyLink() {
         <button type="button" class="minor" @click="regen">
           <ButtonIcon glyph="regen" />
           Re-gen
+        </button>
+
+        <button type="button" class="minor" @click="randomize">
+          <ButtonIcon glyph="dice" />
+          Randomized piece
         </button>
 
         <button type="button" class="see-framed" @click="openPreview">
