@@ -3,7 +3,7 @@ import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 import GenArtMark from './GenArtMark.vue'
 import ButtonIcon from './ButtonIcon.vue'
 import RoomPlate from './RoomPlate.vue'
-import { DEFAULT_FRAME, frameById, frames, rooms } from '../core/mounts.js'
+import { DEFAULT_FRAME, frameById, frames, PLATE_ASPECT, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
@@ -250,7 +250,7 @@ onUnmounted(() => {
              photograph's own proportions so nothing is cropped. -->
         <div
           class="look-plate"
-          :style="{ '--ratio': (rooms[enlarged].width / rooms[enlarged].height).toFixed(4) }"
+          :style="{ '--ratio': PLATE_ASPECT.toFixed(4) }"
         >
           <RoomPlate
             v-if="framed"

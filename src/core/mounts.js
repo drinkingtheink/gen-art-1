@@ -431,6 +431,18 @@ export const rooms = [
 ]
 
 /**
+ * The shape every plate is shown in: the shortest photograph's proportions.
+ *
+ * The rooms were not shot to a common ratio — 1600x1933 against 1600x2400 —
+ * so a grid of them came out ragged. They are cropped to match rather than
+ * squeezed, and to the shortest so the crop only ever removes.
+ *
+ * Derived rather than written down, so a room added tomorrow either fits this
+ * shape or changes it, and cannot quietly be the one that does not match.
+ */
+export const PLATE_ASPECT = Math.max(...rooms.map((room) => room.width / room.height))
+
+/**
  * Where a framed piece sits within a room, as fractions of the photograph.
  *
  * Fractions rather than pixels, so the placement holds at whatever size the

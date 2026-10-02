@@ -1,6 +1,14 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
-import { artWindow, hangStyle, matrix3dFor, placeInRoom, placeOnPlane, wallTone } from '../core/mounts.js'
+import {
+  artWindow,
+  hangStyle,
+  matrix3dFor,
+  PLATE_ASPECT,
+  placeInRoom,
+  placeOnPlane,
+  wallTone,
+} from '../core/mounts.js'
 
 /**
  * One photograph with the piece hung in it.
@@ -119,41 +127,54 @@ const hung = computed(() => {
 </script>
 
 <template>
-  <div ref="el" class="room" :style="{ backgroundColor: wallTone(room) }">
-    <!-- `width` and `height` are the photograph's own pixels, which is what
-         lets the browser reserve the right box before the file arrives. Without
-         them the container has no height until the image decodes, every cell in
-         the grid is flat, and the whole panel jumps when they land. -->
-    <img
-      ref="photo"
-      class="plate"
-      :class="{ arrived }"
-      :src="room.src"
-      :width="room.width"
-      :height="room.height"
-      alt=""
-      decoding="async"
-      @load="arrived = true"
-      @error="arrived = true"
-    />
-    <!-- A shadow on the wall, the room reflected in the glass, and a breath of
-         the wall's own colour over the work. The piece is isolated so those
-         blend with the artwork and not with the photograph underneath it. -->
-    <div v-if="hung" class="hung" :class="{ arrived }" :style="hung.style">
-      <img :src="framed.url" alt="" />
-      <!-- On the print rather than around it: the mat's inner edge shadowing
-           the paper that sits a few millimetres behind it. -->
-      <span class="print" :style="hung.print" />
-      <!-- The room coming back out of the glazing. Over the artwork, because
-           that is where a reflection falls and where a piece otherwise reads
-           as pasted on rather than framed. -->
-      <span class="glaze" :style="{ backgroundImage: hung.light.glaze }" />
-      <span class="glass" :style="{ backgroundImage: hung.light.sheen }" />
-      <span class="cast" :style="{ backgroundColor: hung.light.wall }" />
-      <!-- Last, and over everything: the lit edge of the moulding. A frame
-           with no edge catching the light reads as a printed rectangle however
-           well it is placed. -->
-      <span class="edge" :style="{ boxShadow: hung.light.edge }" />
+  <!-- The window. Every room is shown in the same shape, so a plate is cropped
+       to it rather than taking whatever proportions its photograph happened to
+       be shot in. -->
+  <div
+    ref="el"
+    class="room"
+    :style="{ backgroundColor: wallTone(room), aspectRatio: PLATE_ASPECT }"
+  >
+    <!-- The photograph, whole, behind that window. The piece is placed as a
+         fraction of the *photograph*, so it has to stay inside a box that is
+         still the photograph's own shape — crop the box the piece is measured
+         against and every placement moves with it. -->
+    <div class="photo" :style="{ aspectRatio: room.width / room.height }">
+      <!-- `width` and `height` are the photograph's own pixels, which is what
+           lets the browser reserve the right box before the file arrives.
+           Without them the container has no height until the image decodes,
+           every cell in the grid is flat, and the panel jumps when they land. -->
+      <img
+        ref="photo"
+        class="plate"
+        :class="{ arrived }"
+        :src="room.src"
+        :width="room.width"
+        :height="room.height"
+        alt=""
+        decoding="async"
+        @load="arrived = true"
+        @error="arrived = true"
+      />
+      <!-- A shadow on the wall, the room reflected in the glass, and a breath of
+           the wall's own colour over the work. The piece is isolated so those
+           blend with the artwork and not with the photograph underneath it. -->
+      <div v-if="hung" class="hung" :class="{ arrived }" :style="hung.style">
+        <img :src="framed.url" alt="" />
+        <!-- On the print rather than around it: the mat's inner edge shadowing
+             the paper that sits a few millimetres behind it. -->
+        <span class="print" :style="hung.print" />
+        <!-- The room coming back out of the glazing. Over the artwork, because
+             that is where a reflection falls and where a piece otherwise reads
+             as pasted on rather than framed. -->
+        <span class="glaze" :style="{ backgroundImage: hung.light.glaze }" />
+        <span class="glass" :style="{ backgroundImage: hung.light.sheen }" />
+        <span class="cast" :style="{ backgroundColor: hung.light.wall }" />
+        <!-- Last, and over everything: the lit edge of the moulding. A frame
+             with no edge catching the light reads as a printed rectangle however
+             well it is placed. -->
+        <span class="edge" :style="{ boxShadow: hung.light.edge }" />
+      </div>
     </div>
   </div>
 </template>
@@ -170,10 +191,26 @@ const hung = computed(() => {
   line-height: 0;
 }
 
+/**
+ * The photograph at its own proportions, centred in the window.
+ *
+ * Centred rather than pinned to the top: these rooms carry the wall above and
+ * the furniture below, and taking the crop off one end only would lose a whole
+ * end of the room. The art hangs in the middle third of every one of them, so
+ * the middle is what survives.
+ */
+.photo {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  translate: 0 -50%;
+}
+
 .plate {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
 /**

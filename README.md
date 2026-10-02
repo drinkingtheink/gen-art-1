@@ -270,6 +270,18 @@ the enlarged plate before it closes the panel, so leaving from in there takes tw
 returns focus to the plate for the room you were *looking at*, found by index, not to the one that
 opened the view — after stepping, those are different plates.
 
+The rooms were not shot to a common ratio — 1600x1933 against 1600x2400 — so a grid of them came
+out ragged. Every plate is shown in the **shortest photograph's shape**, which is derived rather
+than written down, so a room added tomorrow either fits it or changes it and cannot quietly be the
+one that does not match. Cropping to the shortest means the crop only ever removes.
+
+The crop is a window, not a resize. The piece is placed as a fraction of the *photograph*, so the
+photograph keeps its own box inside that window and the box is what hangs the work — crop the box
+the piece is measured against and every placement moves with it. The window is centred because
+these rooms carry wall above and furniture below, and taking it off one end would lose a whole end
+of the room. It also means the enlarged plate is one fixed size whatever room is in it, so stepping
+through with the arrows no longer resizes it.
+
 Nothing moves while it loads. Each `<img>` carries the photograph's own `width` and `height`, which
 is what lets the browser reserve the right box before a byte is fetched — without them a container
 has no height until the image decodes, every cell is flat, and the panel jumps when they land. The
