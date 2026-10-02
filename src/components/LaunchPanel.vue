@@ -421,6 +421,37 @@ onUnmounted(() => {
   list-style: none;
 }
 
+/* The About button shares the wordmark's line instead of taking a column.
+   
+   As a flex row it stands beside the whole title block, so every line of the
+   tagline and the blurb sets to a measure 80px short of the sheet — which is
+   affordable at 1040px and is not at 390, where it costs the tagline a second
+   line. `display: contents` drops the wrapper so the three text elements become
+   grid items in their own right: the wordmark takes column one of the first
+   row, the button takes column two, and the rest span both. */
+@media (max-width: 700px) {
+  .head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .titles {
+    display: contents;
+  }
+
+  .about {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .tagline,
+  .blurb {
+    grid-column: 1 / -1;
+  }
+}
+
 /* One column, stated rather than left to `auto-fill`.
    
    The cards are upright below this width, and an upright card wants the whole
