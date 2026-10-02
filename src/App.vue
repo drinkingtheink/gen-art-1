@@ -4,6 +4,7 @@ import ControlPanel from '@/components/ControlPanel.vue'
 import ExportBar from '@/components/ExportBar.vue'
 import GenArtMark from '@/components/GenArtMark.vue'
 import ButtonIcon from '@/components/ButtonIcon.vue'
+import AboutPanel from '@/components/AboutPanel.vue'
 import GalleryPanel from '@/components/GalleryPanel.vue'
 import LaunchPanel from '@/components/LaunchPanel.vue'
 import EffectsBar from '@/components/EffectsBar.vue'
@@ -248,7 +249,7 @@ function onFullscreenChange() {
 
 function onKey(event) {
   // Whichever panel is up owns the keyboard, Escape included.
-  if (launching.value || previewing.value) return
+  if (launching.value || previewing.value || about.value) return
   if (event.key === 'Escape' && presenting.value) leavePresent()
   if (event.key === ' ' && event.target === document.body) {
     event.preventDefault()
@@ -448,6 +449,15 @@ watch(
  */
 const previewing = computed(() => wall.value !== null)
 
+/**
+ * Local state, not URL state.
+ *
+ * The wall is in the link because which room a piece hangs in is part of what
+ * you would send someone. Having read the about page is not — a link that
+ * opened on it would be a link about the app rather than about a piece.
+ */
+const about = ref(false)
+
 function openPreview() {
   if (show.playing.value) {
     commitLive()
@@ -513,6 +523,10 @@ async function copyLink() {
     />
   </Transition>
 
+  <Transition name="about">
+    <AboutPanel v-if="about" @dismiss="about = false" />
+  </Transition>
+
   <LaunchPanel
     v-if="launching"
     @pick="startWith"
@@ -530,7 +544,13 @@ async function copyLink() {
         </h1>
         <p class="tagline">
           <span>Every Pause a Masterpiece</span>
-          <button type="button" class="all" @click="showLaunch">All pieces</button>
+          <!-- Grouped, so the pair wraps together and stays right-aligned when
+               the strapline leaves them no room. Loose, the second one drops to
+               its own line on its own and reads as a mistake. -->
+          <span class="ways-out">
+            <button type="button" class="all" @click="showLaunch">All pieces</button>
+            <button type="button" class="all" @click="about = true">About</button>
+          </span>
         </p>
       </header>
 
@@ -803,6 +823,14 @@ async function copyLink() {
 
 /* Low-key on purpose: it has to be findable without competing with the name
    above it or the piece picker below. */
+.ways-out {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 0.1rem;
+  margin-left: auto;
+}
+
 .all {
   flex: none;
   padding: 0.1rem 0.4rem;

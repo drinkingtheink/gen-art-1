@@ -251,6 +251,24 @@ on anything moving. It watches what actually defines the piece instead — gener
 params, palette use, grain, effects — none of which move while the clock runs, because playback
 drives the lived params and only pausing writes them back.
 
+## About
+
+A modal, opened from **About** beside *All pieces*. Five sections: what the thing is, how to print
+it, the wall preview, the photographers, and a colophon.
+
+Its counts and its credits are read from the registries rather than written out. A page that says
+"twenty generators" is wrong the moment a twenty-first lands and nobody thinks to look here, and
+the photographers matter more than that — a room cannot be added without its credit, so this
+cannot be allowed to fall behind the rooms.
+
+It is **local state, not URL state**. The wall is in the link because which room a piece hangs in
+is part of what you would send someone; having read the about page is not, and a link that opened
+on it would be a link about the app rather than about a piece.
+
+Its sheet is near-solid where the gallery's is 74%. That one is filled edge to edge with opaque
+photographs; this one is text, and text over a piece still moving underneath it is not readable at
+any blur.
+
 ## On the wall
 
 A piece hung in a real room, opened from **See it on a wall** under the stage — it is a question

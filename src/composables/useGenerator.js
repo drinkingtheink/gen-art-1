@@ -7,7 +7,6 @@ import {
   paletteAtCycle,
   paletteIdAtCycle,
   randomBackground,
-  randomPaletteId,
 } from '../core/palettes.js'
 import { createRng, randomSeed } from '../core/rng.js'
 import { paramsAt } from '../core/showcase.js'
@@ -203,26 +202,41 @@ export function useGenerator(initial = {}) {
 
   /**
    * Switch generators, starting from that generator's own defaults — except
-   * the palette, which is rolled.
+   * the palette, which is carried across.
    *
-   * Each piece was authored in one set, so every piece appeared to come in one
-   * colour: truchet was the flame piece, dendrite the green one. The sets are
-   * all general-purpose and there are fifty of them, and which one a piece
-   * happens to have been written in says nothing about which one suits it.
+   * This used to roll a new set, and the reason was real: each piece was
+   * authored in one palette, so every piece arrived in one colour — truchet
+   * was the flame piece, dendrite the green one — and which set a generator
+   * happens to have been written in says nothing about which suits it.
    *
-   * Never the set already on screen, so the change always reads as a change.
+   * Carrying the current set solves that just as well and answers the question
+   * people actually have here, which is what the palette they just chose looks
+   * like on something else. Rolling made that impossible: the one thing you
+   * were holding onto was the one thing the change threw away. The authored
+   * default still shows, once, on whichever generator the session opens with.
+   *
+   * Every generator draws its palette options from the same global list, so a
+   * set carried from one is always valid on the next.
+   *
+   * No background roll here either, and that is the same rule rather than an
+   * exception to it: the background is rolled when a *new* palette arrives,
+   * and nothing new has arrived.
+   *
+   * The palette cycle keeps its timer through this for free. It is re-anchored
+   * by a watcher on the palette param, so leaving that param alone leaves the
+   * cycle where it was — a piece swapped mid-cycle lands on the colour the
+   * clock had already walked to, rather than snapping back to the start.
    */
   function selectGenerator(id) {
     const next = getGenerator(id)
     if (next.id === generatorId.value) return
     generatorId.value = next.id
     const wants = next.params.some((spec) => spec.type === 'palette')
-    const rolled = wants ? randomPaletteId(params.value.palette) : null
+    const carried = wants ? params.value.palette : null
     params.value = {
       ...defaultsFor(next),
-      ...(rolled ? { palette: rolled } : null),
+      ...(carried ? { palette: carried } : null),
     }
-    if (rolled) rollBackground(rolled)
   }
 
   /**
