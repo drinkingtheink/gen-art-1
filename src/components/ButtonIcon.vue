@@ -20,12 +20,13 @@
 defineProps({
   /**
    * Which shape. `link` and `tick` are the two halves of a copy button — the
-   * same control a moment apart — and `back` is the way out of a panel.
+   * same control a moment apart — `play` and `pause` are the two halves of
+   * another, and `back` is the way out of a panel.
    */
   glyph: {
     type: String,
     default: 'link',
-    validator: (v) => ['link', 'tick', 'back'].includes(v),
+    validator: (v) => ['link', 'tick', 'back', 'play', 'pause', 'regen'].includes(v),
   },
 })
 </script>
@@ -54,6 +55,28 @@ defineProps({
     <template v-else-if="glyph === 'back'">
       <path d="M19.5 12H5.2" />
       <path d="M11 5.5 4.5 12l6.5 6.5" />
+    </template>
+
+    <!-- Stroked like the rest rather than filled, which is the whole point of
+         keeping them in one file: a solid triangle at this weight would read
+         heavier than the words beside it and heavier than the tick it sits
+         near. Both are inset to the same 5.9-18.1 band so the pair do not
+         change size as the button changes state. -->
+    <path v-else-if="glyph === 'play'" d="M9.7 5.9 18.1 12 9.7 18.1Z" />
+
+    <template v-else-if="glyph === 'pause'">
+      <path d="M9.6 5.9v12.2" />
+      <path d="M14.4 5.9v12.2" />
+    </template>
+
+    <!-- Most of a circle, running out to a corner at the top right. The head
+         is that corner rather than a V on the tangent: a barbed head at this
+         size puts one barb across the circle's own gap and the whole thing
+         reads as a hook with a tail. A bracket has only two strokes and both
+         of them are straight, which is what survives being 13px wide. -->
+    <template v-else-if="glyph === 'regen'">
+      <path d="M20.6 5.4v4.9h-4.9" />
+      <path d="M18.9 14.5A7.4 7.4 0 1 1 17.2 6.8l3.4 3.5" />
     </template>
 
     <!-- The bar through the middle, and the two half-links it joins. Drawn on

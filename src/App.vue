@@ -595,23 +595,39 @@ async function copyLink() {
         :artwork-filter="artworkFilter"
       />
 
-      <!-- Under the work rather than in the sidebar: it is a question about
-           the piece in front of you, so it is asked where the piece is. -->
-      <button v-if="!presenting" type="button" class="see-framed" @click="openPreview">
-        <!-- Drawn here rather than pulled from an icon set: it is two circles,
-             a bridge and two temples, and the app already draws its own mark.
-             Decorative, because the label beside it says the same thing. -->
-        <svg class="specs" viewBox="0 0 26 11" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-            <circle cx="6.6" cy="6.1" r="4.2" />
-            <circle cx="19.4" cy="6.1" r="4.2" />
-            <path d="M10.8,5.4 Q13,4.1 15.2,5.4" />
-            <path d="M2.4,5.1 L0.9,2.6" />
-            <path d="M23.6,5.1 L25.1,2.6" />
-          </g>
-        </svg>
-        See it on a wall
-      </button>
+      <!-- Under the work rather than in the sidebar: these are the three things
+           you do *to the piece in front of you*, so they are asked where the
+           piece is. Everything else stays in the panel, which is where you go
+           to change what the piece is. -->
+      <div v-if="!presenting" class="stage-controls">
+        <!-- The same two controls as the showcase bar, sharing its state —
+             pressing either one moves both. -->
+        <button type="button" class="minor" @click="toggleShowcase">
+          <ButtonIcon :glyph="show.playing.value ? 'pause' : 'play'" />
+          {{ show.playing.value ? 'Pause' : 'Play' }}
+        </button>
+
+        <button type="button" class="minor" @click="regen">
+          <ButtonIcon glyph="regen" />
+          Re-gen
+        </button>
+
+        <button type="button" class="see-framed" @click="openPreview">
+          <!-- Drawn here rather than pulled from an icon set: it is two circles,
+               a bridge and two temples, and the app already draws its own mark.
+               Decorative, because the label beside it says the same thing. -->
+          <svg class="specs" viewBox="0 0 26 11" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="6.6" cy="6.1" r="4.2" />
+              <circle cx="19.4" cy="6.1" r="4.2" />
+              <path d="M10.8,5.4 Q13,4.1 15.2,5.4" />
+              <path d="M2.4,5.1 L0.9,2.6" />
+              <path d="M23.6,5.1 L25.1,2.6" />
+            </g>
+          </svg>
+          See it on a wall
+        </button>
+      </div>
 
       <button v-if="presenting" type="button" class="leave" @click="leavePresent">
         Esc to exit
@@ -808,14 +824,69 @@ async function copyLink() {
  * `aspect-ratio` against `max-width/height: 100%`, and giving the grid a
  * second child to place would have disturbed it.
  *
+ * The centring lives here rather than on the buttons, which is why it is a row
+ * at all: translating each of three children by half its own width would have
+ * stacked them.
+ */
+.stage-controls {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transform: translateX(-50%);
+  /* Wrapping beats overflowing a narrow stage, and reversed so the accent
+     button is the one that keeps the bottom line. */
+  flex-wrap: wrap-reverse;
+  justify-content: center;
+  max-width: calc(100% - 2rem);
+}
+
+/**
+ * The two quiet ones.
+ *
+ * Deliberately not the accent: three accent buttons in a row would be three
+ * things shouting and no answer to which one you came for. These carry the
+ * panel's own surface, lifted enough to read against artwork of any colour.
+ */
+.stage-controls .minor {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border-color: color-mix(in srgb, var(--panel-edge) 90%, transparent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px -8px rgb(0 0 0 / 70%);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.stage-controls .minor:hover,
+.stage-controls .minor:focus-visible {
+  background: var(--panel);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px -10px rgb(0 0 0 / 75%);
+}
+
+/* The label swaps between Play and Pause, and the row is centred, so the
+   button changing width would shift its neighbours. Both words in one cell,
+   sized to the wider. */
+.stage-controls .minor:first-child {
+  min-width: 6.1rem;
+  justify-content: center;
+}
+
+/**
  * It was a whisper at first, revealed on hover, and nobody found it. It is a
  * real control now: the accent, full strength, sitting on the piece. The one
  * concession is that it lifts clear on hover rather than sitting there inert.
  */
 .see-framed {
-  position: absolute;
-  bottom: 0.9rem;
-  left: 50%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -826,7 +897,6 @@ async function copyLink() {
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  transform: translateX(-50%);
   box-shadow: 0 6px 20px -8px rgb(0 0 0 / 70%);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
@@ -846,18 +916,21 @@ async function copyLink() {
 .see-framed:focus-visible {
   background: var(--accent-hot);
   border-color: var(--accent-edge);
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
   box-shadow: 0 12px 26px -10px rgb(0 0 0 / 75%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .see-framed {
+  .see-framed,
+  .stage-controls .minor {
     transition: none;
   }
 
   .see-framed:hover,
-  .see-framed:focus-visible {
-    transform: translateX(-50%);
+  .see-framed:focus-visible,
+  .stage-controls .minor:hover,
+  .stage-controls .minor:focus-visible {
+    transform: none;
   }
 }
 
