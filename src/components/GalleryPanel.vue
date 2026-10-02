@@ -2,8 +2,9 @@
 import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import GenArtMark from './GenArtMark.vue'
 import ButtonIcon from './ButtonIcon.vue'
+import FrameChoice from './FrameChoice.vue'
 import RoomPlate from './RoomPlate.vue'
-import { DEFAULT_FRAME, frameById, frames, PLATE_ASPECT, rooms } from '../core/mounts.js'
+import { DEFAULT_FRAME, frameById, PLATE_ASPECT, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
 
 /**
@@ -165,18 +166,7 @@ onUnmounted(() => {
         </header>
 
         <div class="choices">
-          <div class="frames" role="group" aria-label="Frame">
-            <button
-              v-for="f in frames"
-              :key="f.id"
-              type="button"
-              :class="{ on: f.id === frame }"
-              :aria-pressed="f.id === frame"
-              @click="emit('frame', f.id)"
-            >
-              {{ f.name }}
-            </button>
-          </div>
+          <FrameChoice :frame="frame" @pick="emit('frame', $event)" />
 
           <!-- The sidebar's own copy button is behind this panel and out of
                reach, and the link it would hand over is a different link: this
@@ -237,6 +227,12 @@ onUnmounted(() => {
           {{ rooms[enlarged].name }}
           <span class="count">{{ enlarged + 1 }} of {{ rooms.length }}</span>
         </p>
+        <!-- The same question, asked where the answer is actually visible. On
+             the grid you are comparing rooms; here you are looking at one, and
+             this is where a change of frame reads. Without it you had to back
+             out to the grid to change the frame and come back in to see it. -->
+        <FrameChoice :frame="frame" @pick="emit('frame', $event)" />
+
         <button ref="enlargedCloser" type="button" @click="shrink">
           <ButtonIcon glyph="back" />
           Back to the gallery
@@ -486,11 +482,6 @@ h2 {
   margin: 1.1rem 0 0;
 }
 
-.frames {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
 
 .share {
   display: flex;
@@ -517,19 +508,6 @@ h2 {
   visibility: hidden;
 }
 
-.frames button {
-  font-size: 0.8rem;
-}
-
-.frames button.on {
-  color: var(--accent-ink);
-  background: var(--accent);
-  border-color: var(--accent-edge);
-}
-
-.frames button.on:hover {
-  background: var(--accent-hot);
-}
 
 .rooms {
   display: grid;
@@ -608,11 +586,14 @@ h2 {
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
 }
 
+/* Three parts now — where you are, the frame, the way out — so it wraps
+   rather than squeezing the frame buttons at narrow widths. */
 .look-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.6rem 1rem;
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
