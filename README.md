@@ -4,10 +4,22 @@
 
 A generative art gallery in Vue 3. Pieces are SVG, seeded, and shareable as a URL.
 
+![Three pieces side by side: a recursive subdivision in orange and blue, a five-rooted dendrite on
+cream, and an amber flow field on near-black](docs/pieces/hero.png)
+
 ```bash
 npm install
 npm run dev
 ```
+
+Every piece shown below is a real one rather than a picture of one. The artwork sheets —
+`hero.png`, `panel.png`, `shapes.png` — come out of `scripts/readmeShots.mjs`, which runs the
+generators through the same DOM-free serialiser the link previews use and rasterises with the same
+`@resvg/resvg-wasm`. Each tile is that generator's authored defaults on a seed derived from its id,
+so `node scripts/readmeShots.mjs` reproduces them and a diff under `docs/pieces/` means a generator
+or a palette actually changed. The three screenshots are the running app, which is the only way to
+get the parts that are browser work: a CSS `matrix3d` projection onto a photograph, and a media
+query.
 
 ## The idea
 
@@ -27,6 +39,13 @@ vector. And because generation is pure with a freshly seeded rng each run, a see
 piece exactly.
 
 Controls are built from each generator's param schema, so **adding a piece of art is one file**.
+
+![The studio: a sidebar of schema-built controls and palette swatches on the left, a truchet piece
+filling the stage on the right, and a tray of actions under it](docs/pieces/studio.jpg)
+
+Nothing in that sidebar is written by hand. The piece picker, the shape, the seed field and every
+slider under them are read off the schema, which is why the panel is the same amount of work for a
+generator with four params as for one with fourteen.
 
 ## Adding a generator
 
@@ -59,11 +78,18 @@ described under *Opening on nothing*.
 ## Opening on nothing
 
 A visit with no query string names no piece, so rather than dropping into whichever generator
-happens to be first, the site opens on a panel of all eighteen. Each card is generated, never
+happens to be first, the site opens on a panel of all twenty. Each card is generated, never
 stored: the thumbnail **is** the piece clicking it opens — same seed, same defaults — so the grid
 can't promise something the studio then fails to deliver. Each card's seed is derived from the
 generator's id, which keeps it the same on every visit without a list of hand-picked seeds to
 maintain.
+
+![A five-by-four grid of all twenty generators, each a square piece in its own
+palette](docs/pieces/panel.png)
+
+The palette is the one thing rolled per visit, so the panel is a different set of colourways each
+time it opens rather than the same wall of pieces in the sets they were written in. The grid above
+is each generator's authored palette, which is what makes it reproducible here.
 
 Behind the panel, a piece plays. It is a real generator on a real showcase preset, picked at
 random with a random palette on every visit, not a video and not a canned loop — so the studio has
@@ -119,9 +145,10 @@ is tuned for flat panel colour; over frosted artwork it goes muddy.
 Thumbnails are built one per animation frame. Together they cost around 280ms, and a single piece
 can be most of that, so built in one pass the panel would be frozen before it appeared; a frame at
 a time, the browser paints between pieces and the grid visibly fills in. Each goes into an `<img>`
-as a blob URL rather than inline SVG — the browser rasterises it once, and eighteen inline
-documents would mean eighteen sets of clip-path ids sharing one namespace and about two megabytes
-of live DOM for a screen of thumbnails.
+as a blob URL rather than inline SVG — the browser rasterises it once, and twenty inline
+documents would mean twenty sets of clip-path ids sharing one namespace and about two megabytes of
+live DOM for a screen of thumbnails. That figure is the sum of the twenty pieces' own markup at
+their defaults, which measures 1.94MB.
 
 The name in the sidebar is a button back to the picker, and there is an explicit grid button on
 the same line for anyone who does not think to try it. Both push the bare URL rather than
@@ -176,6 +203,36 @@ the fragment, and rewritten on arrival.
 Discrete choices (a new seed, a different generator, reset) push a history entry, so Back walks
 through the pieces you looked at. Slider drags replace instead, so one gesture doesn't bury the
 history.
+
+**`w=<frameId>`** is the one optional field, and the only one that is a *view* rather than part of
+the piece: it means "open this in the gallery, in this frame". Its absence means the studio. It is
+written last, so a gallery link reads as an instruction appended to a piece's address — and it is
+omitted entirely rather than written empty when the wall is closed, which keeps an ordinary piece
+link byte-identical to the ones already shared and means the field says something by existing at
+all.
+
+Nothing on arrival rolls anything. `applyState()` writes what the link says and stops there; a link
+that rerolled itself on arrival is not a link. Rolling happens at the places you press — the
+palette swatches, the piece picker, **Re-gen** and **Randomized piece** — and nowhere else, which
+is why there is no watcher on a param that `applyState` also writes.
+
+**Re-gen** rolls the piece, not just the seed. A new seed on its own only reshuffles what the
+generator draws from the same numbers, so twenty presses gave twenty arrangements of one picture —
+the grid stayed 12, the margin stayed 30, the tiles stayed arcs. It rolls every param now, which is
+what makes it a re-generation.
+
+The palette is held, and held properly: it is handed to `randomParams` rather than stamped over the
+top afterwards, because colour params are drawn *from* the set — rolling against a random palette
+and then rewriting the id would leave every stroke belonging to a palette that is no longer in the
+piece. Generator and shape are held too; changing those is what the picker and Randomized piece are
+for, and this is the button for staying where you are. One press on a truchet: seed, grid, tile
+set, subdivide chance, line weight, inset, colour bias and opacity all moved, while `g`, `r` and
+`palette:ocean-sunset` did not.
+
+The roll comes off the new seed rather than `Math.random`, so it is a function of a seed like
+everything else here — which is not the same as a seed being enough to rebuild a piece. Typing one
+back into the field sets the seed and leaves the params alone, because `setSeed` does not re-roll.
+The permalink is what carries a piece, as it always was.
 
 ## Link previews
 
@@ -282,8 +339,11 @@ any blur.
 A piece hung in a real room, opened from **See it on a wall** under the stage — it is a question
 about the work in front of you, so it is asked where the work is.
 
+![A recursive subdivision print in a dark gallery frame, hanging on a slatted timber wall above a
+green sofa, daylight from a bay window to the left](docs/pieces/on-the-wall.jpg)
+
 Any room **enlarges when clicked**, and the arrow keys then walk the rooms with the piece staying
-put, which is the comparison the panel exists for: one work, four walls, a key apart.
+put, which is the comparison the panel exists for: one work, six walls, a key apart.
 
 The enlarged plate takes the larger of the row it is in and a plate near twice the grid cell,
 overflowing and scrolling when the window is too short for that. A portrait photograph in a
@@ -495,6 +555,13 @@ whatever the shape. Square lands on exactly 1000x1000 — what every piece made 
 existed was authored at — and 1:√2 lands on 1189x841, which is A0 in millimetres, so an export
 scales to any A size exactly.
 
+![One truchet piece at three ratios — 16:9, square and A-series portrait — drawn at a single
+scale, the three rectangles visibly covering the same area](docs/pieces/shapes.png)
+
+Those three are one piece on one seed at three shapes, drawn here at a single scale so the equal
+area is something you can see rather than take on trust: the tiles are the same size in all three,
+and only the shape of the field they fill changes.
+
 Changing shape re-runs `generate()` on the new canvas with the same seed. The piece is
 regenerated, not reflowed.
 
@@ -654,7 +721,8 @@ shows a blend of two sets, and a blend has no id to put in a param or a link,
 so pausing snaps to whichever it's nearer.
 
 Frozen values are deliberately not rounded at all. Snapping them to slider steps shifted the piece
-off the frame being paused on, in all fifteen pieces, which is why `coerce` grew a `snap` option.
+off the frame being paused on, in all fifteen pieces that carried a showcase preset when it was
+measured — all twenty do now — which is why `coerce` grew a `snap` option.
 Rounding to even 5 decimals is no better: the attractor iterates a chaotic map 26,000 times, and a
 1e-5 change in its constants moved points by 956 units. Full precision makes a paused permalink
 longer — about 221 characters of params against 153 at the defaults — and it also makes it exact.
@@ -662,7 +730,8 @@ longer — about 221 characters of params against 153 at the defaults — and it
 Playback **eases in** rather than cutting. Pressing play used to swap the params for the preset's
 values in a single frame — up to 58% of a param's range in one step, which reads as a blink. The
 motion now ramps from whatever is already on screen over 1.5s, so the first frame of playback is
-byte-identical to the still frame it started from, on all eighteen pieces.
+byte-identical to the still frame it started from, on all eighteen pieces that existed when it was
+measured.
 
 1.5s rather than less because the pieces with the biggest jumps need the room: truchet's worst
 single frame during the ease drops from 0.194 to 0.133 between 0.8s and 1.5s. Past about 2s it
@@ -719,55 +788,102 @@ one path per depth-and-ink, which is a few dozen elements instead.
 Subdivision plays fine but animates mostly through colour and stroke weight, since nearly all of
 its geometric params reshuffle.
 
+## Operate on a desktop, browse anywhere
+
+The app had one width breakpoint in it, and the studio layout is a fixed 288px sidebar track beside
+`1fr`. On a 402px phone that is 288 for the controls and 114 for the artwork — a full-height
+instrument panel next to a postage stamp.
+
+![The studio at phone width: no sidebar, a line reading "Browsing. The controls, effects and export
+are on a desktop", the dendrite upright and full-bleed, and a tray of four
+actions](docs/pieces/narrow.png)
+
+The split is the one the app already makes. Operating wants a desktop and always did — twenty
+generators, a hundred-odd sliders, export. Looking does not, and a link from here is opened on a
+phone more often than anywhere else, so the one thing that must not break is seeing the piece. A
+"come back on a desktop" wall would have broken exactly that, for every link the share buttons
+produce.
+
+So under **700px** the sidebar goes and what is left is the whole of the looking: the work
+full-bleed, the tray under it — play, re-gen, roll a new piece, see it on a wall — and a line where
+the sidebar was saying where the rest lives. The gallery already collapses to one column and is the
+best thing here on a phone. Measured in a 404px frame: single column, sidebar gone, header shown,
+artwork 383px against 114 before, tray on screen, no scrolling in either axis.
+
+The narrow header is a second element rather than the sidebar's reflowed, and exactly one of the
+two is ever displayed, so the wordmark is never on screen twice or in the accessibility tree twice.
+
+**The media query sits last in the stylesheet**, which is not tidiness. At equal specificity the
+later rule wins, and placed where it reads best — beside the `.app` rules — its `display: none`
+lost to the `.sidebar` rule further down and the sidebar stayed up.
+
+### A rolled piece is upright on a narrow screen
+
+Randomize gave whatever shape it drew, so on a phone it handed back a 16:9 as often as anything
+else: a letterbox in a column. Below 700px the shape is pinned to portrait.
+
+The shape is overridden *after* the roll rather than in place of it, and that is the part worth
+keeping. `randomState` draws the generator, then the shape, then every param from one seeded
+sequence. Skip the shape draw and the sequence shifts — same seed, same generator, different params
+— so the same link would make different art on a phone than on a desktop, and the whole premise is
+that a seed reproduces a piece anywhere. The draw still happens and its result is discarded, which
+costs nothing and keeps them identical. Measured rather than assumed: with the draw skipped the
+generator matched and the params did not.
+
+700px, matching the stylesheet at the foot of the same file, which is the one number that has to
+stay in step by hand. It is watched rather than read once, so a phone turned on its side crosses it,
+and so does a dragged window. Only the shape is pinned: twenty-five narrow rolls came back portrait
+every time and still drew sixteen different generators between them.
+
 ## Layout
 
 ```
 src/
+  App.vue          the shell: stage, sidebar, tray, and the one media query
   core/
     rng.js         seeded PRNG — xmur3 over mulberry32, plus speakable seeds
     noise.js       seeded 2D simplex + fBm
     ratios.js      canvas shapes at constant area
     simplify.js    deviation-bounded polyline simplification
     grain.js       paper-grain overlay (raster)
-    effects.js     bloom, chromatic aberration, vignette (raster)
+    effects.js     bloom, aberration, vignette, glitch, scanlines (raster)
     showcase.js    time-based param modulation
     palettes.js    named colour sets, ordered quiet -> loud
     params.js      schema defaults, coercion, clamping
+    random.js      a whole piece by chance — generator, shape, every param
     permalink.js   query-string encode/decode
     export.js      SVG serialisation and PNG rasterising
+    css.js         a piece as a CSS background rule, inlined as a data URI
+    svg.js         scene tree to an SVG string, with no DOM
+    preview.js     a piece rebuilt from nothing but its URL
+    launch.js      what the opening panel offers, and what may play behind it
+    mounts.js      frames, rooms, and the projection that hangs one in the other
   generators/
     index.js       the registry — add a line here
-    subdivision.js
-    flowField.js
-    truchet.js
-    dendrite.js
-    cove.js
-    moire.js
-    harmonograph.js
-    attractor.js
-    strata.js
-    halftone.js
-    contour.js
-    chladni.js
-    lens.js
-    blocks.js
-    packing.js
-    rosette.js
-    glyphs.js
-    cells.js
-    phyllotaxis.js
+    subdivision.js  flowField.js  truchet.js    dendrite.js   moire.js
+    harmonograph.js attractor.js  strata.js     halftone.js   contour.js
+    cove.js         chladni.js    lens.js       blocks.js     packing.js
+    penrose.js      rosette.js    glyphs.js     cells.js      phyllotaxis.js
   components/
-    SvgStage.vue   viewBox + background; delegates to SvgNode
-    SvgNode.vue    recursive { tag, attrs, children } renderer
+    SvgStage.vue     viewBox + background; delegates to SvgNode
+    SvgNode.vue      recursive { tag, attrs, children } renderer
     ControlPanel.vue / ParamControl.vue   built from the schema
-    Toolbar.vue    generator picker, seed field, re-gen, reset
-    ExportBar.vue  SVG / PNG download
-    EffectsBar.vue   bloom / aberration / vignette / grain
+    Toolbar.vue      piece picker, shape, seed field, re-gen, reset
+    PaletteBar.vue   paper, ink order, and which colours are in play
+    ExportBar.vue    SVG / PNG / CSS
+    EffectsBar.vue   bloom / aberration / vignette / glitch / scanlines / grain
     ShowcaseBar.vue  playback, speed, intensity, present
-    JhMonogram.vue   shared JH mark
+    LaunchPanel.vue / LaunchBackdrop.vue  the front door and the piece behind it
+    GalleryPanel.vue / RoomPlate.vue / FrameChoice.vue   on the wall
+    AboutPanel.vue   what this is, how to print it, colophon
+    GenArtMark.vue / JhMonogram.vue / ButtonIcon.vue   marks and glyphs
   composables/
     useGenerator.js  generator + seed + params -> scene
     usePermalink.js  two-way URL sync
+    useShowcase.js   the playback clock
+netlify/
+  functions/og.mjs       the piece a shared link points at, as a PNG
+  edge-functions/share.js  rewrites the meta tags as index.html goes past
 ```
 
 ## Notes
