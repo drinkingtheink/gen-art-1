@@ -474,8 +474,9 @@ The cards change shape with it, rather than staying square and opening something
 the piece clicking it opens, and that promise is worth more than a uniform grid. The palette roll
 sits outside the shape for the same reason the cards are regenerated and not restretched: crossing
 the breakpoint reshapes twenty pieces, and rolling colour there would recolour them as a side
-effect. The narrow grid is two columns, stated rather than fitted, because `auto-fill` at 168px
-drops to one on a 390px phone and one column of upright cards is 9,400px of scrolling.
+effect. The narrow grid is one column, stated rather than left to `auto-fill`: an upright card wants
+the whole column, and two-up on a 390px phone gives each one 165px — smaller than the thumbnails the
+desktop grid shows.
 
 On a roll the shape is overridden *after* the draw rather than in place of it: `randomState` draws
 the generator, then the shape, then every param from one seeded sequence, so skipping the shape draw

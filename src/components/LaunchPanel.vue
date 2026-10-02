@@ -421,18 +421,16 @@ onUnmounted(() => {
   list-style: none;
 }
 
-/* Two columns, stated rather than fitted.
+/* One column, stated rather than left to `auto-fill`.
    
-   `auto-fill` at 168px wants 349px to place a second column and a 390px phone
-   leaves 342 inside the sheet, so it drops to one — which was survivable while
-   the cards were square and is not now they are upright: one column of
-   portraits is a 470px card and 9,400px of scrolling to see twenty of them.
-   Two columns halve that and still leave each card wider than the thumbnails
-   the desktop grid shows. */
+   The cards are upright below this width, and an upright card wants the whole
+   column: at two-up a 390px phone gives each one 165px, which is smaller than
+   the thumbnails the desktop grid shows and too small to tell two pieces
+   apart. It costs scrolling, and seeing the piece is what this screen is for. */
 @media (max-width: 700px) {
   .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
   }
 }
 
