@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import ButtonIcon from './ButtonIcon.vue'
 import GenArtMark from './GenArtMark.vue'
 import LaunchBackdrop from './LaunchBackdrop.vue'
 import { launchPieces, renderThumbnail } from '../core/launch.js'
@@ -18,7 +19,7 @@ import { launchPieces, renderThumbnail } from '../core/launch.js'
  * itself before a word of this has been read.
  */
 
-const emit = defineEmits(['pick', 'randomize', 'dismiss'])
+const emit = defineEmits(['pick', 'randomize', 'dismiss', 'about'])
 
 const pieces = launchPieces
 
@@ -77,13 +78,25 @@ onUnmounted(() => {
 
     <div class="sheet">
       <header class="head">
-        <h1 id="launch-title" class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
-        <p class="tagline">Every Pause a Masterpiece</p>
-        <p class="blurb">
-          Generative artwork for a wall or a homepage. Move parameters until a piece is yours, then
-          keep the moment you stopped on — get an SVG or PNG big enough to print any size and hang,
-          or CSS for your digital project.
-        </p>
+        <div class="titles">
+          <h1 id="launch-title" class="wordmark"><GenArtMark />gen<span>·</span>art</h1>
+          <p class="tagline">Every Pause a Masterpiece</p>
+          <p class="blurb">
+            Generative artwork for a wall or a homepage. Move parameters until a piece is yours,
+            then keep the moment you stopped on — get an SVG or PNG big enough to print any size and
+            hang, or CSS for your digital project.
+          </p>
+        </div>
+
+        <!-- The same question the studio's info button asks, in the one place
+             someone is still deciding whether to bother. It opens over this
+             panel rather than past it: the picker is not a step to get through
+             on the way to reading about the thing, so closing About puts the
+             choice back exactly where it was. -->
+        <button type="button" class="about" @click="emit('about')">
+          <ButtonIcon glyph="info" />
+          About
+        </button>
       </header>
 
       <button ref="dice" type="button" class="dice" @click="emit('randomize')">
@@ -184,8 +197,36 @@ onUnmounted(() => {
 
 .head {
   display: flex;
+  align-items: start;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.titles {
+  display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Quiet, and quiet the same way `.skip` is: these are the two things on this
+   panel that are not choosing a piece, and they should read as a pair rather
+   than as two differently-weighted asides. */
+.about {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--launch-dim);
+  background: none;
+  border-color: transparent;
+  font-size: 0.8rem;
+}
+
+.about:hover {
+  color: var(--ink);
+  background: none;
+  border-color: var(--panel-edge);
 }
 
 .wordmark {

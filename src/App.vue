@@ -24,6 +24,24 @@ import { DEFAULT_FRAME, coerceFrame } from '@/core/mounts.js'
 
 // A shared link is the starting state; otherwise a fresh random seed.
 const opened = readUrl()
+
+/**
+ * `#about` is how the two legal documents get back here. They are their own
+ * pages, so leaving one is a real navigation, and the fragment is what asks
+ * for the panel on arrival.
+ *
+ * It says nothing about the picker, which is what makes the return land where
+ * the visit started — over the piece if the link named one, over the picker if
+ * it did not, because About paints above both.
+ *
+ * A fragment rather than a query field, because the query string is the piece
+ * and a view flag there would ride along in every link that carried it.
+ *
+ * Read here, at the top, and not where the panel's state is declared: the
+ * first thing `usePermalink` does is stamp the address, and that write drops
+ * the fragment. Everything below this line is already too late to see it.
+ */
+const ARRIVED_AT_ABOUT = window.location.hash === '#about'
 const piece = useGenerator(opened ?? {})
 
 /**
@@ -36,17 +54,8 @@ const piece = useGenerator(opened ?? {})
  * The test is `g`, not "any query at all": a link arriving with a tracking
  * parameter stuck on the end still names no piece.
  *
- * `#about` is the exception, and the only one. It is how the two legal
- * documents get back here: they are their own pages, so leaving one has to be
- * a real navigation, and landing on the picker would drop whoever followed the
- * link out of the piece they were looking at. The fragment rather than a query
- * field because the query string is the piece — adding a non-piece field to it
- * would put a view flag in every link that carried it. usePermalink's first
- * write strips the fragment, which is the same rewriting an old `#…` link
- * already gets on arrival, so the address settles back to an ordinary one.
  */
-const RETURNING = typeof window !== 'undefined' && window.location.hash === '#about'
-const launching = ref(!opened?.generatorId && !RETURNING)
+const launching = ref(!opened?.generatorId)
 
 /**
  * On the wall, as a place in the URL rather than a flag in memory.
@@ -301,7 +310,6 @@ function onKey(event) {
  */
 function onPopState() {
   launching.value = !readUrl()?.generatorId
-  if (launching.value) about.value = false
   // The panel covers the stage, so there's nothing to animate behind it.
   if (launching.value) show.pause()
 }
@@ -310,6 +318,12 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
   window.addEventListener('keydown', onKey)
   window.addEventListener('popstate', onPopState)
+  window.addEventListener('hashchange', takeAboutHash)
+
+  // The fragment this visit arrived on, cleared now the panel it asked for is
+  // up. While the picker is holding the address bare, usePermalink never
+  // writes, so nothing else would take it off.
+  takeAboutHash()
 
   /**
    * Arrived straight on a piece, which means a link named it — and the clock
@@ -336,6 +350,7 @@ onUnmounted(() => {
   document.removeEventListener('fullscreenchange', onFullscreenChange)
   window.removeEventListener('keydown', onKey)
   window.removeEventListener('popstate', onPopState)
+  window.removeEventListener('hashchange', takeAboutHash)
 })
 
 const stage = useTemplateRef('stage')
@@ -494,7 +509,26 @@ const previewing = computed(() => wall.value !== null)
  * you would send someone. Having read the about page is not — a link that
  * opened on it would be a link about the app rather than about a piece.
  */
-const about = ref(RETURNING)
+const about = ref(ARRIVED_AT_ABOUT)
+
+/**
+ * The fragment, consumed rather than left lying in the address bar.
+ *
+ * Bound to `hashchange` as well, because a link to `/#about` from a page the
+ * browser already has open changes only the fragment: there is no reload, so
+ * `ARRIVED_AT_ABOUT` never sees it and only this does.
+ *
+ * Cleared with replaceState rather than by assigning `location.hash`, which
+ * would leave a bare `#` behind and push a history entry nobody asked for.
+ * `usePermalink` strips it too, but only once it writes — and while the picker
+ * is up it deliberately does not write at all, so this is what keeps the
+ * address ordinary in that case.
+ */
+function takeAboutHash() {
+  if (window.location.hash !== '#about') return
+  about.value = true
+  window.history.replaceState(null, '', window.location.pathname + window.location.search)
+}
 
 function openPreview() {
   if (show.playing.value) {
@@ -562,13 +596,14 @@ async function copyLink() {
   </Transition>
 
   <Transition name="about">
-    <AboutPanel v-if="about" :return-to="shareHref()" @dismiss="about = false" />
+    <AboutPanel v-if="about" :return-to="launching ? '' : shareHref()" @dismiss="about = false" />
   </Transition>
 
   <LaunchPanel
     v-if="launching"
     @pick="startWith"
     @randomize="startWith(rollPiece())"
+    @about="about = true"
     @dismiss="leaveLaunch"
   />
 
