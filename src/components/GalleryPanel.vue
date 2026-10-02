@@ -121,6 +121,39 @@ function onKey(event) {
   if (event.key === 'Escape') emit('dismiss')
 }
 
+/**
+ * A press on the surround leaves, the way the dimmed area around any modal
+ * does. It reads as the click-equivalent of Escape, and like Escape it means
+ * the smaller thing first: the enlarged plate carries its own backdrop, so
+ * while that is up this never sees the press at all.
+ *
+ * Two things stop it firing when it shouldn't.
+ *
+ * A click is delivered to the common ancestor of where the press and the
+ * release happened, so selecting a hex code in the sheet and letting go past
+ * its edge reports the surround and would close the panel out from under you.
+ * The press has to have landed outside as well.
+ *
+ * And this element is the scrolling box, so a press on its own scrollbar
+ * targets it exactly as the backdrop does — dragging the thumb would close the
+ * panel on release. `clientWidth` stops at the scrollbar, so a press past it
+ * is on the scrollbar rather than on the backdrop.
+ */
+let pressedOutside = false
+
+function onPress(event) {
+  pressedOutside =
+    event.target === event.currentTarget &&
+    event.offsetX <= event.currentTarget.clientWidth &&
+    event.offsetY <= event.currentTarget.clientHeight
+}
+
+function onSurroundClick(event) {
+  const leaving = pressedOutside && event.target === event.currentTarget
+  pressedOutside = false
+  if (leaving) emit('dismiss')
+}
+
 onMounted(() => {
   // Where the keyboard was before this opened, so it can be put back.
   returnTo = document.activeElement
@@ -138,7 +171,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="gallery" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
+  <div
+    class="gallery"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="gallery-title"
+    @mousedown="onPress"
+    @click="onSurroundClick"
+  >
     <div class="sheet">
       <!-- Title, frames and the two actions ride together. Pinning the title
            row alone would slide the frame buttons under it, and the frames are
