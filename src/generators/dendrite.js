@@ -37,7 +37,7 @@ const params = [
   { key: 'tipSize', type: 'range', label: 'Tip size', min: 0.5, max: 9, step: 0.1, default: 2.6 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.15, max: 1, step: 0.01, default: 0.95, wander: 0.4 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 2, default: 40 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'marigold' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'neutral-harmony-bliss' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.7 },
 ]
 

@@ -57,7 +57,7 @@ const params = [
   { key: 'lineWidth', type: 'range', label: 'Line width', min: 0, max: 6, step: 0.05, default: 1.6, wander: 0.25 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.95, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 50 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'plasma' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'vibrant-sunset' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },
 ]
 

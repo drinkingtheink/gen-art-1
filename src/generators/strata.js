@@ -25,7 +25,7 @@ const params = [
   { key: 'squash', type: 'range', label: 'Squash', min: 0.2, max: 1, step: 0.005, default: 1 },
   { key: 'edge', type: 'range', label: 'Edge', min: 0, max: 4, step: 0.05, default: 0 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 0 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'sodium' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'dusk-tide' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },
 ]
 

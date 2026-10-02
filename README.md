@@ -110,8 +110,8 @@ behind it to blur. Backdrop 0, frost 1, sheet 2.
 13px of blur, not more. Past about 20px the finer pieces — truchet's tiles, a phyllotaxis' dots —
 dissolve into a plain gradient and there is no movement left to see, which is the one thing it is
 for. The tint sits on top of the frost rather than under the artwork, which is what holds the
-screen to roughly one brightness across all fifty palettes, whose backgrounds run from a near-black
-laser to an all but white moss.
+screen to roughly one brightness across all seventy-five palettes, whose backgrounds run from a
+near-black enchanted forest whimsy to a flat white fiery sky.
 
 Everything secondary on this screen uses a brighter grey than the studio's `--ink-dim`. That grey
 is tuned for flat panel colour; over frosted artwork it goes muddy.
@@ -522,16 +522,21 @@ composition still while Shortening and Depth sweep.
 
 ## Palettes
 
-Fifty sets, picked as swatches rather than named in a dropdown — the choice is the look, so it
-should be visible. Each is scored on luminance range x mean saturation; anything below ~0.35 reads
-as bland or midtone-heavy on screen and isn't kept. That measurement retired four sets from the
-first twenty (a greyscale at 0.00, and three whose colours all sat at the same value), and killed
-three of the second twenty before they shipped — including a near-monochrome one that failed the
-same bar the greyscale did, which would have been the rule bending for a set I liked.
+Seventy-five sets, **every one picked from Coolors**, shown as swatches rather than named in a
+dropdown — the choice is the look, so it should be visible.
 
-The second twenty were chosen to even out the first, which ran 13 light backgrounds to 7 dark and
-leaned yellow/red/cyan/orange. Backgrounds are now 20/20. Dominant hue families still lean warm at
-a 2.5-8.5 spread: the first twenty are kept, so perfect evenness isn't reachable by adding alone.
+They were not always. An earlier fifty were generated here and scored on luminance range x mean
+saturation, which kept the obviously bland ones out and still produced combinations nobody would
+have chosen on purpose. Measuring a palette tells you whether it is *dull*; it does not tell you
+whether it is *good*. Those fifty are gone, and the rule now is provenance rather than a score:
+if it did not come from Coolors it is not in the set.
+
+Dropping them meant every one of the twenty generators lost its default palette — all twenty named
+one of the fifty. Each was repointed to its **nearest surviving set**, measured in CIE Lab by
+Chamfer distance between the colour sets with the background weighted 1.6x, because the background
+carries most of a piece's character. Nearest alone put four generators on one palette and twenty on
+eight between them, which would have made the opening grid read as one colour; so the confident
+matches choose first and each takes the nearest *unused* set. Twenty generators, twenty palettes.
 
 No two sets share three or more colours, and none are near-identical by mean nearest-colour
 distance.

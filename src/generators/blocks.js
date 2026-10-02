@@ -29,7 +29,7 @@ const params = [
   { key: 'floor', type: 'range', label: 'Floor', min: 0, max: 1, step: 0.005, default: 0.12 },
   { key: 'zoom', type: 'range', label: 'Zoom', min: 0.5, max: 1.4, step: 0.005, default: 0.94 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 30 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'sodium' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'tidal-rust' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.6 },
 ]
 

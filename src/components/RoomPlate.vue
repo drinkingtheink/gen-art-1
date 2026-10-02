@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import {
   artWindow,
+  beamOver,
   hangStyle,
   matrix3dFor,
   PLATE_ASPECT,
@@ -89,8 +90,17 @@ const hung = computed(() => {
   if (!room.plane) {
     const p = placeInRoom(room, framed.box.width, framed.box.height)
     const light = hangStyle(room)
+    // The beam is measured in the photograph's pixels, so the piece has to be
+    // handed over in those too — not the container's.
+    const flat = [
+      [p.left, p.top],
+      [p.left + p.width, p.top],
+      [p.left + p.width, p.top + p.height],
+      [p.left, p.top + p.height],
+    ].map(([x, y]) => [x * room.width, y * room.height])
     return {
       light,
+      beam: beamOver(room, flat, framed.box.width, framed.box.height),
       style: {
         left: `${p.left * 100}%`,
         top: `${p.top * 100}%`,
@@ -109,9 +119,14 @@ const hung = computed(() => {
     y * height,
   ])
   const light = hangStyle(room, framed.box.width / (quad[1][0] - quad[0][0]))
+  const onPhoto = placeOnPlane(room, framed.box.width, framed.box.height).map(([x, y]) => [
+    x * room.width,
+    y * room.height,
+  ])
 
   return {
     light,
+    beam: beamOver(room, onPhoto, framed.box.width, framed.box.height),
     style: {
       left: '0',
       top: '0',
@@ -170,6 +185,10 @@ const hung = computed(() => {
         <span class="glaze" :style="{ backgroundImage: hung.light.glaze }" />
         <span class="glass" :style="{ backgroundImage: hung.light.sheen }" />
         <span class="cast" :style="{ backgroundColor: hung.light.wall }" />
+        <!-- The room's own sunbeam, carried across the work. Drawn in the
+             piece's flat coordinates and transformed with it, which is what
+             puts it at the wall's angle rather than the screen's. -->
+        <span v-if="hung.beam" class="beam" :style="{ backgroundImage: hung.beam }" />
         <!-- Last, and over everything: the lit edge of the moulding. A frame
              with no edge catching the light reads as a printed rectangle however
              well it is placed. -->
@@ -262,6 +281,13 @@ const hung = computed(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+
+/* Multiply, because what this layer carries is the shade outside the beam
+   rather than the light inside it. The core is white and changes nothing; the
+   wall either side is held down to what the photograph measures. */
+.hung .beam {
+  mix-blend-mode: multiply;
 }
 
 .hung .cast {

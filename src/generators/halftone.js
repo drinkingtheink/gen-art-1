@@ -30,7 +30,7 @@ const params = [
   { key: 'angle', type: 'range', label: 'Screen angle', min: 0, max: 90, step: 0.2, default: 0 },
   { key: 'scatter', type: 'range', label: 'Scatter', min: 0, max: 1, step: 0.01, default: 0 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 40 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'riso' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'dovecote' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.8 },
 ]
 

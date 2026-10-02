@@ -321,25 +321,11 @@ const PALETTES = [
     colors: ['#b4ffff', '#fed811', '#fdc100', '#02cecb', '#06837f'],
   },
   {
-    id: 'riso',
-    name: 'Riso',
-    bg: '#fdf8f0',
-    // 0.44
-    colors: ['#fdf8f0', '#ffe800', '#00a95c', '#0078bf', '#ff48b0'],
-  },
-  {
     id: 'vibrant-color-blast',
     name: 'Vibrant Color Blast',
     bg: '#ffbc42',
     // 0.44
     colors: ['#ffbc42', '#0496ff', '#006ba6', '#8f2d56', '#d81159'],
-  },
-  {
-    id: 'cobalt',
-    name: 'Cobalt',
-    bg: '#050d1f',
-    // 0.45
-    colors: ['#14275c', '#2f5fd0', '#5e9cff', '#a9d4ff', '#ffe066'],
   },
   {
     id: 'rosewood',
@@ -363,13 +349,6 @@ const PALETTES = [
     colors: ['#a9d6e5', '#61a5c2', '#2c7da0', '#01497c', '#012a4a'],
   },
   {
-    id: 'moss',
-    name: 'Moss',
-    bg: '#fcfffc',
-    // 0.46
-    colors: ['#fcfffc', '#2d3a3a', '#2ba84a', '#248232', '#040f0f'],
-  },
-  {
     id: 'bold-hues',
     name: 'Bold Hues',
     bg: '#180544',
@@ -377,32 +356,11 @@ const PALETTES = [
     colors: ['#3a0ca3', '#7209b7', '#f72585', '#4361ee', '#4cc9f0'],
   },
   {
-    id: 'bindweed',
-    name: 'Bindweed',
-    bg: '#f7f2e6',
-    // 0.48
-    colors: ['#25113d', '#7b4ab8', '#b98ce8', '#f6e48a', '#c8ff2e'],
-  },
-  {
-    id: 'geyser',
-    name: 'Geyser',
-    bg: '#eef5f2',
-    // 0.48
-    colors: ['#073d4a', '#1f96a8', '#8fe0cf', '#f5e04a', '#e85a14'],
-  },
-  {
     id: 'gradient-blues',
     name: 'Gradient Blues',
     bg: '#80ffdb',
     // 0.48
     colors: ['#80ffdb', '#64dfdf', '#48bfe3', '#5e60ce', '#7400b8'],
-  },
-  {
-    id: 'ocotillo',
-    name: 'Ocotillo',
-    bg: '#f5ecd8',
-    // 0.48
-    colors: ['#241f0e', '#5c6b2f', '#f2dca0', '#f5a623', '#e0197f'],
   },
   {
     id: 'refreshing-aqua-tones',
@@ -419,13 +377,6 @@ const PALETTES = [
     colors: ['#240046', '#5a189a', '#9d4edd', '#ff6d00', '#ff8500'],
   },
   {
-    id: 'mesa',
-    name: 'Mesa',
-    bg: '#f2e6d2',
-    // 0.49
-    colors: ['#1f120e', '#2f6b5c', '#f2dca8', '#cf7a2a', '#e34a14'],
-  },
-  {
     id: 'red-sunburst',
     name: 'Red Sunburst',
     bg: '#210205',
@@ -440,53 +391,11 @@ const PALETTES = [
     colors: ['#8ecae6', '#ffb703', '#219ebc', '#fb8500', '#023047'],
   },
   {
-    id: 'ukiyo',
-    name: 'Ukiyo',
-    bg: '#f2ece0',
-    // 0.49
-    colors: ['#101c3d', '#3d7fa6', '#e8dca8', '#c25a2a', '#c8203c'],
-  },
-  {
-    id: 'fauve',
-    name: 'Fauve',
-    bg: '#f5efe2',
-    // 0.50
-    colors: ['#123f2e', '#1f6fa8', '#f2d94a', '#e8431f', '#ff1f8f'],
-  },
-  {
-    id: 'tropic',
-    name: 'Tropic',
-    bg: '#041012',
-    // 0.50
-    colors: ['#0d3a37', '#16a08f', '#ffd12e', '#ff6b3d', '#ff2d8f'],
-  },
-  {
     id: 'turquoise-harmony',
     name: 'Turquoise Harmony',
     bg: '#f0f3bd',
     // 0.50
     colors: ['#f0f3bd', '#02c39a', '#00a896', '#028090', '#05668d'],
-  },
-  {
-    id: 'cochineal',
-    name: 'Cochineal',
-    bg: '#fdf4f6',
-    // 0.51
-    colors: ['#f6a8bd', '#c2185b', '#3d0a2b', '#ff3d6e', '#ffcf3d'],
-  },
-  {
-    id: 'fuchsia',
-    name: 'Fuchsia',
-    bg: '#0a0410',
-    // 0.51
-    colors: ['#2e0a2c', '#8a1063', '#e0229c', '#ff6fc8', '#ffd1ec'],
-  },
-  {
-    id: 'thicket',
-    name: 'Thicket',
-    bg: '#f7f4ec',
-    // 0.51
-    colors: ['#8fd98a', '#1d6b45', '#2a1208', '#b5431c', '#f2b705'],
   },
   {
     id: 'autumn-glow',
@@ -501,13 +410,6 @@ const PALETTES = [
     bg: '#11020f',
     // 0.52
     colors: ['#290023', '#2f4111', '#802352', '#c63906', '#f09a05'],
-  },
-  {
-    id: 'sodium',
-    name: 'Sodium',
-    bg: '#10101c',
-    // 0.52
-    colors: ['#2a2440', '#f5e6c8', '#ffb000', '#ff6a00', '#ff2d55'],
   },
   {
     id: 'vivid-nightfall',
@@ -538,95 +440,11 @@ const PALETTES = [
     colors: ['#1c0118', '#370926', '#42113c', '#618b25', '#6bd425'],
   },
   {
-    id: 'flame',
-    name: 'Flame',
-    bg: '#f4eed2',
-    // 0.54
-    colors: ['#eae2b7', '#fcbf49', '#003049', '#f77f00', '#d62828'],
-  },
-  {
-    id: 'jadeite',
-    name: 'Jadeite',
-    bg: '#04100d',
-    // 0.54
-    colors: ['#0c2f28', '#0f6b52', '#17c48e', '#5cffd0', '#ffd23d'],
-  },
-  {
-    id: 'ozone',
-    name: 'Ozone',
-    bg: '#060d14',
-    // 0.54
-    colors: ['#0f2b40', '#1f7fc2', '#4fd6ff', '#c9fbff', '#a3ff12'],
-  },
-  {
-    id: 'pennant',
-    name: 'Pennant',
-    bg: '#f7f4ef',
-    // 0.54
-    colors: ['#8fb8f5', '#0d1b2e', '#00843d', '#c8102e', '#ffc400'],
-  },
-  {
     id: 'tidal-rust',
     name: 'Tidal Rust',
     bg: '#02080b',
     // 0.54
     colors: ['#001219', '#9b2226', '#0a9396', '#bb3e03', '#ee9b00'],
-  },
-  {
-    id: 'ultra',
-    name: 'Ultra',
-    bg: '#f8f9fa',
-    // 0.54
-    colors: ['#f8f9fa', '#ffd60a', '#0033cc', '#e63946', '#0b090a'],
-  },
-  {
-    id: 'acid',
-    name: 'Acid',
-    bg: '#0b0b10',
-    // 0.55
-    colors: ['#2f2f4a', '#7b2ff7', '#00e5a0', '#f2ff49', '#ff2e93'],
-  },
-  {
-    id: 'aster',
-    name: 'Aster',
-    bg: '#f5f6fb',
-    // 0.55
-    colors: ['#9fb0ef', '#2a2fc0', '#0d0f3d', '#ffd500', '#ff2e7a'],
-  },
-  {
-    id: 'klaxon',
-    name: 'Klaxon',
-    bg: '#fbfbf9',
-    // 0.55
-    colors: ['#9fe8f2', '#00a3c4', '#1b1b3a', '#ffd400', '#ff1f8f'],
-  },
-  {
-    id: 'peacock',
-    name: 'Peacock',
-    bg: '#03080e',
-    // 0.55
-    colors: ['#092a45', '#0f6f8f', '#1bbfae', '#8f4dff', '#ffcf2e'],
-  },
-  {
-    id: 'aurora',
-    name: 'Aurora',
-    bg: '#050d16',
-    // 0.56
-    colors: ['#0f2338', '#3fa7ff', '#b14aff', '#00ffc8', '#eaffff'],
-  },
-  {
-    id: 'citrus',
-    name: 'Citrus',
-    bg: '#d3fad6',
-    // 0.56
-    colors: ['#d3fad6', '#f7d488', '#f3b61f', '#e01a4f', '#270722'],
-  },
-  {
-    id: 'ensign',
-    name: 'Ensign',
-    bg: '#f1f3f6',
-    // 0.56
-    colors: ['#b3d4ff', '#2a5db0', '#071634', '#ff8a00', '#e01b24'],
   },
   {
     id: 'golden-spice',
@@ -636,46 +454,11 @@ const PALETTES = [
     colors: ['#eecf6d', '#d5ac4e', '#8b6220', '#45050c', '#720e07'],
   },
   {
-    id: 'hedgerow',
-    name: 'Hedgerow',
-    bg: '#f9f5f0',
-    // 0.56
-    colors: ['#c2d98f', '#2f7a12', '#2a0b26', '#a81070', '#ffc107'],
-  },
-  {
-    id: 'helium',
-    name: 'Helium',
-    bg: '#0f0410',
-    // 0.56
-    colors: ['#35102e', '#a82a5e', '#ff5c7a', '#ffd84d', '#00e5ff'],
-  },
-  {
-    id: 'lagoon',
-    name: 'Lagoon',
-    bg: '#01090f',
-    // 0.56
-    colors: ['#082a3d', '#0f6f99', '#17c8e0', '#6cf7ff', '#ff4d6d'],
-  },
-  {
     id: 'vibrant-spring',
     name: 'Vibrant Spring',
     bg: '#b2ff9e',
     // 0.56
     colors: ['#b2ff9e', '#affc41', '#1dd3b0', '#086375', '#3c1642'],
-  },
-  {
-    id: 'cinnabar',
-    name: 'Cinnabar',
-    bg: '#0a0403',
-    // 0.57
-    colors: ['#4a0d06', '#a81f0c', '#f03a10', '#ff8a2b', '#00ecd1'],
-  },
-  {
-    id: 'cyanotype',
-    name: 'Cyanotype',
-    bg: '#f1f4f8',
-    // 0.57
-    colors: ['#04080f', '#10325e', '#4b86c9', '#cfe4f7', '#ffdd00'],
   },
   {
     id: 'forge',
@@ -685,25 +468,11 @@ const PALETTES = [
     colors: ['#edc200', '#ec9411', '#f66420', '#d92e14', '#a00000'],
   },
   {
-    id: 'oxblood',
-    name: 'Oxblood',
-    bg: '#fdf6ec',
-    // 0.57
-    colors: ['#f4d58d', '#e35337', '#8c1c13', '#2b0307', '#ffffff'],
-  },
-  {
     id: 'vibrant-fusion',
     name: 'Vibrant Fusion',
     bg: '#ffd300',
     // 0.57
     colors: ['#ffd300', '#0aff99', '#147df5', '#be0aff', '#ff0000'],
-  },
-  {
-    id: 'bitumen',
-    name: 'Bitumen',
-    bg: '#0c0806',
-    // 0.59
-    colors: ['#140a02', '#4a2a10', '#a16c38', '#f0dcb8', '#00e5ff'],
   },
   {
     id: 'fiery-ocean',
@@ -713,46 +482,11 @@ const PALETTES = [
     colors: ['#fdf0d5', '#669bbc', '#003049', '#780000', '#c1121f'],
   },
   {
-    id: 'venom',
-    name: 'Venom',
-    bg: '#030a06',
-    // 0.59
-    colors: ['#0a2e18', '#0f7a35', '#1fd65a', '#7dff3d', '#ff00a8'],
-  },
-  {
     id: 'cherry-bomb',
     name: 'Cherry Bomb',
     bg: '#ffcbdd',
     // 0.60
     colors: ['#ffcbdd', '#fb4b4e', '#3e000c', '#7c0b2b', '#d10000'],
-  },
-  {
-    id: 'cryolite',
-    name: 'Cryolite',
-    bg: '#eef4f8',
-    // 0.60
-    colors: ['#120c4d', '#1f3fc4', '#1f8fe0', '#3fdde0', '#a8f7ff'],
-  },
-  {
-    id: 'jewel',
-    name: 'Jewel',
-    bg: '#06040a',
-    // 0.60
-    colors: ['#1a0f3d', '#153fa8', '#0f9e6b', '#c41e5c', '#ffc824'],
-  },
-  {
-    id: 'marigold',
-    name: 'Marigold',
-    bg: '#fffaeb',
-    // 0.60
-    colors: ['#ffeeb8', '#ffd23f', '#f2a007', '#c25e00', '#3d2308'],
-  },
-  {
-    id: 'bramble',
-    name: 'Bramble',
-    bg: '#f2f5ec',
-    // 0.61
-    colors: ['#03140a', '#10561f', '#2f8f4c', '#d8f0a8', '#ff007f'],
   },
   {
     id: 'ocean-sunset',
@@ -762,39 +496,11 @@ const PALETTES = [
     colors: ['#f0f0c9', '#f2bb05', '#124e78', '#d74e09', '#6e0e0a'],
   },
   {
-    id: 'chlorophyll',
-    name: 'Chlorophyll',
-    bg: '#08110a',
-    // 0.63
-    colors: ['#0a2e14', '#17662a', '#4fa314', '#a8d419', '#eaff4a'],
-  },
-  {
-    id: 'voltage',
-    name: 'Voltage',
-    bg: '#01050f',
-    // 0.63
-    colors: ['#0b1240', '#2233ff', '#00b3ff', '#7de8ff', '#ff2e00'],
-  },
-  {
-    id: 'citron',
-    name: 'Citron',
-    bg: '#0a0c02',
-    // 0.64
-    colors: ['#2b3206', '#7a8c0b', '#cfe015', '#fff23d', '#ff3b1f'],
-  },
-  {
     id: 'bright-green',
     name: 'Bright Green',
     bg: '#ccff33',
     // 0.65
     colors: ['#ccff33', '#70e000', '#38b000', '#004b23', '#007200'],
-  },
-  {
-    id: 'electric',
-    name: 'Electric',
-    bg: '#10002b',
-    // 0.65
-    colors: ['#3c096c', '#9b5de5', '#00bbf9', '#00f5d4', '#fee440'],
   },
   {
     id: 'purple-sunset',
@@ -804,32 +510,11 @@ const PALETTES = [
     colors: ['#ffbd00', '#ff5400', '#9e0059', '#ff0054', '#390099'],
   },
   {
-    id: 'solar',
-    name: 'Solar',
-    bg: '#0e0900',
-    // 0.65
-    colors: ['#3a2600', '#a06a00', '#ffc400', '#ffef8a', '#7c3bff'],
-  },
-  {
-    id: 'jade',
-    name: 'Jade',
-    bg: '#f0fffc',
-    // 0.66
-    colors: ['#b2f7ef', '#00a878', '#ffd23f', '#00332c', '#011c1a'],
-  },
-  {
     id: 'electric-rainbow-burst',
     name: 'Electric Rainbow Burst',
     bg: '#adff02',
     // 0.67
     colors: ['#adff02', '#ffdd00', '#01befe', '#ff006d', '#8f00ff'],
-  },
-  {
-    id: 'iris',
-    name: 'Iris',
-    bg: '#0a0518',
-    // 0.67
-    colors: ['#1d0a4d', '#4f19c4', '#8b2bff', '#c86bff', '#f7ff4d'],
   },
   {
     id: 'nautical-blues',
@@ -853,13 +538,6 @@ const PALETTES = [
     colors: ['#ffba08', '#f48c06', '#03071e', '#dc2f02', '#6a040f'],
   },
   {
-    id: 'plasma',
-    name: 'Plasma',
-    bg: '#0d0221',
-    // 0.68
-    colors: ['#2d0b4e', '#7209b7', '#f72585', '#ff8500', '#ffe66d'],
-  },
-  {
     id: 'flaming-fun',
     name: 'Flaming Fun',
     bg: '#ffeaae',
@@ -874,39 +552,11 @@ const PALETTES = [
     colors: ['#ffd500', '#fdc500', '#3d0066', '#510087', '#5c0099'],
   },
   {
-    id: 'flare',
-    name: 'Flare',
-    bg: '#0b0203',
-    // 0.74
-    colors: ['#3d0014', '#9b0b28', '#ee1133', '#ff6a1f', '#ffe94d'],
-  },
-  {
-    id: 'tangerine',
-    name: 'Tangerine',
-    bg: '#fffaf0',
-    // 0.74
-    colors: ['#ffffff', '#ffea00', '#ff9e00', '#ff5400', '#00171f'],
-  },
-  {
-    id: 'cerise',
-    name: 'Cerise',
-    bg: '#0d0210',
-    // 0.77
-    colors: ['#40002b', '#a3007a', '#ff1f8f', '#ffd400', '#aaff00'],
-  },
-  {
     id: 'fiery-sky',
     name: 'Fiery Sky',
     bg: '#ffffff',
     // 0.78
     colors: ['#ffffff', '#004e89', '#00043a', '#800016', '#c00021'],
-  },
-  {
-    id: 'laser',
-    name: 'Laser',
-    bg: '#000305',
-    // 0.78
-    colors: ['#08202b', '#00a2ff', '#ff0055', '#00ff8c', '#faff00'],
   },
 ]
 export const palettes = PALETTES

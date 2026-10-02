@@ -26,7 +26,7 @@ const params = [
   { key: 'lineWeight', type: 'range', label: 'Line weight', min: 0.02, max: 0.6, step: 0.01, default: 0.28 },
   { key: 'inset', type: 'range', label: 'Tile gap', min: 0, max: 0.3, step: 0.01, default: 0 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 120, step: 2, default: 30 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'flame' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'ocean-sunset' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.1, default: 1 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.05, default: 1 },
   { key: 'roundCaps', type: 'toggle', label: 'Round caps', default: true },

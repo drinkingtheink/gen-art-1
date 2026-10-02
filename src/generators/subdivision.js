@@ -23,7 +23,7 @@ const params = [
   { key: 'gutter', type: 'range', label: 'Gutter', min: 0, max: 24, step: 0.5, default: 5 },
   { key: 'cornerRadius', type: 'range', label: 'Corner radius', min: 0, max: 40, step: 1, default: 0 },
   { key: 'motifChance', type: 'range', label: 'Motifs', min: 0, max: 1, step: 0.01, default: 0.22, structural: true },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'flame' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'summer-sunset' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.1, default: 1 },
   { key: 'stroke', type: 'color', label: 'Stroke', default: '#1a1a1a' },
   { key: 'strokeWidth', type: 'range', label: 'Stroke width', min: 0, max: 8, step: 0.5, default: 1.5 },

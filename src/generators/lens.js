@@ -29,7 +29,7 @@ const params = [
   { key: 'inset', type: 'range', label: 'Cell gap', min: 0, max: 0.4, step: 0.005, default: 0 },
   { key: 'edge', type: 'range', label: 'Edge', min: 0, max: 4, step: 0.05, default: 0 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 30 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'ultra' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'fiery-sky' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },
 ]
 

@@ -36,7 +36,7 @@ const params = [
   { key: 'hollow', type: 'range', label: 'Hollow', min: 0, max: 0.6, step: 0.005, default: 0, wander: 0.5 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 0.95, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 40 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'marigold' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'coral-reef' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },
 ]
 

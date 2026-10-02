@@ -30,7 +30,7 @@ const params = [
   { key: 'ascender', type: 'range', label: 'Ascenders', min: 0, max: 1.2, step: 0.005, default: 0.4 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 1 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 60 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'oxblood' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'terracotta' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 1 },
 ]
 

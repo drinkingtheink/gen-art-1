@@ -36,7 +36,7 @@ const params = [
   { key: 'lens', type: 'range', label: 'Lens', min: 0.5, max: 2.6, step: 0.01, default: 1.15 },
   { key: 'variance', type: 'range', label: 'Irregularity', min: 0, max: 1, step: 0.005, default: 0.12 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 2, default: 0 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'flame' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'fiery-ocean' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 2.2 },
 ]
 

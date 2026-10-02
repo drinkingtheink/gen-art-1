@@ -460,6 +460,49 @@ export const rooms = [
     src: '/rooms/steel-wall.jpg',
     width: 1333,
     height: 2000,
+    /**
+     * The sunbeam crossing the wall, so it can cross the work as well.
+     *
+     * The one room where the light is a shape rather than a direction, and
+     * leaving it off the piece was what gave the mockup away: the beam ran
+     * down the plaster, stopped dead at the frame, and carried on underneath.
+     *
+     * Tracked rather than eyeballed. Taking the brightest column per row finds
+     * two separate streaks, because the wall dulls across the middle panel and
+     * a global maximum jumps between them; following the previous row instead
+     * holds one line, and the upper stretch extrapolated to y 630 lands at
+     * x 243 against a measured 233, which is what says they are one beam.
+     * Fitted over 154 rows: x = -0.406y + 951, 22.1 degrees off vertical, rms
+     * 32px — the wall's own mottling, not a second beam.
+     *
+     * `core` is the width at half maximum and `feather` where it reaches the
+     * surrounding wall. `tint` is the light itself: the wall reads 113,97,82
+     * under the beam against 76,68,60 beside it, and that difference
+     * normalised is 1.00, 0.77, 0.58 — a low warm sun, not a white one.
+     */
+    beam: {
+      slope: -0.406,
+      at: 951,
+      core: 66,
+      feather: 230,
+      /**
+       * The wall *outside* the beam, as a fraction of the wall inside it.
+       *
+       * Adding light was the wrong way round and barely showed. The print is
+       * composited at full brightness everywhere, so it has no shadow for a
+       * beam to lift it out of, and screening warm light onto a near-white mat
+       * moves almost nothing — there is nowhere brighter to go. In the
+       * photograph the relationship runs the other way: the wall sits at
+       * 76,68,60 and the beam raises it to 113,97,82, so what the beam really
+       * marks is how much darker everything else is.
+       *
+       * Those two measurements divided, channel by channel, are 0.67, 0.70,
+       * 0.73 — and the slight coolness in that is the point as well, because
+       * it is what makes the lit band read as warm without anything warm being
+       * painted on. Multiplied, not screened.
+       */
+      shade: '171 179 186',
+    },
     plane: [
       [0.48675141, 0, 0.4456114],
       [0.092350541, -0.42603526, 0.8185075],
@@ -762,6 +805,94 @@ export function hangStyle(room, boost = 1) {
  * Every frame reports where it laid the art down, so the glazing treatments
  * can be put on the print itself rather than on the whole mounted object.
  */
+/**
+ * The room's beam, as a gradient in the artwork's own coordinates.
+ *
+ * The span carrying this sits inside the transformed element, so what is drawn
+ * here is in the piece's flat local space and the matrix3d puts it on the
+ * wall. That works because a projective map takes straight lines to straight
+ * lines: a band across the local rectangle arrives as a band across the hung
+ * quad, at the angle the wall gives it, for free.
+ *
+ * What it costs is exactness. Distance from the beam is linear across the
+ * photograph but only near-linear back in local space, so this fits an affine
+ * `d = a·u + b·v + c` to the four corners by least squares rather than solving
+ * it. Over a quad this shallow the corner residual runs well under a pixel;
+ * over a wall shot at a hard angle it would not, and the honest fix there is
+ * the inverse homography.
+ *
+ * Returns null when the beam misses the piece entirely, so the span is not
+ * rendered at all rather than rendered empty.
+ */
+export function beamOver(room, quadInPhotoPixels, boxWidth, boxHeight) {
+  const beam = room.beam
+  if (!beam || !quadInPhotoPixels || !boxWidth || !boxHeight) return null
+
+  // Perpendicular distance from the beam's line, in the photograph's pixels.
+  const k = 1 / Math.hypot(1, beam.slope)
+  const d = quadInPhotoPixels.map(([x, y]) => (x - (beam.slope * y + beam.at)) * k)
+  const uv = [[0, 0], [boxWidth, 0], [boxWidth, boxHeight], [0, boxHeight]]
+
+  // Normal equations for the affine fit.
+  let m = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+  let r = [0, 0, 0]
+  uv.forEach(([u, v], i) => {
+    const row = [u, v, 1]
+    for (let a = 0; a < 3; a++) {
+      for (let b = 0; b < 3; b++) m[a][b] += row[a] * row[b]
+      r[a] += row[a] * d[i]
+    }
+  })
+  // Gaussian elimination, three unknowns.
+  for (let i = 0; i < 3; i++) {
+    let pivot = i
+    for (let j = i + 1; j < 3; j++) if (Math.abs(m[j][i]) > Math.abs(m[pivot][i])) pivot = j
+    if (Math.abs(m[pivot][i]) < 1e-9) return null
+    ;[m[i], m[pivot]] = [m[pivot], m[i]]
+    ;[r[i], r[pivot]] = [r[pivot], r[i]]
+    for (let j = i + 1; j < 3; j++) {
+      const f = m[j][i] / m[i][i]
+      for (let c = i; c < 3; c++) m[j][c] -= f * m[i][c]
+      r[j] -= f * r[i]
+    }
+  }
+  const sol = [0, 0, 0]
+  for (let i = 2; i >= 0; i--) {
+    let acc = r[i]
+    for (let c = i + 1; c < 3; c++) acc -= m[i][c] * sol[c]
+    sol[i] = acc / m[i][i]
+  }
+  const [a, b, c] = sol
+
+  const slopeLen = Math.hypot(a, b)
+  if (slopeLen < 1e-9) return null
+
+  // CSS measures a gradient angle from "to top", clockwise, and local v runs
+  // downward — hence atan2(a, -b) rather than anything more obvious.
+  const radians = Math.atan2(a, -b)
+  const degrees = (radians * 180) / Math.PI
+  // The gradient line's own length at that angle, which is what the stop
+  // percentages are measured along.
+  const line = Math.abs(boxWidth * Math.sin(radians)) + Math.abs(boxHeight * Math.cos(radians))
+  const middle = a * (boxWidth / 2) + b * (boxHeight / 2) + c
+  const at = (distance) => 0.5 + (distance - middle) / (line * slopeLen)
+
+  const edges = [at(-beam.feather), at(-beam.core), at(beam.core), at(beam.feather)]
+  // Entirely off one side of the piece: nothing to draw.
+  if (edges[3] <= 0 || edges[0] >= 1) return null
+
+  const pct = (f) => `${(Math.min(1.4, Math.max(-0.4, f)) * 100).toFixed(1)}%`
+  const shade = `rgb(${beam.shade})`
+  // White multiplies to nothing, so the core is simply left alone and the
+  // shoulder carries the whole effect.
+  return (
+    `linear-gradient(${degrees.toFixed(1)}deg, ` +
+    `${shade} ${pct(edges[0])}, ` +
+    `#fff ${pct(edges[1])}, #fff ${pct(edges[2])}, ` +
+    `${shade} ${pct(edges[3])})`
+  )
+}
+
 export function artWindow(box, scene) {
   const { x, y, scale } = box.art ?? { x: 0, y: 0, scale: 1 }
   return {

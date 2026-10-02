@@ -69,7 +69,7 @@ const params = [
   { key: 'fill', type: 'range', label: 'Fill', min: 0, max: 1, step: 0.01, default: 1 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.1, max: 1, step: 0.01, default: 1, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 40 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'riso' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'ocean-breeze' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.6 },
 ]
 

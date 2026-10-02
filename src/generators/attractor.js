@@ -35,7 +35,7 @@ const params = [
   { key: 'dotSize', type: 'range', label: 'Dot size', min: 0.3, max: 4, step: 0.05, default: 1.35 },
   { key: 'opacity', type: 'range', label: 'Opacity', min: 0.05, max: 1, step: 0.01, default: 0.62, wander: 0.5 },
   { key: 'margin', type: 'range', label: 'Margin', min: 0, max: 140, step: 1, default: 50 },
-  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'aurora' },
+  { key: 'palette', type: 'palette', label: 'Palette', options: paletteOptions, default: 'blue-lagoon' },
   { key: 'colorBias', type: 'range', label: 'Colour bias', min: 0, max: 3, step: 0.05, default: 0.5 },
 ]
 
