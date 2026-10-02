@@ -75,7 +75,7 @@ onUnmounted(() => {
       <header class="head">
         <div>
           <h2 id="about-title">About</h2>
-          <p class="who">gen·art — artwork made rather than drawn</p>
+          <p class="who">Generative artwork for a wall or a homepage</p>
         </div>
         <p class="crest" aria-hidden="true"><GenArtMark /></p>
         <button ref="closer" type="button" class="leave" @click="emit('dismiss')">
