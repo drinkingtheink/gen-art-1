@@ -83,12 +83,24 @@ sets of clip-path ids in one namespace and cost about two megabytes of live DOM;
 markup at their defaults sums to 1.94MB.
 
 Behind the panel a real generator plays on a real showcase preset, picked at random with a random
-palette. A backdrop has to reach the edges, so only the cheap allover fields qualify — subdivision,
-strata, cells, packing and truchet, which mark 50–99% of the left and right sevenths and cost
-0.1–2.4ms a frame. Attractor, rosette, phyllotaxis, harmonograph and dendrite measure 0% there:
-they compose a single figure in the middle. Margin is forced to zero and any `margin` modulator
-dropped, or the piece keeps a breathing border of its own background colour. The canvas is shaped
-to the window at constant area, and a resize regenerates it once the drag stops.
+palette. A backdrop has to reach the edges, so mostly the cheap allover fields qualify —
+subdivision, strata, cells, packing and truchet, which mark 50–99% of the left and right sevenths
+and cost 0.1–2.4ms a frame. Attractor, phyllotaxis, harmonograph and dendrite measure 0% there:
+they compose a single figure in the middle. The canvas is shaped to the window at constant area,
+and a resize regenerates it once the drag stops.
+
+Rosette is the exception, and only since the figure grew past the page. It is still one figure, but
+a crop out of the middle of a window far larger than the frame has something crossing every edge:
+20–28% of the edge columns across the full swing of its petal modulator, against 41% for truchet
+measured the same way, and ink in 100% of the edge rows throughout — an open lattice rather than a
+gap. It is also the cheapest piece in the set, at 0.7–1.3ms and 28KB a frame.
+
+A backdrop pins a few params over the generator's own defaults. Zero margin for all of them, or the
+piece keeps a breathing border of its own background colour; plus a reach and a ring count for
+rosette, which needs more than a zero margin to bleed, because a crop out of a six-ring window runs
+out of bands before it reaches the corners. Any modulator on a pinned param is dropped with it —
+truchet's preset sweeps margin between 18 and 102, so the border would otherwise breathe back in
+within a second of playback.
 
 It runs at half the preset's speed, on authored defaults rather than a roll that could land on a
 dud, and `prefers-reduced-motion` holds it on a single frame. Frosted glass covers the whole screen
