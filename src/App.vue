@@ -23,6 +23,7 @@ import {
   shareImageBlob,
 } from '@/core/export.js'
 import { adviceFor, buildCssRule, byteLength, formatBytes, toDataUri } from '@/core/css.js'
+import { getPalette } from '@/core/palettes.js'
 import { randomState } from '@/core/random.js'
 import { presetFor } from '@/core/showcase.js'
 import { useShowcase } from '@/composables/useShowcase.js'
@@ -723,6 +724,18 @@ const hasPalette = computed(() =>
   generator.value.params.some((spec) => spec.type === 'palette'),
 )
 
+/**
+ * The palette the caption names — the chosen one, not the lived one.
+ *
+ * `basePalette` is what the piece is wearing this instant, and with Cycle
+ * palette running that is a different set every frame: the caption churned
+ * through a hundred names a minute and read as a fault. This is the set the
+ * piece is anchored to and the one the permalink carries, so it holds still
+ * while the colour drifts and moves only when Palette is pressed — which is
+ * the one time a caption changing is information rather than noise.
+ */
+const chosenPalette = computed(() => getPalette(params.value.palette))
+
 const copied = ref(false)
 let copyTimer = null
 
@@ -951,18 +964,63 @@ async function copyLink() {
            is. Everything else stays in the panel, which is where you go
            to change what the piece is. -->
       <div v-if="!presenting" class="stage-controls">
+        <!-- Phones only: the label off a gallery wall.
+             
+             A desktop says what you are looking at four times over in the
+             sidebar — piece, shape, seed, palette. A phone said it nowhere, so
+             the one screen that is purely for looking was the one that never
+             named the thing. It is also what makes the two buttons beside it
+             legible without words: the seed changes under Re-gen and the
+             palette name under Palette, so the icons are captioned by their
+             own effect. -->
+        <div class="plate-line">
+          <p class="ident">
+            {{ generator.name
+            }}<template v-if="hasPalette"><span class="dot">·</span>{{
+              chosenPalette.name }}</template
+            ><span class="dot">·</span><span class="which">{{ seed }}</span>
+          </p>
+
+          <!-- Random lives up here, on the line that names the piece, because
+               that is the line it acts on — it replaces what the caption says.
+               And it is a plain text button where everything below is a filled
+               chip, which is the whole of the grouping: a different kind of
+               thing, drawn as a different kind of control, at full strength. -->
+          <button
+            type="button"
+            class="elsewhere"
+            title="A different piece entirely"
+            @click="randomize"
+          >
+            <ButtonIcon glyph="dice" />
+            Random
+          </button>
+        </div>
+
         <!-- Everything in here acts on the piece in front of you. -->
         <div class="tray this-one">
           <!-- The same two controls as the showcase bar, sharing its state —
                pressing either one moves both. -->
-          <button type="button" class="minor play-toggle" @click="toggleShowcase">
+          <button
+            type="button"
+            class="minor play-toggle"
+            :title="show.playing.value ? 'Pause' : 'Play'"
+            :aria-label="show.playing.value ? 'Pause' : 'Play'"
+            @click="toggleShowcase"
+          >
             <ButtonIcon :glyph="show.playing.value ? 'pause' : 'play'" />
-            {{ show.playing.value ? 'Pause' : 'Play' }}
+            <span class="says">{{ show.playing.value ? 'Pause' : 'Play' }}</span>
           </button>
 
-          <button type="button" class="minor" @click="regen">
+          <button
+            type="button"
+            class="minor"
+            title="Re-gen — the same piece, rolled again"
+            aria-label="Re-gen — the same piece, rolled again"
+            @click="regen"
+          >
             <ButtonIcon glyph="regen" />
-            Re-gen
+            <span class="says">Re-gen</span>
           </button>
 
           <!-- Phones only: the sidebar's palette chips can't come along, so
@@ -985,7 +1043,7 @@ async function copyLink() {
                 :style="{ background: c }"
               />
             </span>
-            Palette
+            <span class="says">Palette</span>
           </button>
 
           <button type="button" class="see-framed" @click="openPreview">
@@ -1022,7 +1080,7 @@ async function copyLink() {
             @click="randomize"
           >
             <ButtonIcon glyph="dice" />
-            {{ narrow ? 'Random' : 'Random Piece' }}
+            Random Piece
           </button>
         </div>
       </div>
@@ -1332,6 +1390,12 @@ async function copyLink() {
   justify-content: center;
 }
 
+/* The caption and its Random are the phone's arrangement; a desktop says all
+   of this in the sidebar and has the room to say it in words. */
+.plate-line {
+  display: none;
+}
+
 /**
  * The one that leaves.
  *
@@ -1539,62 +1603,166 @@ async function copyLink() {
   }
 
   /**
-   * The tray, stacked, and stacked in the order you'd read it: what you do
-   * while looking, then where you'd look at it, then — set apart — the way
-   * out to something else.
+   * The plate, and the end of the tray that sat on the artwork.
    *
-   * Explicit rather than left to wrap-reverse. At this width the row has to
-   * break, and letting flex choose the break put the accent on top and the
-   * two controls you actually press on the bottom line, under the odd one
-   * out. The stack says the order instead.
+   * Three rows of chips floating over the bottom of the piece covered about a
+   * fifth of the only thing this screen exists to show, and the piece was not
+   * smaller for it — just partly hidden, which is worse. The controls come off
+   * the art entirely and take a row of their own beneath it. The piece loses
+   * some height and gets all of itself back, and an uncovered small piece
+   * reads better than a large one with a bar across its feet.
+   *
+   * Full-bleed, in the panel colour, with an edge along the top: the same
+   * surface as the header, so the artwork is held between two pieces of the
+   * app's own furniture rather than having one of them laid on top of it.
    */
+  .stage-area {
+    align-items: start;
+    /* Two rows: the piece takes everything left over, the plate takes what it
+       needs. minmax(0,1fr) rather than 1fr so `max-height: 100%` on the stage
+       has a definite row to resolve against and the plate is never pushed off
+       the bottom. */
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: 0.75rem 0.75rem 0;
+  }
+
   .stage-controls {
+    position: static;
+    justify-self: stretch;
     flex-direction: column;
-    gap: 0.7rem;
-    width: calc(100% - 1.5rem);
-    max-width: 24rem;
+    align-items: stretch;
+    gap: 0.4rem;
+    width: auto;
+    max-width: none;
+    margin: 0.75rem -0.75rem 0;
+    padding: 0.5rem 0.9rem 0.7rem;
+    background: var(--panel);
+    border-top: 1px solid var(--panel-edge);
+    transform: none;
   }
 
-  .tray {
-    flex-wrap: wrap;
-    width: 100%;
+  /* The caption and the way out of this piece, on one line. */
+  .plate-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
   }
 
-  /* The accent takes the line under them. It is the biggest thing on offer
-     here and a thumb should not have to aim for it. */
-  .stage-controls .see-framed {
-    flex-basis: 100%;
-    justify-content: center;
+  /* One line, and it truncates from the right — the seed is last because it is
+     the least readable thing in the sentence and the first worth losing. */
+  .ident {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--ink-dim);
+    font-size: 0.72rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
-  /* Three across in the width of a phone, so the labels come down a notch and
-     Play/Pause gives up the reserved cell it needs on a centred desktop row —
-     here the row is a fixed width and nothing shifts. */
-  .stage-controls .minor {
-    padding: 0.45rem 0.6rem;
+  .ident .dot {
+    margin: 0 0.35em;
+    opacity: 0.55;
+  }
+
+  /* Monospace, because it is a key rather than a word: it is the one part of
+     the caption someone might read back a character at a time. */
+  .ident .which {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.95em;
+  }
+
+  /**
+   * Text, not a chip.
+   *
+   * Everything below is a filled rounded chip that acts on the piece. This one
+   * fetches a different piece, so it is not drawn as one of them — and it is
+   * at full ink while it says so, because the last thing that marked this
+   * button as different did it by fading, which is what this app's `:disabled`
+   * looks like.
+   */
+  .elsewhere {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.1rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
     font-size: 0.78rem;
+    font-weight: 600;
     letter-spacing: 0.02em;
   }
 
-  .stage-controls .play-toggle {
-    min-width: 0;
-    flex: 1;
+  .elsewhere:hover,
+  .elsewhere:focus-visible {
+    color: var(--accent);
+    background: none;
   }
 
-  .stage-controls .this-one .minor {
-    flex: 1;
+  /* The desktop pairing is the caption line's job here. */
+  .stage-controls .other-one {
+    display: none;
+  }
+
+  .tray {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+  }
+
+  /**
+   * The three quiet ones go wordless, and their words move into the caption.
+   *
+   * It buys the accent a place on the same line — labelled, which it has to be
+   * — and it is affordable only because these particular three are the most
+   * self-evident marks in the app: a triangle, a circling arrow, and a literal
+   * strip of the colours it will give you. Each keeps its label in `title` and
+   * `aria-label`, and the caption above reports what the press did: the seed
+   * moves under the arrow, the palette name under the strip.
+   */
+  .stage-controls .minor {
+    flex: none;
     justify-content: center;
+    min-width: 0;
+    padding: 0.5rem 0.65rem;
+    background: var(--panel-edge);
+    border-color: color-mix(in srgb, var(--panel-edge) 70%, var(--ink));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  /* The chips sit on the panel here rather than over artwork, so they are
+     filled from the edge colour to lift off it — which inverts the shared
+     hover, where going to `--panel` is a step up from a translucent chip and
+     here would be a step down. */
+  .stage-controls .minor:hover,
+  .stage-controls .minor:focus-visible {
+    background: color-mix(in srgb, var(--panel-edge) 72%, var(--ink));
+  }
+
+  .stage-controls .minor .says {
+    /* Not `display: none` on the button itself — the name has to survive for
+       the screen reader, and it does, in aria-label. */
+    display: none;
   }
 
   .stage-controls .recolour {
     display: flex;
   }
 
-  /* On its own line, at its own width — not stretched to the full bar, which
-     would have made the thing that discards your piece the widest target on
-     the screen. */
-  .stage-controls .roll {
-    padding: 0.4rem 0.9rem;
+  /* Takes the rest of the row. It is the one thing here worth being asked for
+     and a thumb should not have to aim for it. */
+  .stage-controls .see-framed {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    box-shadow: none;
   }
 }
 </style>
