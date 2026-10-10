@@ -24,6 +24,19 @@ import { getPalette, legibleInks, paletteOptions } from '../core/palettes.js'
  * spin, twist, petal shape, bow, rim and core all move continuously — and
  * because every ring turns at its own rate, the figure never repeats itself
  * even while staying perfectly symmetric.
+ *
+ * **And it is usually bigger than the canvas.** A rose window is sixteen feet
+ * across and you stand under it; a rosette drawn to fit inside its frame is a
+ * drawing of one on a coaster. `reach` runs past the point where the figure
+ * leaves the page, the authored default is already past it, and the roll is
+ * centred out there — so the ordinary encounter with this piece is a detail of
+ * something larger, cropped by the edges, with the medallion anchoring it and
+ * the outer bands running off all four sides.
+ *
+ * Rings that land entirely off the canvas are still generated. They cost path
+ * data nobody sees, and the alternative costs more: `reach` is continuous and
+ * animatable, and culling by radius would make the shape count a function of
+ * it, which is the one thing a modulated param may not change.
  */
 
 const params = [
@@ -44,10 +57,15 @@ const params = [
   { key: 'spin', type: 'range', label: 'Spin', min: 0, max: 360, step: 0.2, default: 0 },
   { key: 'twist', type: 'range', label: 'Twist', min: -60, max: 60, step: 0.2, default: 14 },
   { key: 'inner', type: 'range', label: 'Inner radius', min: 0, max: 0.5, step: 0.005, default: 0.16, wander: 0.5 },
-  // Reach and petal width between them decide how much of the canvas the
-  // figure covers, and a line width of zero draws nothing at all — so a random
-  // roll keeps all three near where the piece was authored.
-  { key: 'reach', type: 'range', label: 'Reach', min: 0.3, max: 1.05, step: 0.005, default: 0.9, wander: 0.5 },
+  // Reach decides how much bigger than the canvas the figure is. Past about
+  // 1.11 on a square the outer rim crosses the edge, past about 1.57 it clears
+  // the corners too and there is no paper left showing round it; the window a
+  // roll draws from is [0.91, 2.29], so it lands outside the frame around
+  // six times in seven and still comes back whole often enough to be a
+  // surprise. The ceiling is where the crop stops being a crop: past 2.8 the
+  // frame holds the medallion and one band, and a rosette with one band is a
+  // circle.
+  { key: 'reach', type: 'range', label: 'Reach', min: 0.3, max: 2.8, step: 0.005, default: 1.6, wander: 0.55 },
   { key: 'petal', type: 'range', label: 'Petal width', min: 0.05, max: 1.4, step: 0.005, default: 0.78, wander: 0.4 },
   { key: 'bow', type: 'range', label: 'Bow', min: -1.2, max: 1.2, step: 0.005, default: 0.45 },
   { key: 'taper', type: 'range', label: 'Taper', min: 0.2, max: 1.6, step: 0.005, default: 0.85, wander: 0.5 },
@@ -71,7 +89,7 @@ const MAX_RINGS = 9
 export default {
   id: 'rosette',
   name: 'Rosette',
-  blurb: 'Petals in radial order about a centre.',
+  blurb: 'Petals in radial order, usually larger than the frame.',
   params,
 
   generate({ params: p, rng, width, height, palette: override }) {
