@@ -202,6 +202,14 @@ the closest it comes, 344KB of SVG against 413KB of PNG.
 multiplier, and the piece scaled to cover it. It is offered only at phone width, where it is the one
 export that needs no decision; see [Operate on a desktop, browse anywhere](#operate-on-a-desktop-browse-anywhere).
 
+It is the one export whose **format follows the picture**. Grain is turbulence and noise is
+incompressible, so a screen-sized truchet is 8.70MB as a PNG with the grain up and 1.38MB as a JPEG
+at q92 — and without grain the two swap places, 0.39MB against 0.57MB, because flat colour between
+hard edges is what PNG is good at and what a DCT is bad at. So the wallpaper encodes as JPEG when
+the scene carries noise and as PNG when it doesn't, decided by reading the serialised markup rather
+than the grain setting: the question is whether there is noise in the picture, and anything else
+that puts it there should get the same answer. The print exports stay PNG whatever happens.
+
 Files are named for the piece — `gen-art-truchet-still-hokusai-12.svg` — so a file on disk is
 traceable back to the seed that made it. A background takes the same name with `-phone` before the
 extension, so it lands beside the plain export rather than over it.
@@ -475,6 +483,21 @@ down two sides is not a background, and these are fields rather than composition
 a lost margin costs less than a letterbox. It goes through the same export path as everything else,
 which means playback pauses first and the file you saved is a piece you can get back from its own
 permalink.
+
+**Saving it takes two presses, and that is iOS rather than indecision.** An `<a download>` on iOS
+puts the file in Files, and the wallpaper picker in Settings reads only Photos — so the download
+that looks like it worked leaves the file somewhere it cannot be used from. The share sheet offers
+Save Image, which is Photos. But Safari wants transient user activation before it will open one, and
+a screen-sized raster is an await long enough to spend it, coming back as `NotAllowedError` rather
+than as a sheet. So the first press does what has to happen while the frame is still on screen —
+pause, commit, render — and the second press, a fresh gesture, hands the file over with nothing
+awaited in front of it. Where there is no sheet to open there is nothing to wait for, and one press
+renders and downloads as before.
+
+A render belongs to the frame it came off, so anything that changes the permalink drops it and the
+button goes back to offering the piece that is actually on screen. `canShare` is asked twice — once
+about files at all, and again about this exact file — and a no the second time falls back to the
+download rather than stranding a file that is already made.
 
 The narrow header is a second element rather than the sidebar's reflowed, and exactly one of the two
 is ever displayed, so the wordmark is never on screen twice or in the accessibility tree twice.

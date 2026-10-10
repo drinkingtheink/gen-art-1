@@ -19,6 +19,31 @@ export const MAX_RASTER_EDGE = 8192
  */
 export const PNG_SCALES = [1, 2, 4, 8]
 
+export const WALLPAPER_QUALITY = 0.92
+
+/**
+ * How to encode a wallpaper, which is not one answer for every piece.
+ *
+ * Grain is turbulence, and noise is incompressible: the same screen-sized
+ * truchet measures 8.70MB as a PNG with the grain up and 1.38MB as a JPEG at
+ * q92. Without grain the two swap places — 0.39MB against 0.57MB — because
+ * flat colour between hard edges is exactly what PNG is good at and exactly
+ * what a DCT is bad at.
+ *
+ * So the grain picks the format rather than the destination picking it. Tested
+ * on the markup rather than on the grain setting, because the question is
+ * whether there is noise in the picture, and anything else that puts noise
+ * there should get the same answer.
+ *
+ * The print exports stay PNG whatever happens: a file headed for paper is not
+ * the place to spend quality on bytes.
+ */
+export function wallpaperEncoding(markup) {
+  return /feTurbulence/.test(markup)
+    ? { type: 'image/jpeg', extension: 'jpg', quality: WALLPAPER_QUALITY }
+    : { type: 'image/png', extension: 'png' }
+}
+
 /**
  * A copy of the live stage, cleaned of anything app-specific and given an
  * explicit size. Firefox in particular won't rasterise an SVG without one.
@@ -54,15 +79,15 @@ export function serializeScene(svgEl) {
 /**
  * Draw the scene into a canvas of a given pixel size and encode it.
  *
- * Both raster exports come through here. The difference between them is only
+ * Both raster exports come through here. They differ in two things only:
  * where the picture lands inside the canvas — a PNG fills it exactly, a
- * wallpaper is scaled up and cropped — so that is the one thing `place`
- * decides and everything else is shared.
+ * wallpaper is scaled up and cropped — and how the pixels are encoded. Those
+ * are `place` and `encode`; everything else is shared.
  *
  * The SVG is self-contained — no external images or fonts — so drawing it to
  * a canvas doesn't taint it and toBlob works.
  */
-async function rasterise(markup, canvasWidth, canvasHeight, place) {
+async function rasterise(markup, canvasWidth, canvasHeight, place, encode = {}) {
   const svgBlob = new Blob([markup], { type: 'image/svg+xml;charset=utf-8' })
   const url = URL.createObjectURL(svgBlob)
 
@@ -79,11 +104,24 @@ async function rasterise(markup, canvasWidth, canvasHeight, place) {
     canvas.height = Math.round(canvasHeight)
 
     const ctx = canvas.getContext('2d')
+
+    // JPEG has no alpha, so any pixel the picture doesn't reach encodes as
+    // black rather than as nothing. Laying the paper down first means a format
+    // without transparency still agrees with the piece everywhere.
+    if (encode.background) {
+      ctx.fillStyle = encode.background
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+
     const { x, y, width, height } = place(canvas.width, canvas.height)
     ctx.drawImage(image, x, y, width, height)
 
     const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Encoding the PNG failed.'))), 'image/png')
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('Encoding the image failed.'))),
+        encode.type ?? 'image/png',
+        encode.quality,
+      )
     })
 
     return { blob, width: canvas.width, height: canvas.height }
@@ -159,8 +197,9 @@ export function phoneCanvas(win = globalThis) {
  */
 export async function renderToWallpaperBlob(svgEl, target = phoneCanvas()) {
   const { markup, width, height } = serializeScene(svgEl)
+  const { extension, ...encode } = wallpaperEncoding(markup)
 
-  return rasterise(markup, target.width, target.height, (w, h) => {
+  const place = (w, h) => {
     const cover = Math.max(w / width, h / height)
     const drawn = { width: width * cover, height: height * cover }
     return {
@@ -168,7 +207,26 @@ export async function renderToWallpaperBlob(svgEl, target = phoneCanvas()) {
       y: (h - drawn.height) / 2,
       ...drawn,
     }
+  }
+
+  const out = await rasterise(markup, target.width, target.height, place, {
+    ...encode,
+    background: sceneBackground(svgEl),
   })
+
+  return { ...out, extension }
+}
+
+/**
+ * The paper the piece is drawn on, read off the live stage.
+ *
+ * `SvgStage` paints the background as the first rect in the document rather
+ * than as a style on the SVG element, so that rect is where the colour is.
+ * Cover leaves nothing uncovered anyway; this is what makes that a fact about
+ * the crop rather than something the encoder has to be right about.
+ */
+function sceneBackground(svgEl) {
+  return svgEl.querySelector('rect')?.getAttribute('fill') ?? ''
 }
 
 /**
@@ -183,6 +241,48 @@ export function buildFilename(generatorId, seed, extension, suffix = '') {
   const safe = (s) => String(s).replace(/[^a-z0-9-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()
   const tail = suffix ? `-${safe(suffix)}` : ''
   return `gen-art-${safe(generatorId)}-${safe(seed)}${tail}.${extension}`
+}
+
+/**
+ * Whether this browser can hand a file to the system share sheet.
+ *
+ * This is the whole reason the wallpaper has a second path. On iOS an
+ * `<a download>` saves into Files, and the wallpaper picker in Settings reads
+ * only Photos — so the download that looks like it worked leaves the file
+ * somewhere it cannot be used from. The share sheet offers Save Image, and
+ * Save Image means Photos.
+ *
+ * The probe is a real, empty File of the type that would actually be sent:
+ * `canShare` answers per type, and `navigator.share` existing says nothing
+ * about whether files are allowed through it.
+ */
+export function canShareImageFile() {
+  if (typeof navigator === 'undefined' || !navigator.share || !navigator.canShare) return false
+
+  try {
+    const probe = new File([], 'probe.jpg', { type: 'image/jpeg' })
+    return navigator.canShare({ files: [probe] })
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Hand a rendered blob to the share sheet.
+ *
+ * Must be called from inside the press that asked for it, and calls `share`
+ * before it awaits anything. Safari requires transient user activation here,
+ * and a screen-sized raster is an await long enough to spend it — which comes
+ * back as `NotAllowedError` rather than as a sheet. So the render happens on
+ * one press and this happens on the next.
+ */
+export function shareImageBlob(blob, filename) {
+  const file = new File([blob], filename, { type: blob.type })
+  if (!navigator.canShare?.({ files: [file] })) {
+    throw new Error('this browser will not share a file')
+  }
+
+  return navigator.share({ files: [file] })
 }
 
 export function downloadBlob(blob, filename) {
