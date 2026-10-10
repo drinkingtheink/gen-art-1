@@ -6,6 +6,7 @@ import {
   getPalette,
   paletteAtCycle,
   paletteIdAtCycle,
+  palettes,
   randomBackground,
 } from '../core/palettes.js'
 import { randomParams } from '../core/random.js'
@@ -270,6 +271,30 @@ export function useGenerator(initial = {}) {
   }
 
   /**
+   * The next palette along, on the piece already here.
+   *
+   * The sidebar shows all of them at once and you pick the one you want. A
+   * phone has no sidebar, and a grid of 125 swatches is not what it should get
+   * instead — so colour is offered there as a step rather than a choice: press
+   * it again and the piece wears the next scheme.
+   *
+   * It walks the global list in order, which is the order the sets are
+   * authored in — graded quiet to loud — so consecutive presses move through
+   * related schemes rather than teleporting. That is the difference between
+   * this and Random: it is still your piece, in another coat.
+   *
+   * Routed through selectPalette rather than setParam, so the background is
+   * rerolled out of the arriving set exactly as it is when you click a chip.
+   * A generator with no palette param leaves findIndex at -1, and a step of 1
+   * lands that on the first set rather than on nothing.
+   */
+  function nextPalette(step = 1) {
+    const at = palettes.findIndex((p) => p.id === params.value.palette)
+    const n = palettes.length
+    selectPalette(palettes[(((at + step) % n) + n) % n].id)
+  }
+
+  /**
    * Switching shape re-runs generate() on the new canvas with the same seed —
    * the piece is regenerated, not reflowed.
    */
@@ -350,6 +375,7 @@ export function useGenerator(initial = {}) {
     setParam,
     selectGenerator,
     selectPalette,
+    nextPalette,
     setRatio,
     setGrain,
     setEffects,

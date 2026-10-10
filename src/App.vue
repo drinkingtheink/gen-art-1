@@ -14,11 +14,13 @@ import SvgStage from '@/components/SvgStage.vue'
 import Toolbar from '@/components/Toolbar.vue'
 import {
   buildFilename,
+  canShareImageFile,
   downloadBlob,
   phoneCanvas,
   renderToPngBlob,
   renderToWallpaperBlob,
   serializeScene,
+  shareImageBlob,
 } from '@/core/export.js'
 import { adviceFor, buildCssRule, byteLength, formatBytes, toDataUri } from '@/core/css.js'
 import { randomState } from '@/core/random.js'
@@ -147,6 +149,7 @@ const {
   commitLive,
   selectGenerator,
   selectPalette,
+  nextPalette,
   setRatio,
   setGrain,
   setEffects,
@@ -464,6 +467,41 @@ function exportPng(scale) {
 const phonePixels = phoneCanvas()
 
 /**
+ * Whether a saved background can reach the photo library.
+ *
+ * Settled once like the screen size, because it is a property of the browser
+ * and not of the piece. It decides which of two presses the button is on.
+ */
+const canShareFile = canShareImageFile()
+
+/**
+ * A rendered background, waiting for the press that files it away.
+ *
+ * Only ever set where the share sheet is available, because that is the only
+ * flow needing two presses. Safari will not open a sheet after an await and a
+ * screen-sized raster is an await, so the first press does the part that has
+ * to happen while the frame is still on screen — pause, commit, render — and
+ * the second press, a fresh gesture, hands over what the first one made.
+ *
+ * Where there is no sheet there is nothing to wait for: one press renders and
+ * downloads, exactly as before.
+ */
+const phoneReady = ref(null)
+
+/**
+ * A rendered background belongs to the frame it came off.
+ *
+ * The permalink is the piece, so a change to it means what is in hand is no
+ * longer what is on screen — and a background saved from a stale render would
+ * be a file that the link it claims to come from cannot reproduce.
+ */
+watch(shareHref, () => {
+  if (!phoneReady.value) return
+  phoneReady.value = null
+  exportStatus.value = ''
+})
+
+/**
  * The piece as this phone's background.
  *
  * The one export that belongs on a phone. Everything else in the export bar
@@ -478,11 +516,57 @@ function exportWallpaper() {
   return runExport(async () => {
     const svg = stageSvg()
     if (!svg) throw new Error('the stage is not ready')
-    const { blob, width, height } = await renderToWallpaperBlob(svg, phonePixels)
-    const name = buildFilename(generatorId.value, seed.value, 'png', 'phone')
+    const { blob, width, height, extension } = await renderToWallpaperBlob(svg, phonePixels)
+    const name = buildFilename(generatorId.value, seed.value, extension, 'phone')
+
+    if (canShareFile) {
+      phoneReady.value = { blob, name }
+      return `Rendered at ${width}×${height} — now save it to your photos.`
+    }
+
     downloadBlob(blob, name)
     return `Saved to your downloads — ${width}×${height}.`
   })
+}
+
+/**
+ * The second press: the rendered background into the photo library.
+ *
+ * Deliberately not inside `runExport`. That helper yields a frame and awaits a
+ * raster, and both spend the user activation Safari wants before it will open
+ * a share sheet; here the file is built and handed over with nothing awaited
+ * in front of it.
+ *
+ * Backing out of the sheet arrives as `AbortError`. That is a decision rather
+ * than a failure, so it keeps the render in hand and the button on screen to
+ * be pressed again.
+ *
+ * Anything else falls back to the download. `canShare` is asked twice — once
+ * about files at all, and again about this actual file — and the second answer
+ * can be no where the first was yes, on a size limit the platform never
+ * published. The file is already rendered by then, so the worst available
+ * answer is still better than dropping it: Files is an awkward place to set a
+ * wallpaper from, but it is a place.
+ */
+async function sharePhoneBackground() {
+  const ready = phoneReady.value
+  if (!ready) return
+
+  try {
+    const sending = shareImageBlob(ready.blob, ready.name)
+    exportStatus.value = 'Choose Save Image to put it in your photos.'
+    await sending
+    phoneReady.value = null
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      exportStatus.value = ''
+      return
+    }
+
+    downloadBlob(ready.blob, ready.name)
+    phoneReady.value = null
+    exportStatus.value = 'Your photos turned it down, so it went to your downloads instead.'
+  }
 }
 
 /**
@@ -609,6 +693,16 @@ function randomize() {
   applyState(rollPiece())
 }
 
+/**
+ * Not every generator takes a palette — the ones that draw their own colour
+ * don't — and a button that steps through sets the piece ignores is worse than
+ * no button. Asked of the generator rather than of the params, because that is
+ * where the answer is authored.
+ */
+const hasPalette = computed(() =>
+  generator.value.params.some((spec) => spec.type === 'palette'),
+)
+
 const copied = ref(false)
 let copyTimer = null
 
@@ -679,15 +773,34 @@ async function copyLink() {
         <button type="button" class="all" @click="about = true">About</button>
       </span>
       <p class="note">
-        Explore the Gallery. But to fine-tune, add effects, play with color, and
-        export print-size files, you'll need desktop.
+        Explore the Gallery. To fine-tune, add effects, play with color, and
+        export print-size files, visit on desktop.
       </p>
 
       <!-- The one thing a phone can do better than a desktop, so it is asked
            here and nowhere else: the device knows its own screen, and the file
            it gets is cut to those exact pixels rather than to a paper size. -->
       <div class="keep">
-        <button type="button" class="keepsake" :disabled="exporting" @click="exportWallpaper">
+        <!-- Two presses where a share sheet exists, because the sheet cannot be
+             opened after the render it is given. The second button says what
+             the press does rather than what the file is, since by then the file
+             is already made. -->
+        <button
+          v-if="phoneReady"
+          type="button"
+          class="keepsake"
+          @click="sharePhoneBackground"
+        >
+          <ButtonIcon glyph="download" />
+          Save to your photos
+        </button>
+        <button
+          v-else
+          type="button"
+          class="keepsake"
+          :disabled="exporting"
+          @click="exportWallpaper"
+        >
           <ButtonIcon glyph="download" />
           {{ exporting ? 'Saving…' : 'Save as phone background' }}
         </button>
@@ -818,38 +931,73 @@ async function copyLink() {
            is. Everything else stays in the panel, which is where you go
            to change what the piece is. -->
       <div v-if="!presenting" class="stage-controls">
-        <!-- The same two controls as the showcase bar, sharing its state —
-             pressing either one moves both. -->
-        <button type="button" class="minor" @click="toggleShowcase">
-          <ButtonIcon :glyph="show.playing.value ? 'pause' : 'play'" />
-          {{ show.playing.value ? 'Pause' : 'Play' }}
-        </button>
+        <!-- Everything in here acts on the piece in front of you. -->
+        <div class="tray this-one">
+          <!-- The same two controls as the showcase bar, sharing its state —
+               pressing either one moves both. -->
+          <button type="button" class="minor play-toggle" @click="toggleShowcase">
+            <ButtonIcon :glyph="show.playing.value ? 'pause' : 'play'" />
+            {{ show.playing.value ? 'Pause' : 'Play' }}
+          </button>
 
-        <button type="button" class="minor" @click="regen">
-          <ButtonIcon glyph="regen" />
-          Re-gen
-        </button>
+          <button type="button" class="minor" @click="regen">
+            <ButtonIcon glyph="regen" />
+            Re-gen
+          </button>
 
-        <button type="button" class="minor" @click="randomize">
-          <ButtonIcon glyph="dice" />
-          Randomized piece
-        </button>
+          <!-- Phones only: the sidebar's palette chips can't come along, so
+               colour is offered here as a step instead. The strip is the
+               current set, so the button both says what it does and shows
+               where you are — pressing it moves the stripes. -->
+          <button
+            v-if="hasPalette"
+            type="button"
+            class="minor recolour"
+            :title="`Next palette — currently ${basePalette.name}`"
+            :aria-label="`Next palette — currently ${basePalette.name}`"
+            @click="nextPalette()"
+          >
+            <span class="strip" aria-hidden="true">
+              <span
+                v-for="c in basePalette.colors"
+                :key="c"
+                class="stripe"
+                :style="{ background: c }"
+              />
+            </span>
+            Palette
+          </button>
 
-        <button type="button" class="see-framed" @click="openPreview">
-          <!-- Drawn here rather than pulled from an icon set: it is two circles,
-               a bridge and two temples, and the app already draws its own mark.
-               Decorative, because the label beside it says the same thing. -->
-          <svg class="specs" viewBox="0 0 26 11" aria-hidden="true" focusable="false">
-            <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-              <circle cx="6.6" cy="6.1" r="4.2" />
-              <circle cx="19.4" cy="6.1" r="4.2" />
-              <path d="M10.8,5.4 Q13,4.1 15.2,5.4" />
-              <path d="M2.4,5.1 L0.9,2.6" />
-              <path d="M23.6,5.1 L25.1,2.6" />
-            </g>
-          </svg>
-          See it on a wall
-        </button>
+          <button type="button" class="see-framed" @click="openPreview">
+            <!-- Drawn here rather than pulled from an icon set: it is two circles,
+                 a bridge and two temples, and the app already draws its own mark.
+                 Decorative, because the label beside it says the same thing. -->
+            <svg class="specs" viewBox="0 0 26 11" aria-hidden="true" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <circle cx="6.6" cy="6.1" r="4.2" />
+                <circle cx="19.4" cy="6.1" r="4.2" />
+                <path d="M10.8,5.4 Q13,4.1 15.2,5.4" />
+                <path d="M2.4,5.1 L0.9,2.6" />
+                <path d="M23.6,5.1 L25.1,2.6" />
+              </g>
+            </svg>
+            See it on a wall
+          </button>
+        </div>
+
+        <!-- And this one does not: it throws the piece away and brings
+             another. Hence the rule between them. -->
+        <div class="tray other-one">
+          <button
+            type="button"
+            class="minor roll"
+            title="A different piece entirely"
+            @click="randomize"
+          >
+            <ButtonIcon glyph="dice" />
+            Random
+          </button>
+        </div>
       </div>
 
       <button v-if="presenting" type="button" class="leave" @click="leavePresent">
@@ -1088,13 +1236,35 @@ async function copyLink() {
   left: 50%;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  /* The gap between the two trays, and it is the whole point of them: four
+     buttons at one spacing read as four equal offers, and one of them was not.
+     Within a tray they sit at 0.4rem. */
+  gap: 1.15rem;
   transform: translateX(-50%);
   /* Wrapping beats overflowing a narrow stage, and reversed so the accent
      button is the one that keeps the bottom line. */
   flex-wrap: wrap-reverse;
   justify-content: center;
   max-width: calc(100% - 2rem);
+}
+
+/**
+ * Two trays, because there are two kinds of thing here.
+ *
+ * Pause, Re-gen, Palette and See it on a wall all address the piece on the
+ * stage — stop it, roll it again, recolour it, hang it. Random does not: it
+ * discards that piece and fetches an unrelated one. Sitting them in one even
+ * row said they were peers, and the odd one out was the only destructive
+ * press in the set.
+ *
+ * Pause and Re-gen lead, because they are what you reach for while looking.
+ */
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap-reverse;
+  justify-content: center;
 }
 
 /**
@@ -1130,9 +1300,56 @@ async function copyLink() {
 /* The label swaps between Play and Pause, and the row is centred, so the
    button changing width would shift its neighbours. Both words in one cell,
    sized to the wider. */
-.stage-controls .minor:first-child {
+.stage-controls .play-toggle {
   min-width: 6.1rem;
   justify-content: center;
+}
+
+/**
+ * The one that leaves.
+ *
+ * A tier quieter than its neighbours — dimmed label, a thinner surface — so
+ * that even read as a single row of chips it does not look like the fourth
+ * thing you do to this piece. The gap says they are different groups; this
+ * says which group is the aside.
+ */
+.stage-controls .roll {
+  color: var(--ink-dim);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+}
+
+.stage-controls .roll:hover,
+.stage-controls .roll:focus-visible {
+  color: var(--ink);
+  background: var(--panel);
+}
+
+/**
+ * Colour as a step rather than a grid.
+ *
+ * Desktop has the whole set in the sidebar, so this is a phone control and
+ * nothing else — hidden rather than conditionally rendered, which also takes
+ * it out of the tab order at widths where it would be a duplicate.
+ */
+.stage-controls .recolour {
+  display: none;
+}
+
+/* The current set, at chip scale. Five colours in a rounded sliver: it reads
+   as "these colours", and the press visibly moves it on, which is the only
+   feedback the button needs. */
+.strip {
+  display: flex;
+  flex: none;
+  width: 1.5rem;
+  height: 0.72rem;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 25%);
+}
+
+.strip .stripe {
+  flex: 1;
 }
 
 /**
@@ -1295,6 +1512,65 @@ async function copyLink() {
   .stage-area {
     align-items: start;
     padding: 0.75rem;
+  }
+
+  /**
+   * The tray, stacked, and stacked in the order you'd read it: what you do
+   * while looking, then where you'd look at it, then — set apart — the way
+   * out to something else.
+   *
+   * Explicit rather than left to wrap-reverse. At this width the row has to
+   * break, and letting flex choose the break put the accent on top and the
+   * two controls you actually press on the bottom line, under the odd one
+   * out. The stack says the order instead.
+   */
+  .stage-controls {
+    flex-direction: column;
+    gap: 0.7rem;
+    width: calc(100% - 1.5rem);
+    max-width: 24rem;
+  }
+
+  .tray {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  /* The accent takes the line under them. It is the biggest thing on offer
+     here and a thumb should not have to aim for it. */
+  .stage-controls .see-framed {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  /* Three across in the width of a phone, so the labels come down a notch and
+     Play/Pause gives up the reserved cell it needs on a centred desktop row —
+     here the row is a fixed width and nothing shifts. */
+  .stage-controls .minor {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+  }
+
+  .stage-controls .play-toggle {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .stage-controls .this-one .minor {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .stage-controls .recolour {
+    display: flex;
+  }
+
+  /* On its own line, at its own width — not stretched to the full bar, which
+     would have made the thing that discards your piece the widest target on
+     the screen. */
+  .stage-controls .roll {
+    padding: 0.4rem 0.9rem;
   }
 }
 </style>
