@@ -1006,8 +1006,15 @@ async function copyLink() {
         </div>
 
         <!-- And this one does not: it throws the piece away and brings
-             another. Hence the rule between them. -->
+             another. Hence the gap between them. -->
         <div class="tray other-one">
+          <!-- "Random Piece" where there is room for it, because the noun is
+               what distinguishes this from everything to its left: the others
+               act on a piece, this one fetches one. A phone drops the noun to
+               keep the button off a second line, and the tray it sits alone in
+               has already made the same point by then. Swapped in the template
+               rather than by CSS, so only one of the two is ever in the
+               accessibility tree. -->
           <button
             type="button"
             class="minor roll"
@@ -1015,7 +1022,7 @@ async function copyLink() {
             @click="randomize"
           >
             <ButtonIcon glyph="dice" />
-            Random
+            {{ narrow ? 'Random' : 'Random Piece' }}
           </button>
         </div>
       </div>
@@ -1328,21 +1335,18 @@ async function copyLink() {
 /**
  * The one that leaves.
  *
- * A tier quieter than its neighbours — dimmed label, a thinner surface — so
- * that even read as a single row of chips it does not look like the fourth
- * thing you do to this piece. The gap says they are different groups; this
- * says which group is the aside.
+ * Carries exactly the weight of its neighbours, and that is the point. It was
+ * dimmed here once — quieter ink on a thinner surface — to say it belonged to
+ * a different group, which is the same thing this app says when a button
+ * cannot be pressed: `:disabled` is drawn as the button faded, nothing else.
+ * So it read as unavailable, and it was the only control on the stage that
+ * looked switched off while working perfectly.
+ *
+ * Grouping is spatial here instead. The gap between the trays is near three
+ * times the gap inside one, and on a phone this button has a line to itself
+ * under the accent — proximity says it is a separate thing without borrowing
+ * a channel that already means something.
  */
-.stage-controls .roll {
-  color: var(--ink-dim);
-  background: color-mix(in srgb, var(--panel) 72%, transparent);
-}
-
-.stage-controls .roll:hover,
-.stage-controls .roll:focus-visible {
-  color: var(--ink);
-  background: var(--panel);
-}
 
 /**
  * Colour as a step rather than a grid.
