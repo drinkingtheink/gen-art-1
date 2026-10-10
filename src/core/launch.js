@@ -78,11 +78,17 @@ export function renderThumbnail({ generator, state }) {
  *
  * The rule is that a backdrop has to reach the edges. Rasterising every piece
  * at 16:9 and measuring ink in the leftmost and rightmost 7% of the frame
- * splits them cleanly: attractor, rosette, phyllotaxis, harmonograph and
- * dendrite all measure 0%, because they compose a single figure in the middle
- * and leave plain background either side. Behind a full-width panel that reads
- * as a blank screen with something small happening in the centre. Blocks
- * manages only 5% for the same reason.
+ * splits them cleanly: attractor, phyllotaxis, harmonograph and dendrite all
+ * measure 0%, because they compose a single figure in the middle and leave
+ * plain background either side. Behind a full-width panel that reads as a
+ * blank screen with something small happening in the centre. Blocks manages
+ * only 5% for the same reason.
+ *
+ * Rosette used to be in that list and is not any more. It is still a single
+ * figure, but the figure is now bigger than the page it is on, so what fills
+ * the frame is a crop out of the middle of it rather than a medallion with
+ * space either side. It is the only piece here that needs more than a zero
+ * margin to bleed, and it declares what it needs below.
  *
  * What survives is the allover fields, and then only the cheap ones — this
  * regenerates every frame while the thumbnail grid is still building, and each
@@ -96,22 +102,49 @@ export function renderThumbnail({ generator, state }) {
  *   cells        71%        89%     0.9      12KB
  *   packing      53%        53%     2.4      44KB
  *   truchet      57%        50%     0.4      62KB
+ *
+ * Rosette measures sparser than any of them and still qualifies. On one run of
+ * the same test it holds 20–28% of the edge columns across the full swing of
+ * the petal modulator, against 41% for truchet and 32% for packing measured
+ * the same way — but it marks ink in 100% of the edge *rows* at every point in
+ * that swing, so what is out there is an open lattice rather than a gap. It is
+ * also the cheapest piece in the set, at 0.7–1.3ms and 28KB a frame.
  */
-const BACKDROP_PIECES = ['subdivision', 'strata', 'cells', 'packing', 'truchet']
+
+/**
+ * `bleed` is the params a backdrop pins, over the generator's own defaults.
+ *
+ * Every piece here keeps a margin of background colour by default, which on a
+ * backdrop is just a border around the screen, so zero margin is the bleed
+ * they all share. Rosette needs two more: a reach that puts the figure well
+ * past the frame, and every ring it has, because a crop out of a nine-ring
+ * window has something crossing the edges and a crop out of a six-ring one
+ * runs out of bands before it gets there.
+ */
+const BACKDROP_PIECES = [
+  { id: 'subdivision' },
+  { id: 'strata' },
+  { id: 'cells' },
+  { id: 'packing' },
+  { id: 'truchet' },
+  { id: 'rosette', bleed: { reach: 2.2, rings: 9 } },
+]
 
 export function backdropPiece(rng = createRng(randomSeed())) {
-  const generator = getGenerator(rng.pick(BACKDROP_PIECES))
+  const choice = rng.pick(BACKDROP_PIECES)
+  const generator = getGenerator(choice.id)
+  const bleed = { margin: 0, ...choice.bleed }
 
-  // Full bleed. Every piece keeps a margin of background colour by default,
-  // which on a backdrop is just a border around the screen — and truchet's
-  // preset sweeps its margin between 18 and 102, so the border would breathe
-  // unless that modulator goes too.
-  const params = { ...defaultsFor(generator), palette: rng.pick(palettes).id, margin: 0 }
+  const params = { ...defaultsFor(generator), palette: rng.pick(palettes).id, ...bleed }
 
   return {
     generator,
     params,
     seed: randomSeed(rng),
-    modulators: presetFor(generator).filter((m) => m.key !== 'margin'),
+    // A modulator on a pinned param would unpin it within a second of
+    // playback: truchet's preset sweeps margin between 18 and 102, so the
+    // border this just removed would breathe back in. That is true of every
+    // param the bleed sets, not only of margin, so the whole set goes.
+    modulators: presetFor(generator).filter((m) => !(m.key in bleed)),
   }
 }
