@@ -176,18 +176,38 @@ const show = useShowcase()
 const stillness = window.matchMedia?.('(prefers-reduced-motion: reduce)')
 
 /**
- * A rolled piece, upright on a narrow screen.
+ * A rolled piece, upright on a narrow screen and drawn to its edges.
  *
  * The shape is overridden *after* the roll rather than in place of it, which
  * matters more than it looks: `randomState` draws the generator, then the
  * shape, then every param from one seeded sequence. Skip the shape draw and
  * the sequence shifts, so the same seed would make different art on a phone
  * than on a desktop — and the whole premise is that a seed reproduces a piece
- * anywhere. Drawing it and discarding it keeps them identical.
+ * anywhere. Drawing it and discarding it keeps them identical. The margin is
+ * overridden the same way and for the same reason.
+ *
+ * The margin goes to zero because on a phone it is subtracted twice. The piece
+ * is already inset by the stage's own padding and sitting in the one column
+ * there is, so a generator's 60 units of its own paper is a border inside a
+ * border — and what it borders is the smallest the artwork is ever displayed.
+ * On a desktop that margin is composition; here it is the difference between
+ * a piece and a stamp. It is also what the wallpaper is cropped from, and a
+ * background with a band of empty paper down two sides is not a background.
+ *
+ * Every generator carries `margin` with a floor of 0, so this is in range
+ * wherever it lands. Guarded on the key anyway, so a generator that one day
+ * composes without one is unaffected rather than given a param it never
+ * declared.
  */
 function rollPiece() {
   const rolled = randomState()
-  return narrow.value ? { ...rolled, ratioId: ownShape.value } : rolled
+  if (!narrow.value) return rolled
+
+  return {
+    ...rolled,
+    ratioId: ownShape.value,
+    params: 'margin' in rolled.params ? { ...rolled.params, margin: 0 } : rolled.params,
+  }
 }
 
 function leaveLaunch() {
