@@ -63,22 +63,55 @@ const PAPER = [
  */
 const MM_PER_INCH = 25.4
 const DPI = 300
-const sheet = getRatio('a-portrait')
-const longEdge = Math.max(sheet.width, sheet.height)
+/** The smallest multiplier that covers `inches` on a canvas's long edge. */
+function exportFor(ratioId, inches) {
+  const edge = Math.max(getRatio(ratioId).width, getRatio(ratioId).height)
+  const scale = PNG_SCALES.find((s) => {
+    const used = Math.min(s, MAX_RASTER_EDGE / edge)
+    return (edge * used) / DPI >= inches
+  })
+  return scale ? `PNG at ${scale}×` : 'SVG'
+}
 
 const sizes = PAPER.map((paper) => {
-  const scale = PNG_SCALES.find((s) => {
-    const used = Math.min(s, MAX_RASTER_EDGE / longEdge)
-    return ((longEdge * used) / DPI) * MM_PER_INCH >= paper.h
-  })
   const inch = (mm) => (mm / MM_PER_INCH).toFixed(1)
   return {
     ...paper,
     inches: `${inch(paper.w)} × ${inch(paper.h)} in`,
     mm: `${paper.w} × ${paper.h} mm`,
-    how: scale ? `PNG at ${scale}×` : 'SVG',
+    how: exportFor('a-portrait', paper.h / MM_PER_INCH),
   }
 })
+
+/**
+ * The frames an American picks a piece up for, and the canvas each one wants.
+ *
+ * Written down because a frame shelf is a physical fact like ISO 216 is, and
+ * read against the shapes the app actually has: 2:3 covers 4x6 through 24x36,
+ * 4:5 covers 8x10 and 16x20, 3:4 covers the three sizes that fit nothing else,
+ * and 5x7 is 1:1.400 against the A-series 1:1.414 — a seventh of an inch over
+ * seven, which disappears under a mat.
+ *
+ * 11x14 is the one that doesn't match anything, and it doesn't need to. Those
+ * frames are sold with an 8x10 mat opening, so the 4:5 piece that fits an 8x10
+ * is the piece that fits an 11x14 frame.
+ */
+const FRAMES = [
+  { name: '5 × 7', h: 7, ratio: 'a-portrait' },
+  { name: '8 × 10', h: 10, ratio: 'print' },
+  { name: '9 × 12', h: 12, ratio: 'poster' },
+  { name: '11 × 14', h: 14, ratio: 'print', note: 'with its 8 × 10 mat' },
+  { name: '12 × 16', h: 16, ratio: 'poster' },
+  { name: '16 × 20', h: 20, ratio: 'print' },
+  { name: '18 × 24', h: 24, ratio: 'poster' },
+  { name: '24 × 36', h: 36, ratio: 'portrait' },
+]
+
+const frames = FRAMES.map((frame) => ({
+  ...frame,
+  canvas: getRatio(frame.ratio).label,
+  how: exportFor(frame.ratio, frame.h),
+}))
 
 const shapes = ratios.length
 
@@ -227,6 +260,30 @@ onUnmounted(() => {
               Those are for the A-series canvas — <strong>√2:1</strong> is 1189 × 841, A0 in
               millimetres, so it lands on any of them uncropped. Other shapes differ; the line under
               the PNG button always gives the real inches.
+            </p>
+
+            <h4>Off-the-shelf frames</h4>
+            <table class="sizes">
+              <thead>
+                <tr>
+                  <th>Frame</th>
+                  <th>Canvas</th>
+                  <th>Export</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="frame in frames" :key="frame.name">
+                  <td>{{ frame.name }} in<span v-if="frame.note" class="aside">&nbsp;{{ frame.note }}</span></td>
+                  <td>{{ frame.canvas }}</td>
+                  <td>{{ frame.how }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="note">
+              Pick the canvas before you make the piece, not after — a shape change regenerates on
+              the new canvas rather than stretching what was there. 24 × 36 is past what a PNG
+              reaches at 300dpi, which is what SVG is for: it has no size at all until something
+              prints it.
             </p>
             <p class="note">
               Grain and effects are raster — a PNG keeps them, a plotter ignores them and draws the
@@ -527,6 +584,25 @@ p:last-child {
 .sizes th:last-child,
 .sizes td:last-child {
   text-align: right;
+}
+
+h4 {
+  margin: 1.4rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* The mat a frame ships with, beside the size it belongs to: a qualification
+   of the row rather than another column, since only one row has one. It is
+   free to wrap — held to one line it would widen the column for every other
+   row — but the space before it is a non-breaking one, so it can never come
+   to rest against the "in" it qualifies. */
+.aside {
+  font-weight: 400;
+  color: var(--ink-dim);
 }
 
 strong {

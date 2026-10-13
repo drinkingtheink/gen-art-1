@@ -15,6 +15,11 @@ const SHAPES = [
   { id: 'landscape', label: 'Landscape · 3:2', w: 3, h: 2 },
   { id: 'portrait', label: 'Portrait · 2:3', w: 2, h: 3 },
   { id: 'print', label: 'Print · 4:5', w: 4, h: 5 },
+  // 3:4 is the US frame shelf that nothing else here fits: 9x12, 12x16 and
+  // 18x24 are all this shape, and the nearest alternative, 4:5, crops 6% off
+  // the long edge of each. 11x14 is left to 4:5 on purpose — those frames are
+  // sold with an 8x10 mat opening, and a mat is what absorbs a near miss.
+  { id: 'poster', label: 'Poster · 3:4', w: 3, h: 4 },
   // 1:√2 is the A-series ratio. At constant area it lands on 1189x841, which
   // is A0 in millimetres — so an export scales to any A size exactly.
   { id: 'a-landscape', label: 'A-series · √2:1', w: Math.SQRT2, h: 1 },
