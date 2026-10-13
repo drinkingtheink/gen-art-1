@@ -63,14 +63,23 @@ const PAPER = [
  */
 const MM_PER_INCH = 25.4
 const DPI = 300
-/** The smallest multiplier that covers `inches` on a canvas's long edge. */
+/**
+ * What will print at this size, on this canvas.
+ *
+ * SVG is the answer for every row — it is vector, so it has no size until
+ * something prints it — and the only question a row actually has is whether
+ * the raster can also reach it, and at which of the multipliers the menu
+ * offers. Naming the multiplier alone would read as the answer rather than as
+ * the alternative, and send people to a 4000px file for a print the vector
+ * does better.
+ */
 function exportFor(ratioId, inches) {
   const edge = Math.max(getRatio(ratioId).width, getRatio(ratioId).height)
   const scale = PNG_SCALES.find((s) => {
     const used = Math.min(s, MAX_RASTER_EDGE / edge)
     return (edge * used) / DPI >= inches
   })
-  return scale ? `PNG at ${scale}×` : 'SVG'
+  return scale ? `SVG, or PNG at ${scale}×` : 'SVG only'
 }
 
 const sizes = PAPER.map((paper) => {
@@ -234,9 +243,9 @@ onUnmounted(() => {
           <section>
             <h3>Printing</h3>
             <p>
-              <strong>SVG</strong> is vector: no size limit, and a pen plotter draws it straight from
-              the file. <strong>PNG</strong> is pixels, 1× to 8×, capped at 8192px — about 27 inches
-              on the long edge.
+              <strong>SVG</strong> is vector: no size limit, so it prints at every size below, and
+              a pen plotter draws it straight from the file. <strong>PNG</strong> is pixels, 1× to
+              8×, capped at 8192px — about 27 inches on the long edge.
             </p>
             <table class="sizes">
               <thead>
