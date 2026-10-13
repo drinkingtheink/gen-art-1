@@ -241,31 +241,6 @@ onUnmounted(() => {
             <table class="sizes">
               <thead>
                 <tr>
-                  <th>Paper</th>
-                  <th>Millimetres</th>
-                  <th>Inches</th>
-                  <th>Export</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="size in sizes" :key="size.name">
-                  <td>{{ size.name }}</td>
-                  <td>{{ size.mm }}</td>
-                  <td>{{ size.inches }}</td>
-                  <td>{{ size.how }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p class="note">
-              Those are for the A-series canvas — <strong>√2:1</strong> is 1189 × 841, A0 in
-              millimetres, so it lands on any of them uncropped. Other shapes differ; the line under
-              the PNG button always gives the real inches.
-            </p>
-
-            <h4>Off-the-shelf frames</h4>
-            <table class="sizes">
-              <thead>
-                <tr>
                   <th>Frame</th>
                   <th>Canvas</th>
                   <th>Export</th>
@@ -283,7 +258,32 @@ onUnmounted(() => {
               Pick the canvas before you make the piece, not after — a shape change regenerates on
               the new canvas rather than stretching what was there. 24 × 36 is past what a PNG
               reaches at 300dpi, which is what SVG is for: it has no size at all until something
-              prints it.
+              prints it. Whatever shape you end on, the line under the PNG button gives its real
+              inches.
+            </p>
+
+            <h4>A-series paper</h4>
+            <table class="sizes">
+              <thead>
+                <tr>
+                  <th>Paper</th>
+                  <th>Millimetres</th>
+                  <th>Inches</th>
+                  <th>Export</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="size in sizes" :key="size.name">
+                  <td>{{ size.name }}</td>
+                  <td>{{ size.mm }}</td>
+                  <td>{{ size.inches }}</td>
+                  <td>{{ size.how }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="note">
+              The <strong>√2:1</strong> canvas is 1189 × 841 — A0 in millimetres — so one export
+              lands on every size in the family uncropped.
             </p>
             <p class="note">
               Grain and effects are raster — a PNG keeps them, a plotter ignores them and draws the
