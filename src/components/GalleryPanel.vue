@@ -80,11 +80,11 @@ async function savePlate(room, event) {
   saving.value = room.id
   saveFailed.value = ''
   try {
-    const blob = await renderPlateBlob(roomEl)
+    const { blob, extension } = await renderPlateBlob(roomEl)
     const name = buildFilename(
       props.generatorId || 'gen-art',
       props.seed || 'piece',
-      'png',
+      extension,
       `on-${room.id}`,
     )
     downloadBlob(blob, name)
@@ -306,8 +306,8 @@ onUnmounted(() => {
               class="save"
               :class="{ failed: saveFailed === room.id }"
               :disabled="!!saving"
-              :title="`Save ${room.name} as a PNG`"
-              :aria-label="`Save ${room.name} as a PNG`"
+              :title="`Save ${room.name} as a photo`"
+              :aria-label="`Save ${room.name} as a photo`"
               @click="savePlate(room, $event)"
             >
               <ButtonIcon :glyph="saveFailed === room.id ? 'info' : 'download'" />
@@ -380,8 +380,8 @@ onUnmounted(() => {
             class="save"
             :class="{ failed: saveFailed === rooms[enlarged].id }"
             :disabled="!!saving"
-            :title="`Save ${rooms[enlarged].name} as a PNG`"
-            :aria-label="`Save ${rooms[enlarged].name} as a PNG`"
+            :title="`Save ${rooms[enlarged].name} as a photo`"
+            :aria-label="`Save ${rooms[enlarged].name} as a photo`"
             @click="savePlate(rooms[enlarged], $event)"
           >
             <ButtonIcon

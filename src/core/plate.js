@@ -41,6 +41,24 @@ const HUNG = '.hung'
  */
 const LONG_EDGE = 2000
 
+/**
+ * A plate is a photograph, so it is encoded like one.
+ *
+ * Not a judgement call the way the wallpaper's is. `wallpaperEncoding` has to
+ * ask, because a piece on its own may be flat colour between hard edges, which
+ * is the one thing PNG wins at and a DCT loses at. A room plate is never that:
+ * a photograph of a room fills the frame and the work occupies a fifth of it.
+ *
+ * Measured on the ochre study at 1657x2000 — PNG 4392KB against 449KB at this
+ * quality, for a mean error of 1.01 per channel over the whole frame and 1.07
+ * inside the artwork itself. Dropping to 0.88 saves another 85KB and takes the
+ * mean to 1.15; going up to 0.95 costs 159KB to reach 0.87. The isolated
+ * maximum sits near 48 at either end, because that is ringing on the hard
+ * colour boundaries in the work and it is a property of the transform rather
+ * than of the setting. 0.92 is the same number the wallpaper settled on.
+ */
+const QUALITY = 0.92
+
 async function toDataUri(url) {
   const blob = await fetch(url).then((r) => r.blob())
   return new Promise((resolve, reject) => {
@@ -275,7 +293,7 @@ function shadowReach(element) {
 }
 
 /**
- * The plate as a PNG blob.
+ * The plate as a file: `{ blob, extension }`.
  *
  * Flat rooms are one pass: the whole element, straight through the browser's
  * renderer, which is exact.
@@ -301,11 +319,38 @@ export async function renderPlateBlob(roomEl) {
   canvas.height = Math.round(height * scale)
   const ctx = canvas.getContext('2d')
 
+  /**
+   * Paper down before anything else, because JPEG has no alpha.
+   *
+   * Whatever the picture does not cover encodes as black rather than as
+   * nothing, and a plate does leave something uncovered: the gallery rounds
+   * the corners of its cells, so about five hundred pixels at the four corners
+   * come through translucent. In a file those would be four black wedges.
+   *
+   * The radius comes off as well — see `prepare` below — so this is the second
+   * of two answers to the same problem. It stays because the first one only
+   * covers the corners, and a format without transparency should not depend on
+   * nothing else in the stack ever being translucent again.
+   */
+  ctx.fillStyle = getComputedStyle(roomEl).backgroundColor || '#000'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
   const hung = roomEl.querySelector(HUNG)
   const matrix = hung ? readTransform(getComputedStyle(hung).transform) : null
 
+  /**
+   * The rounded corner is the gallery's, not the photograph's.
+   *
+   * It is there so a cell sits in a grid of cells. A file is not in that grid,
+   * and a photograph with its corners clipped is a photograph someone has to
+   * repair before they can use it, so the saved rectangle is a rectangle.
+   */
+  const squareOff = (clone) => {
+    clone.style.borderRadius = '0'
+  }
+
   if (!projects(matrix)) {
-    const whole = await rasteriseElement(roomEl, { width, height })
+    const whole = await rasteriseElement(roomEl, { width, height, prepare: squareOff })
     ctx.scale(scale, scale)
     ctx.drawImage(whole, 0, 0, width, height)
   } else {
@@ -313,6 +358,7 @@ export async function renderPlateBlob(roomEl) {
       width,
       height,
       prepare: (clone) => {
+        squareOff(clone)
         const copy = clone.querySelector(HUNG)
         if (copy) copy.style.display = 'none'
       },
@@ -352,10 +398,16 @@ export async function renderPlateBlob(roomEl) {
     })
   }
 
-  return new Promise((resolve, reject) => {
+  const blob = await new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('the plate could not be encoded'))),
-      'image/png',
+      (out) => (out ? resolve(out) : reject(new Error('the plate could not be encoded'))),
+      'image/jpeg',
+      QUALITY,
     )
   })
+
+  // Paired with the blob rather than assumed by the caller, so the name on
+  // disk cannot disagree with what is inside the file — the same shape
+  // `renderToWallpaperBlob` hands back for the same reason.
+  return { blob, extension: 'jpg' }
 }
