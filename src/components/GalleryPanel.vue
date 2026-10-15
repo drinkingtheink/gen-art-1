@@ -6,6 +6,8 @@ import FrameChoice from './FrameChoice.vue'
 import RoomPlate from './RoomPlate.vue'
 import { DEFAULT_FRAME, frameById, PLATE_ASPECT, rooms } from '../core/mounts.js'
 import { renderSvg } from '../core/svg.js'
+import { buildFilename, downloadBlob } from '../core/export.js'
+import { renderPlateBlob } from '../core/plate.js'
 
 /**
  * The current piece, standing in a real room.
@@ -36,9 +38,64 @@ const props = defineProps({
    */
   frame: { type: String, default: DEFAULT_FRAME },
   copied: { type: Boolean, default: false },
+  /**
+   * Who the piece is, for the filename on a saved plate.
+   *
+   * `title` is already here and already carries both, but it carries them
+   * formatted for reading — and a name on disk is not a caption. These are the
+   * same two values the studio's own exports are named from, so a room plate
+   * lands beside them rather than under a name of its own invention.
+   */
+  generatorId: { type: String, default: '' },
+  seed: { type: String, default: '' },
 })
 
 const emit = defineEmits(['dismiss', 'frame', 'copy'])
+
+/**
+ * Which room is being written to a file, by id, or '' for none.
+ *
+ * One at a time: the work is a pair of rasterises and a warp against a
+ * full-resolution photograph, and firing several at once would make all of
+ * them slow rather than any of them fast.
+ */
+const saving = ref('')
+const saveFailed = ref('')
+
+/**
+ * The plate as it stands, saved.
+ *
+ * The element is found from the press rather than held in a ref, because the
+ * same room is mounted twice the moment one is enlarged — in the grid behind
+ * and in the plate in front — and the one to save is the one next to the
+ * button that was pressed.
+ */
+async function savePlate(room, event) {
+  if (saving.value) return
+
+  const slot = event.currentTarget.closest('.plate-slot')
+  const roomEl = slot?.querySelector('.room')
+  if (!roomEl) return
+
+  saving.value = room.id
+  saveFailed.value = ''
+  try {
+    const blob = await renderPlateBlob(roomEl)
+    const name = buildFilename(
+      props.generatorId || 'gen-art',
+      props.seed || 'piece',
+      'png',
+      `on-${room.id}`,
+    )
+    downloadBlob(blob, name)
+  } catch {
+    // The plate is still on screen and still correct — only the file failed,
+    // so the panel says so quietly and stays where it is.
+    saveFailed.value = room.id
+  } finally {
+    saving.value = ''
+  }
+}
 
 const framed = ref(null)
 let url = null
@@ -230,13 +287,35 @@ onUnmounted(() => {
 
       <ul ref="grid" class="rooms">
         <li v-for="(room, i) in rooms" :key="room.id">
-          <!-- The photograph is the control. A separate "enlarge" button beside
-               it would be a smaller target for the same intent, and the piece
-               on the wall is what the eye is already on. -->
-          <button type="button" class="peek" @click="enlarge(i)">
-            <RoomPlate v-if="framed" :room="room" :framed="framed" :scene="scene" />
-            <span class="said">See {{ room.name }} larger</span>
-          </button>
+          <!-- A wrapper so the save control can sit over the plate: the
+               photograph is itself a button, and a button cannot hold one. -->
+          <div class="plate-slot">
+            <!-- The photograph is the control. A separate "enlarge" button beside
+                 it would be a smaller target for the same intent, and the piece
+                 on the wall is what the eye is already on. -->
+            <button type="button" class="peek" @click="enlarge(i)">
+              <RoomPlate v-if="framed" :room="room" :framed="framed" :scene="scene" />
+              <span class="said">See {{ room.name }} larger</span>
+            </button>
+
+            <!-- Over the plate rather than beside it, because what it saves is
+                 this photograph and no other, and the grid is six of them. -->
+            <button
+              v-if="framed"
+              type="button"
+              class="save"
+              :class="{ failed: saveFailed === room.id }"
+              :disabled="!!saving"
+              :title="`Save ${room.name} as a PNG`"
+              :aria-label="`Save ${room.name} as a PNG`"
+              @click="savePlate(room, $event)"
+            >
+              <ButtonIcon :glyph="saveFailed === room.id ? 'info' : 'download'" />
+              <span class="save-says">{{
+                saving === room.id ? 'Saving…' : saveFailed === room.id ? 'Failed' : 'Save'
+              }}</span>
+            </button>
+          </div>
           <p class="credit">
             {{ room.name }} — photo by
             <a :href="room.credit.profile" target="_blank" rel="noopener noreferrer">{{ room.credit.who }}</a>
@@ -285,7 +364,7 @@ onUnmounted(() => {
              viewport runs out vertically first. The width follows from the
              photograph's own proportions so nothing is cropped. -->
         <div
-          class="look-plate"
+          class="look-plate plate-slot"
           :style="{ '--ratio': PLATE_ASPECT.toFixed(4) }"
         >
           <RoomPlate
@@ -295,6 +374,27 @@ onUnmounted(() => {
             :framed="framed"
             :scene="scene"
           />
+          <button
+            v-if="framed"
+            type="button"
+            class="save"
+            :class="{ failed: saveFailed === rooms[enlarged].id }"
+            :disabled="!!saving"
+            :title="`Save ${rooms[enlarged].name} as a PNG`"
+            :aria-label="`Save ${rooms[enlarged].name} as a PNG`"
+            @click="savePlate(rooms[enlarged], $event)"
+          >
+            <ButtonIcon
+              :glyph="saveFailed === rooms[enlarged].id ? 'info' : 'download'"
+            />
+            <span class="save-says">{{
+              saving === rooms[enlarged].id
+                ? 'Saving…'
+                : saveFailed === rooms[enlarged].id
+                  ? 'Failed'
+                  : 'Save'
+            }}</span>
+          </button>
         </div>
         <button type="button" class="step next" aria-label="Next room" @click="step(1)">›</button>
       </div>
@@ -769,6 +869,89 @@ h2 {
 
   .hint {
     display: none;
+  }
+}
+
+/**
+ * The plate and its save control share a box.
+ *
+ * `relative` only, with no size of its own: the plate sets the height, as it
+ * did when it was the cell's only child, so adding the control changes nothing
+ * about how the grid lays out.
+ */
+.plate-slot {
+  position: relative;
+}
+
+/**
+ * Quiet until wanted, and never over the work.
+ *
+ * Bottom-left, which is the one corner of these photographs that is reliably
+ * furniture or floor rather than the piece — the work hangs high in every
+ * room in the set. It carries the panel's own surface with a blur behind it
+ * so it stays legible against a photograph of anything.
+ */
+.save {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  border-color: color-mix(in srgb, var(--panel-edge) 85%, transparent);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 0.18s ease, background-color 0.18s ease;
+}
+
+/* Shown on hover on a pointer, and always where there is no hover to wait for
+   — a touch screen has no way to ask for it. */
+li:hover .save,
+.plate-slot:hover .save,
+.save:focus-visible,
+.save:disabled,
+.save.failed {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .save {
+    opacity: 1;
+  }
+}
+
+.save:hover:not(:disabled) {
+  background: var(--panel);
+}
+
+.save:disabled {
+  cursor: progress;
+}
+
+.save.failed {
+  color: var(--ink);
+  background: color-mix(in srgb, #b4452f 72%, var(--panel));
+}
+
+/* The enlarged plate is sized to the viewport's height and can still run past
+   it on a short window, which puts anything anchored to its bottom edge below
+   the fold. Up here instead, where the top of the plate always is. */
+.look-plate .save {
+  top: 0.5rem;
+  bottom: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save {
+    transition: none;
   }
 }
 

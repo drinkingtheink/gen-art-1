@@ -770,6 +770,8 @@ async function copyLink() {
       :artwork-filter="artworkFilter"
       :overlay="overlay"
       :title="`${generator.name} · ${seed}`"
+      :generator-id="generatorId"
+      :seed="seed"
       :frame="wall ?? DEFAULT_FRAME"
       :copied="copied"
       @frame="wall = $event"
